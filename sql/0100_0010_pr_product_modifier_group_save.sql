@@ -1,0 +1,113 @@
+CREATE OR REPLACE PROCEDURE pr_product_modifier_group_save (
+	IN p_current_uid character varying(255), 
+	OUT p_msg text,
+	INOUT p_modifier_group_id uuid,
+	IN p_modifier_group_name character varying(255),
+	IN p_is_single_modifier_choice integer,
+	IN p_is_multiple_modifier_choice integer,
+	IN p_is_debug integer DEFAULT 0)
+LANGUAGE 'plpgsql'
+AS $BODY$
+-- -------------------------------------
+-- init
+-- -------------------------------------
+DECLARE
+	v_now CONSTANT timestamp = localtimestamp;
+	audit_log text;
+	module_code text;
+	v_modifier_group_name_old varchar(255);
+	v_is_single_modifier_choice_old varchar(255);
+	v_is_multiple_modifier_choice_old varchar(255);
+BEGIN
+/* 0100_0010_pr_product_modifier_group_save
+
+*/
+
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_product_modifier_group_save - start';
+	END IF;
+	
+	module_code := 'Setting - Modifier Group';
+	
+	-- -------------------------------------
+	-- validation
+	-- -------------------------------------
+	IF LENGTH(COALESCE(p_modifier_group_name, '')) = 0 THEN
+		p_msg := 'Modifier Group Name cannot be blank!!';
+		RETURN;
+	END IF;
+	
+	IF EXISTS (
+		SELECT *
+		FROM tb_modifier_group
+		WHERE modifier_group_name = p_modifier_group_name
+	) THEN
+		p_msg := 'Modifier Group Name: ' || p_modifier_group_name || ' already exists!!';
+		RETURN;
+	END IF;
+	
+	-- -------------------------------------
+	-- process
+	-- -------------------------------------
+	IF fn_to_guid(p_modifier_group_id) = fn_empty_guid() THEN
+	
+		p_modifier_group_id := gen_random_uuid();
+		
+		-- Insert new record
+		INSERT INTO tb_modifier_group (
+			modifier_group_id, created_on, created_by, modified_on, modified_by, modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice
+		) VALUES (
+			p_modifier_group_id, v_now, p_current_uid, v_now, p_current_uid, p_modifier_group_name, p_is_single_modifier_choice, p_is_multiple_modifier_choice
+		);
+		
+		-- Prepare Audit Log
+		audit_log := 'Added Modifier Group: ' || p_modifier_group_name || '.';
+	
+	ELSE
+		
+		-- Get old record for audit log purpose
+		SELECT modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice
+		INTO v_modifier_group_name_old, v_is_single_modifier_choice_old, v_is_multiple_modifier_choice_old
+		FROM tb_modifier_group
+		WHERE modifier_group_id = p_modifier_group_id;
+		
+		-- Update record
+		UPDATE tb_modifier_group
+		SET	
+			modified_on = v_now,
+			modified_by = p_current_uid,
+			modifier_group_name = p_modified_group_name,
+			is_single_modifier_choice = p_is_single_modifier_choice,
+			is_multiple_modifier_choice = p_is_multiple_modifier_choice
+		WHERE modifier_group_id = p_modifier_group_id;
+	
+		-- Prepare Audit Log
+		audit_log := 'Update Modifier Group Name from ' || v_modifier_group_name_old || ' to ' || p_modified_group_name || ', ' ||
+						'Updated Single Modifier Choice from ' || v_is_single_modifier_choice_old || ' to ' || p_is_single_modifier_choice || ', ' ||
+						'Update Multiple Modifier Choice from ' || v_is_multiple_modifier_choice_old || ' to ' || p_is_multiple_modifier_choice || '.';
+		
+	END IF;
+	
+	p_msg := 'ok';
+	
+	-- Create Aufit Log
+	CALL pr_append_sys_task_inbox (
+		p_msg => audit_log
+		, p_remarks => 'pr_Product_modifier_group_save'
+		, p_uid => p_current_uid
+		, p_id1 => p_modifier_group_id
+		, p_id2 => null
+		, p_id3 => null
+        , p_app_id => null
+		, p_module_code => module_code
+	);
+	
+	-- -------------------------------------
+	-- cleanup
+	-- -------------------------------------
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_product_modifier_group_save - end';
+	END IF;
+
+END
+$BODY$;
