@@ -35,7 +35,7 @@ create table if not exists tb_prod_category (
 );
 
 create table if not exists tb_modifier_group (
-	modifier_id uuid not null primary key
+	modifier_group_id uuid not null primary key
 	, created_on timestamp not null
 	, created_by varchar(255) not null
 	, modified_on timestamp not null
@@ -45,7 +45,29 @@ create table if not exists tb_modifier_group (
 	, is_multiple_modifier_choice int
 );
 
-create table tb_pricing_type (
+create table if not exists tb_modifier_option (
+	modifier_option_id uuid primary key,
+	created_on timestamp, 
+	created_by varchar(255), 
+	modified_on timestamp, 
+	modified_by varchar(255), 
+	modifier_group_id uuid, 
+	modifier_option_name varchar(255), 
+	addon_amt money, 
+	is_default integer
+);
+
+create table if not exists tb_modifier_item_link (
+	modifier_item_link_id uuid primary key,
+	created_on timestamp not null, 
+	created_by varchar(255) not null, 
+	modified_on timestamp not null, 
+	modified_by varchar(255) not null, 
+	modifier_group_id uuid,
+	product_id uuid
+);
+
+create table if not exists tb_pricing_type (
 	pricing_type_id uuid not null primary key
 	, created_on timestamp not null
 	, created_by varchar(255) not null
@@ -72,16 +94,11 @@ create table if not exists tb_product (
 	, cost money
 	, sell_price money
 	, tax_code1 varchar(50)
-	, tax_pct1 money
-	, tax_amt1 money
 	, amt_include_tax1 int
 	, tax_code2 varchar(50)
-	, tax_pct2 money
-	, tax_amt2 money
 	, amt_include_tax2 int
 	, calc_tax2_after_tax1 int
 	, display_seq varchar(6)
-	--, quantity int
 	, is_enable_kitchen_printer int
 	, is_allow_modifier int
 	, is_enable_track_stock int

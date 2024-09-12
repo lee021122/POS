@@ -43,7 +43,10 @@ BEGIN
 	IF EXISTS (
 		SELECT * 
 		FROM tb_modifier_option
-		WHERE modifier_option_name = p_modifier_option_name
+		WHERE 
+			modifier_option_name = p_modifier_option_name
+			-- Each Modifier Group cannot have same option name
+			AND modifier_group_id = p_modifier_group_id
 	) THEN
 		p_msg := 'Option Name: ' || p_modifier_option_name || ' already exists!!';
 		RETURN;
@@ -115,7 +118,7 @@ BEGIN
 	-- Create Audit Log
 	CALL pr_append_sys_task_inbox (
 		p_msg => audit_log
-		, p_remarks => ' pr_product_modifier_item_save'
+		, p_remarks => 'pr_product_modifier_item_save'
 		, p_uid => p_current_uid
 		, p_id1 => p_modifier_option_id
 		, p_id2 => null
