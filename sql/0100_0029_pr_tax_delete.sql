@@ -1,7 +1,7 @@
-CREATE OR REPLACE PROCEDURE pr_store_delete (
-	IN p_current_id character varying(255),
+CREATE OR REPLACE PROCEDURE pr_tax_delete (
+	IN p_current_uid character varying(255),
 	OUT p_msg text,
-	IN p_store_id uuid,
+	IN p_tax_id uuid,
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -12,28 +12,27 @@ AS $BODY$
 DECLARE
 	audit_log text;
 	module_code text;
-	v_store_name_old character varying(255);
+	v_tax_code_old character varying(255);
 BEGIN
-/* 0100_0023_pr_store_delete
-
+/* 0100_0029_pr_tax_delete
 
 */
-
+	
 	IF p_is_debug = 1 THEN
-		RAISE NOTICE 'pr_store_delete - start';
+		RAISE NOTICE 'pr_tax_delete - start';
 	END IF;
 	
-	module_code := 'Settings - Store';
+	module_code := 'Settings - Tax';
 	
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
 	IF NOT EXISTS (
 		SELECT *
-		FROM tb_store
-		WHERE store_id = p_store_id
-	) THEN 
-		p_msg := 'Store Name is not exists!!';
+		FROM tb_tax
+		WHERE tax_id = p_tax_id
+	) THEN
+		p_msg := 'Tax is not exists!!'
 		RETURN;
 	END IF;
 	
@@ -41,25 +40,27 @@ BEGIN
 	-- process
 	-- -------------------------------------
 	
-	-- Get old record for aaudit log purpose
-	SELECT store_name
-	INTO v_store_name_old
-	FROM tb_store
-	WHERE store_id = p_store_id;
+	-- Get old record for audit log purpose
+	SELECT tax_code
+	INTO v_tax_code_old 
+	FROM tb_tax
+	WHERE tax_id = p_tax_id;
 	
-	-- Delete the record
-	DELETE FROM tb_store
-	WHERE store_id = p_store_id;
+	-- Delete record
+	DELETE FROM tb_tax	
+	WHERE tax_id = p_tax_id;
+	
+	p_msg := 'ok';
 	
 	-- Prepare Audit Log
-	audit_log := 'Deleted Store Name: ' || v_store_name_old || '.';
+	audit_log := 'Deleted Tax: ' || v_tax_code_old || '.';
 	
 	-- Create Audit Log
 	CALL pr_append_sys_task_inbox (
 		p_msg => audit_log
-		, p_remarks => 'pr_store_delete'
+		, p_remarks => 'pr_tax_delete'
 		, p_uid => p_current_uid
-		, p_id1 => p_store_id
+		, p_id1 => p_tax_id
 		, p_id2 => null
 		, p_id3 => null
         , p_app_id => null
@@ -70,8 +71,8 @@ BEGIN
 	-- cleanup
 	-- -------------------------------------
 	IF p_is_debug = 1 THEN
-		RAISE NOTICE 'pr_store_delete - end';
+		RAISE NOTICE 'pr_tax_delete - end';
 	END IF;
-
+	
 END
 $BODY$;

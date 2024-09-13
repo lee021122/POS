@@ -20,6 +20,9 @@ CREATE OR REPLACE PROCEDURE pr_store_save (
 )
 LANGUAGE 'plpgsql'
 AS $BODY$
+-- -------------------------------------
+-- init
+-- -------------------------------------
 DECLARE
 	v_now CONSTANT timestamp = localtimestamp;
 	audit_log text;

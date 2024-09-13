@@ -217,6 +217,7 @@ create table if not exists tb_tax (
 	, tax_desc varchar(255) not null
 	, tax_pct money not null
 	, is_in_use int
+	, display_seq varchar(6)
 );
 
 -- Receipt Template
@@ -301,6 +302,7 @@ create table if not exists tb_guest (
 	guest_id uuid not null
 	, first_name varchar(255) 
 	, last_name varchar(255)
+	, full_name varchar(255)
 	, title varchar(50)
 	, phone_number varchar(50) not null 
 	, email varchar(255)
@@ -308,9 +310,9 @@ create table if not exists tb_guest (
 	, addr_line_1 varchar(255)
 	, addr_line_2 varchar(255)
 	, city varchar(255)
-	, state varchar(255)
+	, state uuid
 	, post_code varchar(50)
-	, country varchar(255)
+	, country uuid
 	, guest_tag varchar(255)
 	, total_spend money
 	, total_cashback money

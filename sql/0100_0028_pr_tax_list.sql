@@ -1,0 +1,12 @@
+CREATE OR REPLACE PROCEDURE pr_tax_list (
+
+)
+LANGUAGE 'plpgsql'
+AS $BODY$
+DECLARE
+BEGIN
+/* 0100_0028_pr_tax_list
+
+*/
+END
+$BODY$;
