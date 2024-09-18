@@ -70,10 +70,17 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	IF LENGTH(COALESCE(p_supplier_name, '')) = 0 THEN
+		p_msg := 'Supplier Name cannot be blank!!';
+		RETURN;
+	END IF;
+
 	IF EXISTS (
 		SELECT *
 		FROM tb_supplier
-		WHERE supplier_name = p_supplier_name
+		WHERE 
+			supplier_name = p_supplier_name
+			AND supplier_id <> fn_to_guid(p_supplier_id)
 	) THEN
 		p_msg := 'Supplier Name: ' || p_supplier_name || ' already exist!!';
 		RETURN;
@@ -147,7 +154,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => ' pr_supplier_save'
 		, p_uid => p_current_uid

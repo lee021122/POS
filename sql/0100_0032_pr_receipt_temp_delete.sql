@@ -65,7 +65,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_receipt_temp_delete'
 		, p_uid => p_current_uid

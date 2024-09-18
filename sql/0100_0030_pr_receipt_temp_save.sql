@@ -51,7 +51,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_receipt_temp
-		WHERE receipt_temp_name = p_receipt_temp_name
+		WHERE 
+			receipt_temp_name = p_receipt_temp_name
+			AND receipt_temp_id <> fn_to_guid(p_receipt_temp_id)
 	) THEN
 		p_msg := 'Receipt Template Name: ' || p_receipt_temp_name || ' already exists!!';
 		RETURN;
@@ -114,7 +116,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_receipt_temp_save'
 		, p_uid => p_current_uid

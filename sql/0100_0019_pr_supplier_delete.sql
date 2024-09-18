@@ -63,7 +63,7 @@ BEGIN
 	audit_log := 'Deleted the Supplier: ' || v_supplier_name_old || '.';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => ' pr_supplier_delete'
 		, p_uid => p_current_uid

@@ -1,15 +1,42 @@
 function libShared() {};
 
+/**
+ * // Handle undefined and null
+ * @param {string} v 
+ * @returns 
+ */
 libShared.isUndefinedOrNull = function (v) {
     return (typeof v === undefined) || (v === null);
 };
 
 libShared.toString = function (v) {
+    if (libShared.isUndefinedOrNull(v)) {
+        return '';
+    };
+
     if (typeof v === 'string') {
         return v;
-    }
+    };
+
+    // if (v.length > l) { 
+    //     return v.substring(0, l);
+    // }
+
     return String(v);
 };
+
+/**
+ * // Handle Data Type Text in Postgresql
+ * @param {string} v 
+ * @returns 
+ */
+libShared.toText = function(v) {
+    if (libShared.isUndefinedOrNull(v)) {
+        return '';
+    };
+
+    return String(v);
+}
 
 libShared.toInt = function(v) {
     if (libShared.isUndefinedOrNull(v)) {
@@ -40,7 +67,7 @@ libShared.toFloat = function(v) {
 };
 
 libShared.toUUID = function(v) {
-    if (v.length === 36) {
+    if (v && v.length === 36) {
         return `${v.toString()}`;
     }
 

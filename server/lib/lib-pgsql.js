@@ -152,9 +152,14 @@ pgSql.validTbOrFn = function (name) {
  * @returns 
  */
 pgSql.validColumnName = function (col) {
-    const regex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    const regex = /^(fn_[a-zA-Z_][a-zA-Z0-9_]*)|([a-zA-Z_][a-zA-Z0-9_]*)$/;
     return regex.test(col);
 };
+
+pgSql.validProcName = async function (proc_name) {
+    const regex = /^(pr_[a-zA-Z_][a-zA-Z0-9_]*)|([a-zA-Z_][a-zA-Z0-9_]*)$/;
+    return regex.test(proc_name);
+}
 
 
 pgSql.executeFunction = async function (fn_name, params) {
@@ -191,6 +196,21 @@ pgSql.getAction = async function (axn_code) {
     }
 };
 
+pgSql.executeStoreProc = async function (sp_name, params) {
+    try {
+        if (!pgSql.validProcName(sp_name)) {
+            throw new Error('Invalid procedure name');
+        }
+
+        const query = pgp.as.format('CALL $1:name($2:csv)', [sp_name, params]);
+
+        return await db.many(query);
+    } catch (err) {
+        console.error('Error in executeStoreProc:', err);
+        throw err;
+    }
+}
+
 pgSql.toSql = function (data_type, v) {
     if (data_type === pgSql.PARAMS_STRING) {
         return `'${v}'`
@@ -206,6 +226,8 @@ pgSql.toSql = function (data_type, v) {
     // }
 }
 
-
+pgSql.appendLog = async function (log_type, log_data) {
+    
+};
 
 module.exports = { pgSql, db };

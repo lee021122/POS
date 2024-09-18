@@ -42,8 +42,10 @@ BEGIN
 	
 	IF EXISTS (
 		SELECT *
-		FROM tb_pym_mode
-		WHERE pymt_mode_desc = p_pymt_mode_desc
+		FROM tb_pymt_mode
+		WHERE 
+			pymt_mode_desc = p_pymt_mode_desc
+			AND pymt_mode_id <> fn_to_guid(p_pymt_mode_id)
 	) THEN
 		p_msg := 'Payment Mode: ' || p_pymt_mode_desc || ' already exists!!';
 		RETURN;
@@ -137,7 +139,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_pymt_mode_save'
 		, p_uid => p_current_uid

@@ -75,7 +75,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_product
-		WHERE product_desc = p_product_desc
+		WHERE 
+			product_desc = p_product_desc
+			AND product_id <> fn_to_guid(p_product_id)
 	) THEN
 		p_msg := 'Product Description: ' || p_product_desc || ' already exists!!';
 		RETURN;
@@ -84,7 +86,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_product
-		WHERE product_code = p_product_code
+		WHERE 
+			product_code = p_product_code
+			AND product_id <> fn_to_guid(p_product_id)
 	) THEN
 		p_msg := 'Product Code: ' || p_product_code || ' already exists!!';
 		RETURN;
@@ -205,7 +209,7 @@ BEGIN
 	p_msg = 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_product_save'
 		, p_uid => p_current_uid

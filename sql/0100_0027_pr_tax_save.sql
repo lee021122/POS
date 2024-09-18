@@ -45,7 +45,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_tax
-		WHERE tax_code = p_tax_code
+		WHERE 
+			tax_code = p_tax_code
+			AND tax_id <> fn_to_guid(p_tax_id)
 	) THEN
 		p_msg := 'Tax Code: ' || p_tax_code || ' already exists!!';
 		RETURN;
@@ -59,7 +61,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_tax
-		WHERE tax_desc = p_tax_desc
+		WHERE 
+			tax_desc = p_tax_desc
+			AND tax_id <> fn_to_guid(p_tax_id)
 	) THEN
 		p_msg := 'Tax Description: ' || p_tax_desc || ' already exists!!';
 		RETURN;
@@ -114,7 +118,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_tax_save'
 		, p_uid => p_current_uid

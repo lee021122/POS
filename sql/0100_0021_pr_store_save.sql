@@ -85,6 +85,38 @@ BEGIN
 		p_msg := 'Must Select the Receipt Template!!';
 		RETURN;
 	END IF;
+
+	IF EXISTS (
+		SELECT *
+		FROM tb_store
+		WHERE 
+			store_name = p_store_name
+			AND store_id <> fn_to_guid(p_store_id)
+	) THEN
+		p_msg := 'Store Name: ' || p_store_name || ' already exists!!';
+		RETURN;
+	END IF;
+	)
+
+	IF EXISTS (
+		SELECT *
+		FROM tb_store
+		WHERE business_registration_num = p_business_registration_num
+	) THEN
+		p_msg := 'Business Registration Number already exists!!';
+		RETURN;
+	END IF;
+
+	-- -------------------------------------
+	-- process
+	-- -------------------------------------
+	IF fn_to_guid(p_store_id) = fn_empty_guid() THEN
+	
+		p_store_id := gen_random_uuid();
+		
+		-- Insert new reocrd
+		INSERT INTO tb_store (
+	)
 	
 	-- -------------------------------------
 	-- process
@@ -160,7 +192,7 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_store_save'
 		, p_uid => p_current_uid
