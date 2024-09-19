@@ -160,7 +160,7 @@ create table if not exists tb_general_setting (
 );
 
 create table if not exists tb_store_status (
-	store_status_id int not null 
+	store_status_id int not null primary key
 	, created_on timestamp not null
 	, created_by varchar(255) not null
 	, modified_on timestamp not null
@@ -239,7 +239,7 @@ create table if not exists tb_receipt_temp (
 
 -- Printer Setup
 create table if not exists tb_pos_printer (
-	pos_printer_id not null uuid
+	pos_printer_id uuid not null primary key
 	, created_on timestamp not null
 	, created_by varchar(255) not null
 	, modified_on timestamp not null
@@ -282,6 +282,7 @@ create table if not exists tb_food_menu (
 	, modified_on timestamp not null
 	, modified_by varchar(255 )not null
 	, food_menu_desc varchar(255)
+	, meal_period_id uuid
 	, is_in_use int
 	, display_seq varchar(6)
 );
@@ -323,18 +324,18 @@ create table if not exists tb_guest (
 );
 
 -- Transcation
-create table if not exists tb_order_trans (
-	order_trans_id uuid not null primary key 
-	, created_on timestamp not null
-	, created_by varchar(255) not null
-	, modified_on timestamp not null
-	, modified_by varchar(255) not null
-	, 
-);
+-- create table if not exists tb_order_trans (
+-- 	order_trans_id uuid not null primary key 
+-- 	, created_on timestamp not null
+-- 	, created_by varchar(255) not null
+-- 	, modified_on timestamp not null
+-- 	, modified_by varchar(255) not null
+-- 	, 
+-- );
 
-create table if not exists tb_order_item_line_trans (
+-- create table if not exists tb_order_item_line_trans (
 
-);
+-- );
 
 -- log in every click
 create table if not exists tb_audit_log (

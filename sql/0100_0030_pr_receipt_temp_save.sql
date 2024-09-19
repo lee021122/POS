@@ -4,7 +4,7 @@ CREATE OR REPLACE PROCEDURE pr_receipt_temp_save (
 	INOUT p_receipt_temp_id uuid,
 	IN p_receipt_temp_name character varying(255),
 	IN p_logo_img_path character varying(255),
-	IN p_extra_information character varying(255),
+	IN p_extra_information text,
 	IN p_is_show_store_name integer,
 	IN p_is_show_store_details integer,
 	IN p_is_show_customer_details integer, 

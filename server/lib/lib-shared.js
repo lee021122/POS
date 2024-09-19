@@ -1,4 +1,8 @@
+const uuid = require('uuid');
+
 function libShared() {};
+
+libShared.imgFormat = ['.jpeg', '.jpg', '.png', '.gif', '.ico', '.bmp', '.tif', '.tiff', '.jpe', '.jfif'];
 
 /**
  * // Handle undefined and null
@@ -9,6 +13,11 @@ libShared.isUndefinedOrNull = function (v) {
     return (typeof v === undefined) || (v === null);
 };
 
+/**
+ * 
+ * @param {string} v 
+ * @returns 
+ */
 libShared.toString = function (v) {
     if (libShared.isUndefinedOrNull(v)) {
         return '';
@@ -38,6 +47,7 @@ libShared.toText = function(v) {
     return String(v);
 }
 
+
 libShared.toInt = function(v) {
     if (libShared.isUndefinedOrNull(v)) {
         return 0;
@@ -56,20 +66,25 @@ libShared.toInt = function(v) {
 libShared.toFloat = function(v) {
     if (libShared.isUndefinedOrNull(v)) {
         return 0;
-    }
+    };
 
     const parsed = parseFloat(v);
+
     if (!isNaN(parsed)) {
         return parsed;
-    }
+    };
 
     return 0;
 };
 
+libShared.toNewGuid = function() {
+    return uuid.v4();
+}
+
 libShared.toUUID = function(v) {
     if (v && v.length === 36) {
         return `${v.toString()}`;
-    }
+    };
 
     return null;
 };

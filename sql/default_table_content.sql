@@ -1,8 +1,8 @@
 insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, is_in_use, display_seq, created_on, created_by) values
 -- Module: Product
-(gen_random_uuid(), 'prod-category::s', 'Product Category - Save', 'pr_prod_category_save', null, 1, '000001', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-category::l', 'Product Category - List', 'pr_prod_category_list', null, 1, '000002',  current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-category::d', 'Product Category - Delete', 'pr_prod_category_delete', null, 1, '000003', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::s', 'Product Category - Save', 'pr_prod_category_save', null, 1, '000001', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::l', 'Product Category - List', 'pr_prod_category_list', null, 1, '000002',  current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::d', 'Product Category - Delete', 'pr_prod_category_delete', null, 1, '000003', current_timestamp, 'admin'),
 (gen_random_uuid(), 'prod-setup::s', 'Product - Save', 'pr_product_save', null, 1, '000004', current_timestamp, 'admin'),
 (gen_random_uuid(), 'prod-setup::l', 'Product - List', 'pr_product_list', null, 1, '000005',  current_timestamp, 'admin'),
 (gen_random_uuid(), 'prod-setup::d', 'Product - Delete', 'pr_product_delete', null, 1, '000006', current_timestamp, 'admin'),
@@ -37,11 +37,31 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 
 
 insert into tb_action_param (action_param_id, action_id, action_param_name, data_type, seq, is_compulsory, created_on, created_by) values
+-- prod-category::s
 (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'category_id', 'id', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'category_desc', 'string', 3, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'is_in_use', 'int', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'display_seq', 'string', 5, 0, current_timestamp, 'admin')
+(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'category_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'category_desc', 'string', 4, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
+-- prod-category::l
+-- prod-category::d
+(gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'category_id', 'id', 3, 0, current_timestamp, 'admin'),
+
+-- setting-receipt-temp::s
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'receipt_temp_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'receipt_temp_name', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'logo_img_path', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'extra_information', 'text', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'is_show_store_name', 'integer', 7, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'is_show_store_details', 'integer', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'is_show_customer_details', 'integer', 9, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'is_show_customer_point', 'integer', 10, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9604d85e-0c7c-4538-acd9-9a519bf8de70', 'is_in_use', 'integer', 11, 0, current_timestamp, 'admin'),
 
 insert into tb_pricing_type (pricing_type_id, created_on, created_by, modified_on, modified_by, pricing_type_desc, is_in_use) values
 (gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'Fixed', 1),

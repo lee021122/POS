@@ -8,6 +8,8 @@ const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
 const libShared = require('../lib/lib-shared');
 
+const p0 = new libApi.apiCaller();
+
 const FILE = path.basename(__filename) + '::'
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
@@ -25,19 +27,19 @@ AppSettingStore.prototype.save = async function(req, res) {
 
         // Validate the request data
         if (!code) {
-            return res.status(400).send(libApi.responseError('Code is required!!', 'Failed'));
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
         if (!axn) {
-            return res.status(400).send(libApi.responseError('Action is required!!', 'Failed'));
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
         if (!o2[0].store_name) {
-            return res.status(400).send(libApi.responseError('Store Name is required!!', 'Failed'));
+            return res.status(400).send(libApi.response('Store Name is required!!', 'Failed'));
         };
 
         if (!o2[0].receipt_temp_id) {
-            return res.status(400).send(libApi.responseError('Receipt Template is required!!', 'Failed'));
+            return res.status(400).send(libApi.response('Receipt Template is required!!', 'Failed'));
         };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
