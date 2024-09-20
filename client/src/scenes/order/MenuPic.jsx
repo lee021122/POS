@@ -24,7 +24,7 @@ const MenuPic = ({ title, image, price, category }) => {
   };
 
   return (
-    <Box width="100%" 
+    <Box width="100%"
       
     >
       <Box display="flex" flexDirection="column" alignItems="center">
@@ -41,7 +41,7 @@ const MenuPic = ({ title, image, price, category }) => {
           <Button
             variant="contained"
             onClick={handleAdd}
-            sx={{ backgroundColor: "#CD5C08", fontWeight: "bold", width: "170px", mt: "10px", borderRadius: "24px",
+            sx={{ backgroundColor: "#CD5C08", fontWeight: "bold", width: "170px", mt: "10px", borderRadius: "24px", height:"35px",
               '&:hover': {
               backgroundColor: "#FFE7D1",
               color: "#CD5C08", // Change to your desired hover color
@@ -57,10 +57,12 @@ const MenuPic = ({ title, image, price, category }) => {
             transition: 'border-color 0.3s ease',  // Smooth transition
             borderRadius: "24px",
             width: "170px",
+            mt: "10px",
+            height:"35px"
           }}
           >
             {/* Remove Button */}
-            <IconButton onClick={handleRemove}>
+            <IconButton onClick={handleRemove} >
               <RemoveCircleOutlineRounded />
             </IconButton>
 
