@@ -115,7 +115,7 @@ Object.defineProperty(pgSql, 'SQL_ACTION', { get: function () { return 'fn_actio
  * @param {Array} params 
  * @returns 
  */
-pgSql.getTable = async function (tb_name, sql, cols, params) {
+pgSql.getTable = async function (tb_name, sql, cols) {
     try {
         // Ensure table name is safe to use to prevent SQL injection
         if (!pgSql.validTbOrFn(tb_name)) {
@@ -132,7 +132,7 @@ pgSql.getTable = async function (tb_name, sql, cols, params) {
         const query = `SELECT ${columnList} FROM ${tb_name} ${sql || ''}`;
         
         // Execute the query and return the result
-        return await db.any(query, params);
+        return await db.any(query);
     } catch (error) {
         console.error('Error in getTable:', error);
         throw error;    

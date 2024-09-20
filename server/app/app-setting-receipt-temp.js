@@ -13,7 +13,7 @@ const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
 const libShared = require('../lib/lib-shared');
 
-const p0 = new libApi.apiCaller();
+const p0 = new libApi.apiCallerImg();
 
 const FILE = path.basename(__filename) + '::'
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
@@ -53,27 +53,53 @@ const upload = multer({
             cb('Only Accept Image Files!!');
         }
     }
-}).single('logo_img_path'); // 'image' is the field name in the form
+}).fields([
+    { name: 'logo_img_path', maxCount: 1 }, // Field for image
+    { name: 'data', maxCount: 1 }           // Field for JSON data
+]);
 
 function AppSettingReceiptTemp() {};
 
 AppSettingReceiptTemp.prototype.save = async function (req, res) {
     try {
+        const { code, axn, data, logo_img_path } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        p0.img = logo_img_path;
+        const preCode = p0.code;
+        const o2 = JSON.parse(p0.data);
+
         // Access the uploaded file
-        const uploadedFile = req.file;
+        const uploadedFile = req.files['logo_img_path'] ? req.files['logo_img_path'][0] : null;
+        let a = req.body;
+        // console.log(a);
         
         // Check if the file was uploaded
         if (!uploadedFile) {
             return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
         }
 
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = p0.data;
-
+        if (uploadedFile) {
+            // Extract the old `logo_img_path` from the database
+            const oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']); 
+            // console.log(oldLogoImgPath);
+            
+            if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
+                // Get the full path of the old image
+                const oldImagePath = path.join(__dirname, 'user-file', oldLogoImgPath[0].logo_img_path.replace('/user-file/', ''));
+                // console.log('Full path to old image:', oldImagePath);
+                
+                // Check if the old image exists, if so, delete it
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath); // Delete the old image
+                }
+            }
+        
+            // Now update `logo_img_path` in the params array with the new uploaded file path
+            o2[0].logo_img_path = `/user-file/${uploadedFile.filename}`;
+        }
+        
         if (!code) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
@@ -100,9 +126,7 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
-
-        // Include the file path in the parameters if needed
-        params.logo_img_path = `/user-file/${uploadedFile.filename}`;
+        // console.log("params: ", params);
             
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
@@ -119,17 +143,17 @@ AppSettingReceiptTemp.prototype.list = async function (req, res) {
 };
 
 AppSettingReceiptTemp.prototype.delete = async function (req, res) {
-    
+    try {
+        
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    }
 };
 
 const receiptTemp = new AppSettingReceiptTemp();
 
 // router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
-router.post('/s', (req, res, next) => {
-    console.log(req.body); // Log request body
-    console.log(req.file);  // Log uploaded file (should be undefined here)
-    next();
-}, upload, receiptTemp.save.bind(receiptTemp));
-
+router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
 
 module.exports = router;

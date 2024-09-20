@@ -5,6 +5,7 @@ const userConfig = require('./config/user-config');
 const prodCat = require('./app/app-prod-category');
 const store = require('./app/app-setting-store');
 const receiptTemp = require('./app/app-setting-receipt-temp');
+const tax = require('./app/app-setting-tax');
 
 app.use(cors());
 app.use(express.json());
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use('/prodCat', prodCat);
 app.use('/store', store);
 app.use('/receiptTemp', receiptTemp);
+app.use('/tax', tax);
 
 app.listen(userConfig.PORT, () => {
     console.log(`Server running on PORT: ${userConfig.PORT}`);

@@ -4,7 +4,7 @@ CREATE OR REPLACE PROCEDURE pr_tax_save (
 	INOUT p_tax_id uuid,
 	IN p_tax_code character varying(255),
 	IN p_tax_desc character varying(255),
-	IN p_tax_pct money,
+	IN p_tax_pct numeric(15, 2),
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(6),
 	IN p_is_debug integer DEFAULT 0
@@ -20,12 +20,22 @@ DECLARE
 	module_code text;
 	v_tax_code_old character varying(255);
 	v_tax_desc_old character varying(255);
-	v_tax_pct_old money;
+	v_tax_pct_old numeric(15, 2);
 	v_is_in_use_old integer;
 	v_display_seq_old character varying(6);
 BEGIN
 /* 0100_0027_pr_tax_save
 
+	CALL pr_tax_save(
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_tax_id => '9241fe97-e300-4090-b9d8-6d1c2a6cec9d',
+		p_tax_code => 'TEST',
+		p_tax_desc => 'Test Charge',
+		p_tax_pct => 6,
+		p_is_in_use => 1,
+		p_display_seq => '000001'
+	);
 */
 
 	IF p_is_debug = 1 THEN

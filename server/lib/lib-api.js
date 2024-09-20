@@ -26,6 +26,20 @@ libApi.apiCaller = function() {
     this.data = null
 };
 
+libApi.apiCallerImg = function() {
+    /** @type {string} */
+    this.api_code = null
+
+    /** @type {string} */
+    this.api_axn = null
+
+    /** @type {string} */
+    this.img = null
+
+    /** @type {object} */
+    this.data = null
+}
+
 libApi.apiParameterObj = function () {
     /** @type {} */
     this.params = null

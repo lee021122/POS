@@ -105,7 +105,7 @@ AppSettingStore.prototype.delete = async function (req, res) {
     }
 };
 
-// Create an instance of AppCoProfile
+// Create an instance
 const store = new AppSettingStore();
 
 // Define route handler

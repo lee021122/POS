@@ -53,7 +53,7 @@ create table if not exists tb_modifier_option (
 	modified_by varchar(255), 
 	modifier_group_id uuid, 
 	modifier_option_name varchar(255), 
-	addon_amt money, 
+	addon_amt numeric(15, 4), 
 	is_default integer
 );
 
@@ -91,8 +91,8 @@ create table if not exists tb_product (
 	, product_img_path varchar(255)
 	, supplier_id uuid
 	, pricing_type uuid not null
-	, cost money
-	, sell_price money
+	, cost numeric(15, 4)
+	, sell_price numeric(15, 4)
 	, tax_code1 varchar(50)
 	, amt_include_tax1 int
 	, tax_code2 varchar(50)
@@ -215,7 +215,7 @@ create table if not exists tb_tax (
 	, modified_by varchar(255) not null
 	, tax_code varchar(50) not null
 	, tax_desc varchar(255) not null
-	, tax_pct money not null
+	, tax_pct numeric(15, 2) not null
 	, is_in_use int
 	, display_seq varchar(6)
 );
@@ -315,9 +315,9 @@ create table if not exists tb_guest (
 	, post_code varchar(50)
 	, country uuid
 	, guest_tag varchar(255)
-	, total_spend money
-	, total_cashback money
-	, total_transaction money
+	, total_spend numeric(15, 4)
+	, total_cashback numeric(15, 4)
+	, total_transaction integer
 	, last_purchase_dt date
 	
 	, primary key (guest_id, phone_number)

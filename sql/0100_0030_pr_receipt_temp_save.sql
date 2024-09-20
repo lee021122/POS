@@ -71,7 +71,7 @@ BEGIN
 			receipt_temp_id, created_on, created_by, modified_on, modified_by, receipt_temp_name, logo_img_path, extra_information, is_show_store_name, 
 			is_show_store_details, is_show_customer_details, is_show_customer_point, is_in_use
 		) VALUES (
-			p_receipt_temp_id, v_now, p_current_uid, v_now, p_current_uid, p_receipt_temp_name, p_logo_img_path, p_extar_information, p_is_show_store_name,
+			p_receipt_temp_id, v_now, p_current_uid, v_now, p_current_uid, p_receipt_temp_name, p_logo_img_path, p_extra_information, p_is_show_store_name,
 			p_is_show_store_details, p_is_show_customer_details, p_is_show_customer_point, p_is_in_use
 		);
 		
@@ -93,7 +93,7 @@ BEGIN
 		SET
 			receipt_temp_name = p_receipt_temp_name, 
 			logo_img_path = p_logo_img_path, 
-			extra_information = p_extar_information, 
+			extra_information = p_extra_information, 
 			is_show_store_name = COALESCE(p_is_show_store_name, 0), 
 			is_show_store_details = COALESCE(p_is_show_store_details, 0), 
 			is_show_customer_details = COALESCE(p_is_show_customer_details, 0), 

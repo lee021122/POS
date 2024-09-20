@@ -2,6 +2,7 @@ const uuid = require('uuid');
 
 function libShared() {};
 
+libShared.money = '$'
 libShared.imgFormat = ['.jpeg', '.jpg', '.png', '.gif', '.ico', '.bmp', '.tif', '.tiff', '.jpe', '.jfif'];
 
 /**
