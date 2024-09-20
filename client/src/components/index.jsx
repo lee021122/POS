@@ -7,8 +7,8 @@ import StreamChart from "./StreamChart";
 import GeographyChart from "./GeographyChart";
 import ProgressCircle from "./ProgressCircle";
 import StatBox from "./StatBox";
-import CategoriesBox from "./CategoriesBox";
-import MenuPic from "./MenuPic";
+import CategoriesBox from "../scenes/order/CategoriesBox";
+import MenuPic from "../scenes/order/MenuPic";
 
 export {
   Header,

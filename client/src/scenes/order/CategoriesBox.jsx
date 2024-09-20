@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Box, Typography, useTheme } from "@mui/material";
-import { tokens } from "../theme";
+import { tokens } from "../../theme";
 
 const CategoriesBox = ({ title, icon, count }) => {
   const theme = useTheme();
@@ -12,10 +12,10 @@ const CategoriesBox = ({ title, icon, count }) => {
           
         >
           {icon}
-          <Typography variant="h5" fontWeight="bold" color={"#557C56"}>
+          <Typography variant="h6" fontWeight="bold" color={"#557C56"}>
             {title}
           </Typography>
-          <Typography variant="h6" color={"#7D7C7C"}>
+          <Typography variant="h7" color={"#7D7C7C"}>
           {count}
         </Typography>
         </Box>

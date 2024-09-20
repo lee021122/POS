@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Box, Typography, useTheme, Button, IconButton } from "@mui/material";
 import { useState } from "react";
-import { tokens } from "../theme";
+import { tokens } from "../../theme";
 import{ RemoveCircleOutlineRounded, AddCircleOutlineRounded } from '@mui/icons-material';
 
 const MenuPic = ({ title, image, price, category }) => {
@@ -24,12 +24,12 @@ const MenuPic = ({ title, image, price, category }) => {
   };
 
   return (
-    <Box width="100%" mx="20px"
+    <Box width="100%" 
       
     >
       <Box display="flex" flexDirection="column" alignItems="center">
         {image}
-        <Typography variant="h5" fontWeight="bold" color={"#557C56"} mt="20px" align="center">
+        <Typography variant="h6" fontWeight="bold" color={"#557C56"} mt="20px" align="center">
           {title}
         </Typography>
         <Typography variant="h6" color={colors.gray[100]}>
@@ -51,7 +51,7 @@ const MenuPic = ({ title, image, price, category }) => {
             Add to Dish
           </Button>
         ) : (
-          <Box mt="5px" display="flex" alignItems="center" justifyContent="space-between"
+          <Box  display="flex" alignItems="center" justifyContent="space-between"
           sx={{
             border: quantity > 0 ? '2px solid #CD5C08' : '2px solid transparent',  // Change border when quantity > 0
             transition: 'border-color 0.3s ease',  // Smooth transition

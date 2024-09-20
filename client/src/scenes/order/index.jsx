@@ -1,23 +1,13 @@
 import React from "react";
 import {
     Box,
-    IconButton,
-    Typography,
     useMediaQuery,
     useTheme,
 } from "@mui/material";
 import {
-    StatBox,
-    LineChart,
-    ProgressCircle,
-    BarChart,
-    GeographyChart,
     CategoriesBox,
     MenuPic,
 } from "../../components";
-import {
-    DownloadOutlined,
-} from "@mui/icons-material";
 
 import AllIcon from "../../assets/images/all.png";
 import MainCourseIcon from "../../assets/images/main.png";
@@ -31,7 +21,7 @@ import nasi from "../../assets/images/nasi.jpg";
 
 
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
+import OrderListing from "./OrderListing";
 
 const categories = [
     { title: "All", icon: AllIcon, count: "157 items" },
@@ -41,12 +31,14 @@ const categories = [
     { title: "Breakfast", icon: BreakfastIcon, count: "19 items" },
     { title: "Dessert", icon: DessertIcon, count: "22 items" },
     { title: "Beverage", icon: BeverageIcon, count: "17 items" },
-    { title: "Beverage", icon: BeverageIcon, count: "17 items" },
+    { title: "All", icon: AllIcon, count: "157 items" },
+    { title: "Main Course", icon: MainCourseIcon, count: "67 items" },
+    { title: "Pasta", icon: PastaIcon, count: "14 items" },
+    { title: "Burger", icon: BurgerIcon, count: "3 items" },
     { title: "Breakfast", icon: BreakfastIcon, count: "19 items" },
     { title: "Dessert", icon: DessertIcon, count: "22 items" },
     { title: "Beverage", icon: BeverageIcon, count: "17 items" },
-    { title: "Beverage", icon: BeverageIcon, count: "17 items" },
-];
+]
 
 const menuItems = [
     {title: "Nasi Goreng Kampung",image: NGK,price: "RM16.90", category: "Main Course",},
@@ -71,9 +63,7 @@ function Order() {
     const isXsDevices = useMediaQuery("(max-width: 436px)");
     return (
       <Box m="15px">
-        
-  
-        {/* GRID & CHARTS */}
+          
         <Box
           display="grid"
           gridTemplateColumns={
@@ -84,19 +74,19 @@ function Order() {
               : "repeat(3, 1fr)"
           }
           gridAutoRows="140px"
-          gap="20px"
+          gap="10px"
         >
           {/* Category Items */}
 
           <Box 
             backgroundColor="transparent"
-            gridColumn="span 8"
+            gridColumn="span 9"
             display="flex"
             alignItems="center"
             // borderRadius="20px"
             // boxShadow="0px 4px 12px rgba(0, 0, 0, 0.15)"
-            pl="10px"
-            pr="10px"
+            pl="5px"
+            pr="5px"
 
             maxWidth="100%" 
             overflow="auto"
@@ -117,11 +107,12 @@ function Order() {
                 justifyContent="center"
                 alignItems="center"
                 width="120px" // Set a fixed width for each item box
+                height="120px"
                 p="10px"
                 ml="3.5px"
                 mr="3.5px" // Add some margin between items
                 borderRadius="15px" // Add border radius to each item
-                boxShadow="0px 4px 12px rgba(0, 0, 0, 0.3)" // Optional: shadow for each item
+                boxShadow="0px 4px 12px rgba(0, 0, 0, 0.20)" // Optional: shadow for each item
                 sx={{ 
                     '&:hover': {
                     backgroundColor: "#FFE7D1",
@@ -132,43 +123,43 @@ function Order() {
                 <CategoriesBox
                     title={category.title}
                     count={category.count}
-                    icon={<img src={category.icon} alt={category.title} style={{ width: '30px', height: '30px' }} />}
+                    icon={<img src={category.icon} alt={category.title} style={{ width: '25px', height: '25px' }} />}
                 />
                 </Box>
             ))}
             </Box>
 
-            {/* Order Part */}
+             {/* Order Part */}
 
-            <Box
-                gridColumn={isXlDevices ? "span 4" : "span 3"}
+              <Box
+                gridColumn={isXlDevices ? "span 3" : "span 3"}
                 gridRow="span 6"
                 backgroundColor={colors.primary[400]}
-            >
+              >
 
-                <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                height="250px"
-                mt="-20px"
-                >
-                </Box>
+
+              <OrderListing 
+                order_num={"#000"}
+              />
+                
             </Box>
+
+            
 
           {/* Menu Item */}
 
           <Box 
             backgroundColor="transparent"
-            gridColumn="span 8"
+            gridColumn="span 9"
             gridRow="span 5"
             display="grid"
             gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))" // Responsive grid with min-width for each item
-            gap="20px" // Space between grid items
-            p="15px"
+            gap="10px" // Space between grid items
             maxWidth="100%" 
             overflow="auto"
             mb="50px"
+            pl="2px"
+            pr="2px"
             >
             {menuItems.map((item, index) => (
                 <Box
@@ -185,8 +176,7 @@ function Order() {
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    height="250px"
-                    mt="8px"
+                    // mt="8px"
                 >
                     <MenuPic
                     title={item.title}
@@ -199,29 +189,7 @@ function Order() {
             ))}
             </Box>
 
-
-             {/* Order Part
-
-             <Box
-                gridColumn={isXlDevices ? "span 4" : "span 3"}
-                gridRow="span 2"
-                backgroundColor={colors.primary[400]}
-            >
-                
-                <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                height="250px"
-                mt="-20px"
-                >
-                </Box>
-            </Box> */}
-
-        
-
-         
-  
+           
         </Box>
       </Box>
     );
