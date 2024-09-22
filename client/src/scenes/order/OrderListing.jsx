@@ -14,8 +14,8 @@ const OrderListing = ({ order_num }) => {
   };
 
   return (
-    <Box sx={{ padding: 2, borderBottom: '1px solid #ccc', maxWidth: '400px', backgroundColor: 'transparent', margin: 'auto' }}>
-      <Typography variant="h4" fontWeight="bold" color="black" gutterBottom 
+    <Box sx={{ padding: 2, borderBottom: '1px solid #ccc', backgroundColor: 'transparent', margin: 'auto' }}>
+      <Typography variant="h4" fontWeight="bold" color="#33372C" gutterBottom 
        sx={{ textAlign: 'center' }}
       >
         Order Details
@@ -62,7 +62,11 @@ const OrderListing = ({ order_num }) => {
         </Select>
       </FormControl>
       </Box>
+      
     </Box>
+    
+
+    
   );
 };
 

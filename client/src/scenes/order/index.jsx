@@ -18,6 +18,7 @@ import nasi from "../../assets/images/nasi.jpg";
 
 import { tokens } from "../../theme";
 import OrderListing from "./OrderListing";
+import MenuOrdered from "./MenuOrdered";
 
 const CategoryType = [
   { title: "All", icon: AllIcon },
@@ -30,11 +31,11 @@ const CategoryType = [
 ];
 
 const menuItems = [
-    {title: "Nasi Goreng Kampung",image: NGK,price: "RM16.90", category: "Main Course",},
-    {title: "Nasi Goreng USA",image: nasi,price: "RM16.90", category: "Main Course",},
-    {title: "Nasi Goreng Cili Padi",image: NGK,price: "RM16.90", category: "Main Course",},
-    {title: "Ice Cream",image: NGK,price: "RM16.90", category: "Dessert",},
-
+    {id:1, title: "Nasi Goreng Kampung",image: NGK,price: "RM16.90", category: "Main Course",},
+    {id:2, title: "Nasi Goreng USA",image: nasi,price: "RM16.90", category: "Main Course",},
+    {id:3, title: "Nasi Goreng Cili Padi",image: NGK,price: "RM16.90", category: "Main Course",},
+    {id:4, title: "Ice Cream",image: NGK,price: "RM16.90", category: "Dessert",},
+    {id:5, title: "Nasi Goreng",image: NGK,price: "RM16.90", category: "Main Course",},
 
   ];
 
@@ -66,15 +67,35 @@ function Order() {
     // Update categories with dynamic counts
     const categories = CategoryType.map((category) => {
       if (category.title === "All") {
-        return { ...category, count: `${totalItemCount} items` };
+        return { ...category, count: `${totalItemCount} ${totalItemCount <= 1 ? 'item' : 'items'}` };
       }
       const categoryCount = categoryCounts[category.title] || 0;
-      return { ...category, count: `${categoryCount} items` };
+      return { ...category, count: `${categoryCount} ${categoryCount <= 1 ? 'item' : 'items'}` };
     });
 
     // Filter menu items based on selected category
     const filteredMenuItems = selectedCategory === "All"? menuItems: menuItems.filter((item) => item.category === selectedCategory);
 
+    // State to manage quantities for each MenuPic by id
+    const [quantities, setQuantities] = useState({});
+
+    // Function to handle incrementing the quantity for a specific item
+    const handleAdd = (id) => {
+      setQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [id]: (prevQuantities[id] || 0) + 1,
+      }));
+    };
+
+    // Function to handle decrementing the quantity for a specific item
+    const handleRemove = (id) => {
+      setQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [id]: Math.max((prevQuantities[id] || 0) - 1, 0),
+      }));
+    };
+
+    const orderedItems = menuItems.filter(item => quantities[item.id] > 0);
 
       return (
         <Box m="15px">
@@ -150,8 +171,18 @@ function Order() {
               backgroundColor={colors.primary[400]}
               border="1px solid #ccc"
               borderRadius="5px"
+              padding="0px"
             >
               <OrderListing order_num={"#000"} />
+              {orderedItems.map((item) => (
+                <MenuOrdered
+                  key={item.id}
+                  quantity={quantities[item.id]}
+                  title={item.title}
+                  price={item.price}
+                />
+              ))}
+
             </Box>
     
             {/* Menu Items */}
@@ -181,10 +212,14 @@ function Order() {
                 >
                   <Box display="flex" alignItems="center" justifyContent="center">
                     <MenuPic
+                      id={item.id}
                       title={item.title}
                       image={<img src={item.image} style={{ width: "170px", height: "130px", borderRadius: "15px" }} />}
                       price={item.price}
                       category={item.category}
+                      quantity={quantities[item.id] || 0} 
+                      onAdd={() => handleAdd(item.id)} 
+                      onRemove={() => handleRemove(item.id)} 
                     />
                   </Box>
                 </Box>
