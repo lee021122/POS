@@ -11,7 +11,7 @@ const MenuPic = ({ id, title, image, price, category, quantity, onAdd, onRemove 
           {title}
         </Typography>
         <Typography variant="h6" color="#757575">
-          {price}
+          RM{price.toFixed(2)}
         </Typography>
         
         {/* Conditionally render Add to Dish button or the counter based on the quantity */}

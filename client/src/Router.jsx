@@ -15,6 +15,7 @@ import {
   Calendar,
   Stream,
   Order,
+  Table,
 } from "./scenes";
 
 const AppRouter = () => {
@@ -34,7 +35,8 @@ const AppRouter = () => {
           <Route path="/line" element={<Line />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/order" element={<Order />} />
-         
+          <Route path="/table" element={<Table />} />
+
 
         </Route>
       </Routes>

@@ -13,6 +13,8 @@ import Stream from "./stream";
 import FAQ from "./faq";
 import Geography from "./geography";
 import Order from "./order";
+import Table from "./table";
+
 export {
   Navbar,
   SideBar,
@@ -29,4 +31,5 @@ export {
   FAQ,
   Geography,
   Order,
+  Table,
 };

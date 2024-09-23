@@ -31,11 +31,11 @@ const CategoryType = [
 ];
 
 const menuItems = [
-    {id:1, title: "Nasi Goreng Kampung",image: NGK,price: "RM16.90", category: "Main Course",},
-    {id:2, title: "Nasi Goreng USA",image: nasi,price: "RM16.90", category: "Main Course",},
-    {id:3, title: "Nasi Goreng Cili Padi",image: NGK,price: "RM16.90", category: "Main Course",},
-    {id:4, title: "Ice Cream",image: NGK,price: "RM16.90", category: "Dessert",},
-    {id:5, title: "Nasi Goreng",image: NGK,price: "RM16.90", category: "Main Course",},
+    {id:1, title: "Nasi Goreng Kampung",image: NGK,price: 16.90, category: "Main Course",},
+    {id:2, title: "Nasi Goreng USA",image: nasi,price: 6.90, category: "Main Course",},
+    {id:3, title: "Nasi Goreng Cili Padi",image: NGK,price: 6.90, category: "Main Course",},
+    {id:4, title: "Ice Cream",image: NGK,price: 16.90, category: "Dessert",},
+    {id:5, title: "Nasi Goreng",image: NGK,price: 8.90, category: "Main Course",},
 
   ];
 
@@ -179,7 +179,7 @@ function Order() {
                   key={item.id}
                   quantity={quantities[item.id]}
                   title={item.title}
-                  price={item.price}
+                  price={item.price * quantities[item.id]}
                 />
               ))}
 
@@ -194,7 +194,6 @@ function Order() {
               gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
               gap="10px"
               maxWidth="100%"
-              maxHeight="270px"
               overflow="auto"
               mb="50px"
               pl="5px"
@@ -208,7 +207,9 @@ function Order() {
                   flexDirection="column"
                   alignItems="center"
                   justifyContent="center"
-                  p="15px"
+                  // p="15px"
+                  maxHeight="350px"
+
                 >
                   <Box display="flex" alignItems="center" justifyContent="center">
                     <MenuPic

@@ -32,7 +32,7 @@ const MenuOrdered = ({ quantity, title, price }) => {
             </Typography>
 
             <Typography variant="h7" color="black" textAlign="right">
-            {price}
+            RM{price.toFixed(2)}
             </Typography>
         </Box>
         </Box>

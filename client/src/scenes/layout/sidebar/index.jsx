@@ -140,7 +140,7 @@ const SideBar = () => {
           />
           <Item
             title="Table Location"
-            path="/invoices"
+            path="/table"
             colors={colors}
             icon={<TableBarOutlined />}
           />

@@ -26,9 +26,9 @@ const OrderListing = ({ order_num }) => {
         Order Number: {order_num}
       </Typography>
       
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap:"5px" }}>
       <FormControl fullWidth  margin="normal"
-      sx={{borderRadius: "24px", flex: 1, }}>
+      sx={{borderRadius: "24px", flex: 1 }}>
         <Select value={table} onChange={handleTableChange} 
         sx={{
         borderRadius: '24px', 
