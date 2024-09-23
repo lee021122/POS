@@ -29,7 +29,7 @@ BEGIN
 		p_category_desc => 'TEG',
 		p_is_in_use => 1,
 		p_display_seq => '000001'
-	)
+	);
 */
 
 	IF p_is_debug = 1 THEN

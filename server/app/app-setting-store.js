@@ -10,10 +10,35 @@ const libShared = require('../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 
-const FILE = path.basename(__filename) + '::'
+const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 function AppSettingStore() {};
+
+AppSettingStore.prototype.storeObject = function(o = {}) {
+    const d = {
+        current_uid: null,
+        msg: null,
+        store_id: null,
+        store_name: null,
+        addr_line_1: null,
+        addr_line_2: null,
+        city: null,
+        state: null,
+        post_code: null,
+        country: null,
+        phone_number: null,
+        email: null,
+        website: null,
+        gst_id: null,
+        sst_id: null,
+        business_registration_num: null,
+        receipt_temp_id: null
+    };
+
+    // Merge o with d, o will overwrite d properties if provided
+    return Object.assign(d, o);
+}
 
 AppSettingStore.prototype.save = async function(req, res) {
     try {
@@ -23,10 +48,10 @@ AppSettingStore.prototype.save = async function(req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.storeObject(item));
 
         // Validate the request data
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
@@ -79,7 +104,21 @@ AppSettingStore.prototype.delete = async function (req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.storeObject(item));
+
+        // Validate the request data
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        if (!o2[0].store_id) {
+            return res.status(400).send(libApi.response('Invalid Store!!', 'Failed'));
+        }
+
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
         

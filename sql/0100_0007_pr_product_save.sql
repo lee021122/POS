@@ -9,8 +9,8 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_product_img_path character varying(255),
 	IN p_supplier_id uuid,
 	IN p_pricing_type_id uuid,
-	IN p_cost money,
-	IN p_sell_price money,
+	IN p_cost numeric(15, 4),
+	IN p_sell_price numeric(15, 4),
 	IN p_tax_code1 character varying(255),
 	IN p_amt_include_tax1 integer,
 	IN p_tax_code2 character varying(255),
@@ -32,7 +32,8 @@ DECLARE
 	v_now CONSTANT timestamp = localtimestamp;
 	audit_log text;
 	module_code text;
-	v_newid CONSTANT uuid = gen_random_uuid();
+	final_price numeric(15, 4);
+	unit_price numeric(15, 4);
 	v_product_desc_old character varying;
 	v_product_code_old character varying;
 	v_category_id_old uuid;
@@ -40,8 +41,8 @@ DECLARE
 	v_product_img_path_old character varying;
 	v_supplier_id_old uuid;
 	v_pricing_type_id_old uuid;
-	v_cost_old money;
-	v_sell_price_old money;
+	v_cost_old numeric(15, 2);
+	v_sell_price_old numeric(15, 2);
 	v_tax_code1_old character varying;
 	v_amt_include_tax1_old integer;
 	v_tax_code2_old character varying;
@@ -121,12 +122,34 @@ BEGIN
 		RETURN;
 	END IF;
 	
+	IF NOT EXISTS (
+		SELECT * 
+		FROM tb_tax 
+		WHERE tax_code = p_tax_code1 OR tax_code = p_tax_code2
+	) THEN
+		p_msg := 'Invalid Tax Code!!';
+		RETURN;
+	END IF;
+	
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
+	-- Calc the tax 
+	SELECT final_price, unit_price
+	INTO final_price, unit_price
+	FROM fn_tax_calculation (
+		p_tax_code1 => p_tax_code1,
+		p_tax_code2 => p_tax_code2,
+		p_tax_include_tax1 => p_amt_include_tax1, 
+		p_tax_include_tax2 => p_amt_include_tax2, 
+		p_calc_tax2_after_tax1 => p_calc_tax2_after_tax1, 
+		p_qty => 1,
+		p_amt => p_cost	
+	);
+	
 	IF fn_to_guid(p_product_id) = fn_empty_guid() THEN
 	
-		p_product_id := v_newid;
+		p_product_id := gen_random_uuid();
 		
 		-- Insert new record
 		INSERT INTO tb_product (
@@ -135,7 +158,7 @@ BEGIN
 			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item
 		) VALUES (
 			p_product_id, v_now, p_current_uid, v_now, p_current_uid, p_product_desc, p_product_code, p_category_id, p_product_tag, p_product_img_path, p_supplier_id,
-			p_pricing_type_id, p_cost, p_sell_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
+			p_pricing_type_id, final_price, unit_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
 			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item
 		);
 		
@@ -168,8 +191,8 @@ BEGIN
 			product_image_path = p_product_image_path,
 			supplier_id = p_supplier_id,
 			pricing_type_id = p_pricing_type_id,
-			cost = p_cost,
-			sell_price = p_sell_price,
+			cost = final_price,
+			sell_price = unit_price,
 			tax_code1 = p_tax_code1,
 			amt_include_tax1 = p_amt_include_tax1,
 			tax_code2 = p_tax_code2, 

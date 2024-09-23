@@ -10,10 +10,26 @@ const libShared = require('../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 
-const FILE = path.basename(__filename) + '::'
+const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 function AppSettingTax() {};
+
+AppSettingTax.prototype.taxObject = function (o = {}) {
+    const d = {
+        current_uid: null,
+        msg: null,
+        tax_id: null,
+        tax_code: null,
+        tax_desc: null,
+        tax_pct: null,
+        is_in_use: null,
+        display_seq: null
+    };
+
+    // Merge o with d, o will overwrite d properties if provided
+    return Object.assign(d, o);
+};
 
 AppSettingTax.prototype.save = async function (req, res) {
     try {
@@ -22,9 +38,9 @@ AppSettingTax.prototype.save = async function (req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.taxObject(item));
 
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required', 'Failed'));
         };
 
@@ -38,6 +54,14 @@ AppSettingTax.prototype.save = async function (req, res) {
 
         if (!o2[0].tax_desc) {
             return res.status(400).send(libApi.response('Tax Description is required', 'Failed'));
+        };
+
+        if (o2[0].display_seq) {
+            if (length(o2[0].display_seq) > 6) {
+                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+            } else {
+                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+            };
         };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
@@ -77,9 +101,9 @@ AppSettingTax.prototype.delete = async function (req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.taxObject(item));
 
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 

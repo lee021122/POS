@@ -6,12 +6,23 @@ const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
 const libShared = require('../lib/lib-shared');
 
-const FILE = path.basename(__filename) + '::'
+const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 const p0 = new libApi.apiCaller();
 
 const AppSettingMealPeriod = function () {};
+
+AppSettingMealPeriod.prototype.mealPeriodObject = function (o = {}) {
+    const d = {
+        current_uid: null,
+        msg: null,
+        meal_period_id: null,
+        meal_period_desc: null,
+        is_in_use: null,
+        display_seq: null
+    };
+}
 
 AppSettingMealPeriod.prototype.save = async function (req, res) {
     try {
@@ -21,9 +32,9 @@ AppSettingMealPeriod.prototype.save = async function (req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.mealPeriodObject(item));
 
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required', 'Failed'));
         };
 
@@ -33,6 +44,14 @@ AppSettingMealPeriod.prototype.save = async function (req, res) {
 
         if (!o2[0].meal_period_desc) {
             return res.status(400).send(libApi.response('Meal period description is required', 'Failed'));
+        };
+
+        if (o2[0].display_seq) {
+            if (length(o2[0].display_seq) > 6) {
+                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+            } else {
+                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+            };
         };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
@@ -59,7 +78,15 @@ AppSettingMealPeriod.prototype.save = async function (req, res) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     }
-}
+};
+
+AppSettingMealPeriod.prototype.list = async function(req, res) {
+
+};
+
+AppSettingMealPeriod.prototype.delete = async function(req, res) {
+
+};
 
 const mealPeriod = new AppSettingMealPeriod();
 

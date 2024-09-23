@@ -6,6 +6,7 @@ CREATE OR REPLACE PROCEDURE pr_guest_save (
 	IN p_last_name character varying(255),
 	IN p_full_name character varying(255),
 	IN p_title character varying(50),
+	IN p_gender character varying(255),
 	IN p_phone_number character varying(50),
 	IN p_email character varying(255),
 	IN p_dob date,
@@ -31,6 +32,7 @@ DECLARE
 	v_last_name_old character varying(255);
 	v_full_name_old character varying(255);
 	v_title_old character varying(50);
+	v_gender_old character varying(50);
 	v_phone_number_old character varying(50);
 	v_email_old character varying(255);
 	v_dob_old date;
@@ -98,11 +100,11 @@ BEGIN
 		
 		-- Insert new record
 		INSERT INTO tb_guest (
-			guest_id, created_on, created_by, modified_on, modified_by, first_name, last_name, full_name, title, phone_number, email, dob, addr_line_1, 
-			addr_line_2, city, state, post_code, country, guest_tag
+			guest_id, created_on, created_by, modified_on, modified_by, first_name, last_name, full_name, title, gender, phone_number, email, dob, 
+			addr_line_1, addr_line_2, city, state, post_code, country, guest_tag
 		) VALUES (
-			p_guest_id, v_now, p_current_uid, v_now, p_current_uid, p_first_name, p_last_name, p_full_name, p_title, p_phone_number, p_email, p_dob, p_addr_line_1, 
-			p_addr_line_2, p_city, p_state, p_post_code, p_country, p_guest_tag
+			p_guest_id, v_now, p_current_uid, v_now, p_current_uid, p_first_name, p_last_name, p_full_name, p_title, p_gender, p_phone_number, p_email, p_dob, 
+			p_addr_line_1, p_addr_line_2, p_city, p_state, p_post_code, p_country, p_guest_tag
 		);
 		
 		-- Prepare Audit Log
@@ -111,10 +113,10 @@ BEGIN
 	ELSE
 		
 		-- Get old record for audit log purpose
-		SELECT first_name, last_name, full_name, title, phone_number, email, dob, addr_line_1, addr_line_2, city, state, post_code, country, guest_tag
+		SELECT first_name, last_name, full_name, title, gender, phone_number, email, dob, addr_line_1, addr_line_2, city, state, post_code, country, guest_tag
 		INTO 
-			v_first_name_old, v_last_name_old, v_full_name_old, v_title_old, v_phone_number_old, v_email_old, v_dob_old, v_addr_line_1_old, v_addr_line_2_old,
-			v_city_old, v_state_old, v_post_code_old, v_country_old, v_guest_tag_old
+			v_first_name_old, v_last_name_old, v_full_name_old, v_title_old, v_gender_old, v_phone_number_old, v_email_old, v_dob_old, v_addr_line_1_old, 
+			v_addr_line_2_old, v_city_old, v_state_old, v_post_code_old, v_country_old, v_guest_tag_old
 		FROM tb_guest
 		WHERE guest_id = p_guest_id;
 		
@@ -125,6 +127,7 @@ BEGIN
 			last_name = p_last_name, 
 			full_name = p_full_name, 
 			title = p_title, 
+			gender = p_gender,
 			phone_number = p_phone_number, 
 			email = p_email, 
 			dob = p_dob, 
@@ -142,6 +145,7 @@ BEGIN
 						'Updated Last Name from ' || v_last_name_old || ' to ' || p_last_name || ', ' ||
 						'Updated Full Name from ' || v_full_name_old || ' to ' || p_full_name || ', ' ||
 						'Updated Title from ' || v_title_old || ' to ' || p_title || ', ' ||
+						'Updated Gender from ' || v_gender_old || ' to ' || p_gender || ', ' ||
 						'Updated Phone Number from ' || v_phone_number_old || ' to ' || p_phone_number || ', ' ||
 						'Updated Email from ' || v_email_old || ' to ' || p_email || ', ' ||
 						'Updated Date of Birth from ' || v_dob_old || ' to ' || p_dob || ', ' ||

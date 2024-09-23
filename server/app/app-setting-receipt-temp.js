@@ -15,7 +15,7 @@ const libShared = require('../lib/lib-shared');
 
 const p0 = new libApi.apiCallerImg();
 
-const FILE = path.basename(__filename) + '::'
+const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 // Create the directory if it doesn't exist
@@ -60,6 +60,26 @@ const upload = multer({
 
 function AppSettingReceiptTemp() {};
 
+AppSettingReceiptTemp.prototype.receiptTempObject = function (o ={}) {
+    const d = {
+        current_uid: null,
+        msg: null,
+        receipt_temp_id: null,
+        receipt_temp_name: null,
+        logo_img_path: null,
+        extra_information: null,
+        is_show_store_name: null,
+        is_show_store_details: null,
+        is_show_customer_details: null,
+        is_show_customer_point: null,
+        is_in_use: null,
+        display_seq: null
+    };
+
+    // Merge o with d, o will overwrite d properties if provided
+    return Object.assign(d, o);
+}
+
 AppSettingReceiptTemp.prototype.save = async function (req, res) {
     try {
         const { code, axn, data, logo_img_path } = req.body;
@@ -68,12 +88,23 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
         p0.data = data;
         p0.img = logo_img_path;
         const preCode = p0.code;
-        const o2 = JSON.parse(p0.data);
+
+        let parsedData = data;
+        if (typeof data === 'string') {
+            parsedData = JSON.parse(data);
+        }
+
+        // Check parsedData is an array
+        if (!Array.isArray(parsedData)) {
+            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
+        }
+
+        const o2 = parsedData.map(item => this.receiptTempObject(item));
+        console.log(o2);
+        
 
         // Access the uploaded file
         const uploadedFile = req.files['logo_img_path'] ? req.files['logo_img_path'][0] : null;
-        let a = req.body;
-        // console.log(a);
         
         // Check if the file was uploaded
         if (!uploadedFile) {
@@ -100,7 +131,7 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
             o2[0].logo_img_path = `/user-file/${uploadedFile.filename}`;
         }
         
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
@@ -110,7 +141,15 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
 
         if (!o2[0].receipt_temp_name) {
             return res.status(400).send(libApi.response('Receipt Template Name is required!!', 'Failed'));
-        }
+        };
+
+        if (o2[0].display_seq) {
+            if (length(o2[0].display_seq) > 6) {
+                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+            } else {
+                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+            };
+        };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -144,7 +183,7 @@ AppSettingReceiptTemp.prototype.list = async function (req, res) {
 
 AppSettingReceiptTemp.prototype.delete = async function (req, res) {
     try {
-        
+
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));

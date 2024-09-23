@@ -6,12 +6,28 @@ const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
 const libShared = require('../lib/lib-shared');
 
-const FILE = path.basename(__filename) + '::'
+const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 const p0 = new libApi.apiCaller();
 
 const AppProdCategory = function () {};
+
+// Initialize the Category Object
+AppProdCategory.prototype.categoryObject = function (o = {}) {
+    const d = {
+        current_uid: null,
+        msg: null,
+        category_id: null,
+        category_desc: null,
+        is_in_use: null,
+        display_seq: null
+    };
+
+    // Merge o with d, o will overwrite d properties if provided
+    return Object.assign(d, o);
+};
+
 
 AppProdCategory.prototype.save = async function (req, res) {
     try {
@@ -21,9 +37,9 @@ AppProdCategory.prototype.save = async function (req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
+        const o2 = data.map(item => this.categoryObject(item));
 
-        if (!code) {
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
@@ -79,9 +95,9 @@ AppProdCategory.prototype.delete = async function(req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = p0.data;
-
-        if (!code) {
+        const o2 = data.map(item => this.categoryObject(item));
+        
+        if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 

@@ -155,8 +155,9 @@ create table if not exists tb_general_setting (
 	, modified_on timestamp not null
 	, modified_by varchar(255) not null
 	, setting_grp varchar(255) not null
--- 	, setting_title varchar(255)
--- 	, setting_value varchar(255)
+	, setting_title varchar(255)
+	, setting_value varchar(255)
+	, is_in_use integer
 );
 
 create table if not exists tb_store_status (
@@ -298,13 +299,41 @@ create table if not exists tb_food_menu_product (
 	, product_id uuid
 );
 
+create table if not exists tb_table_section (
+	table_section_id uuid not null primary key,
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, modified_on timestamp not null
+	, modified_by varchar(255 )not null
+	, table_section_name varchar(255)
+	, is_in_use integer
+	, display_seq varchar(6)
+);
+
+create table if not exists tb_table (
+	table_id uuid not null primary key,
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, modified_on timestamp not null
+	, modified_by varchar(255 )not null
+	, table_name varchar(255)
+	, table_section_id uuid
+	, is_in_use integer
+	, display_seq varchar(6)
+);
+
 -- customer membership
 create table if not exists tb_guest (
 	guest_id uuid not null
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, modified_on timestamp not null
+	, modified_by varchar(255 )not null
 	, first_name varchar(255) 
 	, last_name varchar(255)
 	, full_name varchar(255)
 	, title varchar(50)
+	, gender varchar(50)
 	, phone_number varchar(50) not null 
 	, email varchar(255)
 	, dob date
@@ -324,18 +353,40 @@ create table if not exists tb_guest (
 );
 
 -- Transcation
--- create table if not exists tb_order_trans (
--- 	order_trans_id uuid not null primary key 
--- 	, created_on timestamp not null
--- 	, created_by varchar(255) not null
--- 	, modified_on timestamp not null
--- 	, modified_by varchar(255) not null
--- 	, 
--- );
+create table if not exists tb_order_trans (
+	order_trans_id uuid not null primary key 
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, modified_on timestamp not null
+	, modified_by varchar(255) not null
+	, tr_dt timestamp 
+	, tr_status varchar(10)
+	, doc_no varchar(50)
+	, remarks text
+	, override_on timestamp
+	, override_by varchar(255)
+	, 
+);
 
 -- create table if not exists tb_order_item_line_trans (
 
 -- );
+
+-- User
+create table if not exists tb_users (
+	user_id uuid not null primary key,
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, modified_on timestamp not null
+	, modified_by varchar(255 )not null
+	, login_id varchar(255)
+	, user_name varchar(255)
+	, pwd varchar(255)
+	, pwd_expire_on date
+	, is_super_admin integer
+	, is_manager integer
+	, is_cashier integer
+)
 
 -- log in every click
 create table if not exists tb_audit_log (
