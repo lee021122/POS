@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, useMediaQuery, useTheme, Button, Typography } from "@mui/material";
 import {
     CategoriesBox,
     MenuPic,
@@ -97,6 +97,8 @@ function Order() {
 
     const orderedItems = menuItems.filter(item => quantities[item.id] > 0);
 
+    const totalPrice = orderedItems.reduce((total, item) => total + item.price * quantities[item.id],0);
+
       return (
         <Box m="15px">
           <Box
@@ -172,18 +174,73 @@ function Order() {
               border="1px solid #ccc"
               borderRadius="5px"
               padding="0px"
+              display="flex"
+              flexDirection="column"
+              justifyContent="space-between" 
             >
-              <OrderListing order_num={"#000"} />
-              {orderedItems.map((item) => (
-                <MenuOrdered
-                  key={item.id}
-                  quantity={quantities[item.id]}
-                  title={item.title}
-                  price={item.price * quantities[item.id]}
-                />
-              ))}
+              <div>
+                <OrderListing order_num={"#000"} />
+                {orderedItems.map((item) => (
+                  <MenuOrdered
+                    key={item.id}
+                    quantity={quantities[item.id]}
+                    title={item.title}
+                    price={item.price * quantities[item.id]}
+                  />
+                ))}
+              </div>
+         
+              <Box display="flex" flexDirection="column" borderTop="1px solid #ccc">
+                <Box 
+                  mx="20px"
+                  my="10px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Typography 
+                    variant="h6" 
+                    color={"black"}
+                    fontWeight={"bold"} 
+                    sx={{ 
+                      textAlign: 'left', 
+                      marginBottom: '10px' 
+                    }}>
+                    Total Price:
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    color={"black"} 
+                    sx={{ 
+                      textAlign: 'left', 
+                      marginBottom: '10px' 
+                    }}>
+                    RM {totalPrice.toFixed(2)}
+                  </Typography>
+                </Box>
+              
 
+              <Button
+                onClick={() => handleButtonClick()}
+                variant="contained"
+                sx={{ 
+                  width: '100%',
+                  borderRadius: "0px",
+                  fontWeight: "bold",
+                  backgroundColor: "#CD5C08",
+                  color: "#FFF5E4",
+                  ":hover": {
+                    backgroundColor: "#FFE7D1", // Change background on hover
+                    color: "#CD5C08", // Change text color on hover
+                  },
+                  transition: "all 0.3s ease", // Smooth transition for hover effects
+                }}
+              >
+                Place Order
+              </Button>
             </Box>
+            </Box>
+
     
             {/* Menu Items */}
             <Box
