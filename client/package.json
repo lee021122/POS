@@ -27,7 +27,7 @@
     "yup": "^1.4.0"
   },
   "scripts": {
-    "start": "vite",
+    "dev": "vite",
     "build": "vite build",
     "build-stage": "env-cmd -f .env.qa vite build",
     "preview": "vite preview",
