@@ -21,21 +21,21 @@ import OrderListing from "./OrderListing";
 import MenuOrdered from "./MenuOrdered";
 
 const CategoryType = [
-  { title: "All", icon: AllIcon },
+  { title: "All", icon: MainCourseIcon },
   { title: "Main Course", icon: MainCourseIcon },
-  { title: "Pasta", icon: PastaIcon },
-  { title: "Burger", icon: BurgerIcon },
-  { title: "Breakfast", icon: BreakfastIcon },
-  { title: "Dessert", icon: DessertIcon },
-  { title: "Beverage", icon: BeverageIcon },
+  { title: "Pasta", icon: MainCourseIcon },
+  { title: "Burger", icon: MainCourseIcon },
+  { title: "Breakfast", icon: MainCourseIcon },
+  { title: "Dessert", icon: MainCourseIcon },
+  { title: "Beverage", icon: MainCourseIcon },
 ];
 
 const menuItems = [
-    {id:1, title: "Nasi Goreng Kampung",image: NGK,price: 16.90, category: "Main Course",},
+    {id:1, title: "Nasi Goreng Kampung",image: nasi,price: 16.90, category: "Main Course",},
     {id:2, title: "Nasi Goreng USA",image: nasi,price: 6.90, category: "Main Course",},
-    {id:3, title: "Nasi Goreng Cili Padi",image: NGK,price: 6.90, category: "Main Course",},
-    {id:4, title: "Ice Cream",image: NGK,price: 16.90, category: "Dessert",},
-    {id:5, title: "Nasi Goreng",image: NGK,price: 8.90, category: "Main Course",},
+    {id:3, title: "Nasi Goreng Cili Padi",image: nasi,price: 6.90, category: "Main Course",},
+    {id:4, title: "Ice Cream",image: nasi,price: 16.90, category: "Dessert",},
+    {id:5, title: "Nasi Goreng",image: nasi,price: 8.90, category: "Main Course",},
 
   ];
 
@@ -98,6 +98,14 @@ function Order() {
     const orderedItems = menuItems.filter(item => quantities[item.id] > 0);
 
     const totalPrice = orderedItems.reduce((total, item) => total + item.price * quantities[item.id],0);
+
+    const handleButtonClick = () => {
+      console.log("Order placed");
+      alert('Order placed successfully!');
+      window.location.reload();
+
+
+    };
 
       return (
         <Box m="15px">
@@ -168,8 +176,8 @@ function Order() {
     
             {/* Order Part */}
             <Box
-              gridColumn={isXlDevices ? "span 3" : "span 3"}
-              gridRow="span 6"
+              gridColumn= "span 3"
+              height="700px"
               backgroundColor={colors.primary[400]}
               border="1px solid #ccc"
               borderRadius="5px"
@@ -220,24 +228,29 @@ function Order() {
                 </Box>
               
 
-              <Button
-                onClick={() => handleButtonClick()}
-                variant="contained"
-                sx={{ 
-                  width: '100%',
-                  borderRadius: "0px",
-                  fontWeight: "bold",
-                  backgroundColor: "#CD5C08",
-                  color: "#FFF5E4",
-                  ":hover": {
-                    backgroundColor: "#FFE7D1", // Change background on hover
-                    color: "#CD5C08", // Change text color on hover
-                  },
-                  transition: "all 0.3s ease", // Smooth transition for hover effects
-                }}
-              >
-                Place Order
-              </Button>
+                <Button
+                  onClick={() => {
+                    handleButtonClick();
+                  }}
+                  variant="contained"
+                  disabled={orderedItems.length === 0}
+                  sx={{ 
+                    width: '100%',
+                    borderRadius: "0px",
+                    fontWeight: "bold",
+                    backgroundColor: "#CD5C08",
+                    color: "#FFF5E4",
+
+                    ":hover": {
+                      backgroundColor: "#FFE7D1", // Change background on hover
+                      color: "#CD5C08", // Change text color on hover
+                    },
+                    transition: "all 0.3s ease", // Smooth transition for hover effects
+                  }}
+                >
+                  Place Order
+                </Button>
+
             </Box>
             </Box>
 
@@ -246,7 +259,7 @@ function Order() {
             <Box
               backgroundColor="transparent"
               gridColumn="span 9"
-              gridRow="span 5"
+              height="550px"
               display="grid"
               gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
               gap="10px"
@@ -272,7 +285,7 @@ function Order() {
                     <MenuPic
                       id={item.id}
                       title={item.title}
-                      image={<img src={item.image} style={{ width: "170px", height: "130px", borderRadius: "15px" }} />}
+                      image={<img src={item.image} style={{ width: "70%", height: "70%", borderRadius: "15px" }} />}
                       price={item.price}
                       category={item.category}
                       quantity={quantities[item.id] || 0} 

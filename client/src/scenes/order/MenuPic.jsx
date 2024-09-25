@@ -7,7 +7,7 @@ const MenuPic = ({ id, title, image, price, category, quantity, onAdd, onRemove 
     <Box width="100%">
       <Box display="flex" flexDirection="column" alignItems="center">
         {image}
-        <Typography variant="h6" fontWeight="bold" color={"#557C56"} mt="20px" align="center">
+        <Typography variant="h6" fontWeight="bold" color={"#557C56"} mt="5px" align="center">
           {title}
         </Typography>
         <Typography variant="h6" color="#757575">
@@ -23,7 +23,7 @@ const MenuPic = ({ id, title, image, price, category, quantity, onAdd, onRemove 
               backgroundColor: "#CD5C08", 
               fontWeight: "bold", 
               width: "170px", 
-              mt: "10px", 
+              my: "5px", 
               borderRadius: "24px", 
               height: "35px",
               '&:hover': {

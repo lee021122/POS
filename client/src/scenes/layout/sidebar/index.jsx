@@ -134,7 +134,7 @@ const SideBar = () => {
           />
           <Item
             title="Payment & Billing "
-            path="/contacts"
+            path="/payment"
             colors={colors}
             icon={<PaymentsOutlined />}
           />
@@ -146,12 +146,12 @@ const SideBar = () => {
           />
            <Item
             title="Order History"
-            path="/invoices"
+            path="/history"
             colors={colors}
             icon={<HistoryOutlined />}
           />
         </Menu>
-        <Typography
+        {/* <Typography
           variant="h6"
           color={"#7D7C7C"}
           sx={{ m: "15px 0 5px 20px", textTransform: "uppercase", fontWeight: "bold" }}
@@ -169,7 +169,7 @@ const SideBar = () => {
             },
           }}
         >
-          {/* <Item
+          <Item
             title="Profile Form"
             path="/form"
             colors={colors}
@@ -186,7 +186,7 @@ const SideBar = () => {
             path="/faq"
             colors={colors}
             icon={<HelpOutlineOutlined />}
-          /> */}
+          />
         </Menu>
         <Typography
           variant="h6"
@@ -206,7 +206,7 @@ const SideBar = () => {
             },
           }}
         >
-          {/* <Item
+          <Item
             title="Bar Chart"
             path="/bar"
             colors={colors}
@@ -235,8 +235,8 @@ const SideBar = () => {
             path="/stream"
             colors={colors}
             icon={<WavesOutlined />}
-          /> */}
-        </Menu>
+          />
+        </Menu> */}
       </Box>
     </Sidebar>
   );
