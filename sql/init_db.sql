@@ -316,7 +316,7 @@ create table if not exists tb_table (
 	, created_by varchar(255) not null
 	, modified_on timestamp not null
 	, modified_by varchar(255 )not null
-	, table_name varchar(255)
+	, table_desc varchar(255)
 	, table_section_id uuid
 	, is_in_use integer
 	, display_seq varchar(6)
