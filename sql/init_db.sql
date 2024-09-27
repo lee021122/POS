@@ -318,6 +318,7 @@ create table if not exists tb_table (
 	, modified_by varchar(255 )not null
 	, table_desc varchar(255)
 	, table_section_id uuid
+	, qr_code text
 	, is_in_use integer
 	, display_seq varchar(6)
 );
