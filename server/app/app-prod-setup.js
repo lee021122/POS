@@ -75,7 +75,7 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         cost: null,
         sell_price: null,
         tax_code1: null, 
-        amt_inclusive_tax1: null,
+        amt_include_tax1: null,
         tax_code2: null,
         amt_include_tax2: null,
         calc_tax2_after_tax1: null,
@@ -110,6 +110,8 @@ AppProdSetup.prototype.save = async function (req, res) {
         };
 
         const o2 = parsedData.map(item => this.prodObject(item));
+        console.log(o2[0].product_id);
+        
         
         // Access the uploaded file
         const uploadedFile = req.files['product_img_path'] ? req.files['product_img_path'][0] : null;
@@ -119,7 +121,7 @@ AppProdSetup.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
         };
 
-        if (uploadedFile) {
+        if (uploadedFile && o2[0].product_id) {
             // Extract the old `logo_img_path` from the database
             const oldLogoImgPath = await pgSql.getTable('tb_product', `${pgSql.SQL_WHERE} product_id = '${o2[0].product_id}'`, ['product_img_path']); 
             // console.log(oldLogoImgPath);
@@ -134,10 +136,10 @@ AppProdSetup.prototype.save = async function (req, res) {
                     fs.unlinkSync(oldImagePath); // Delete the old image
                 };
             };
-        
-            // Now update `logo_img_path` in the params array with the new uploaded file path
-            o2[0].product_img_path = `/product-file/${uploadedFile.filename}`;
         };
+
+        // Now update `logo_img_path` in the params array with the new uploaded file path
+        o2[0].product_img_path = `/product-file/${uploadedFile.filename}`;
         
         if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
@@ -152,7 +154,7 @@ AppProdSetup.prototype.save = async function (req, res) {
         };
 
         if (o2[0].display_seq) {
-            if (length(o2[0].display_seq) > 6) {
+            if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
@@ -192,5 +194,9 @@ AppProdSetup.prototype.list = function (req, res) {
 AppProdSetup.prototype.delete = function (req, res) {
 
 };
+
+const prod = new AppProdSetup();
+
+router.post('/s', upload, prod.save.bind(prod));
 
 module.exports = router;

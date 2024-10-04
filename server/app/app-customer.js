@@ -2,11 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const bodyParser = require('body-parser');
-
-// Ensure that the "user-file" folder exists
-const uploadDir = path.join(__dirname, 'user-file');
 
 // Import Libraries
 const { pgSql } = require('../lib/lib-pgsql');
