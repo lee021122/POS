@@ -37,11 +37,11 @@ BEGIN
 	FROM fn_tax_calculation(
 		p_tax_code1 => 'SC',
 		p_tax_code2 => 'SST-6%',
-		p_tax_include_tax1 => 0, 
+		p_tax_include_tax1 => 1, 
 		p_tax_include_tax2 => 1, 
 		p_calc_tax2_after_tax1 => 0, 
 		p_qty => 1,
-		p_amt => 20	
+		p_amt => 10	
 	); 
 */
 	

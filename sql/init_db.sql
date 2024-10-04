@@ -90,7 +90,7 @@ create table if not exists tb_product (
 	, product_tag varchar(255)
 	, product_img_path varchar(255)
 	, supplier_id uuid
-	, pricing_type uuid not null
+	, pricing_type_id uuid not null
 	, cost numeric(15, 4)
 	, sell_price numeric(15, 4)
 	, tax_code1 varchar(50)
@@ -98,6 +98,7 @@ create table if not exists tb_product (
 	, tax_code2 varchar(50)
 	, amt_include_tax2 int
 	, calc_tax2_after_tax1 int
+	, is_in_use int
 	, display_seq varchar(6)
 	, is_enable_kitchen_printer int
 	, is_allow_modifier int

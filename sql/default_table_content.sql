@@ -35,6 +35,8 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 (gen_random_uuid(), 'app-supplier::l', 'Supplier - List', 'pr_supplier_list', null, 1, '000024', current_timestamp, 'admin'),
 (gen_random_uuid(), 'app-supplier::d', 'Supplier - Delete', 'pr_supplier_delete', null, 1, '000025', current_timestamp, 'admin'),
 select * from tb_action
+select * from tb_action_param where action_id = 'e20b2f51-e2af-407d-b511-3e15f0186f36' order by seq
+delete from tb_action_param where action_id = 'e20b2f51-e2af-407d-b511-3e15f0186f36'
 
 insert into tb_action_param (action_param_id, action_id, action_param_name, data_type, seq, is_compulsory, created_on, created_by) values
 -- -- prod-category::s
@@ -66,26 +68,27 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- prod-setup::s
 (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_product_id', 'id', 3, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_product_desc', 'string', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_product_code', 'string', 5, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_categroy_id', 'id', 6, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_product_tag', 'id', 7, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_product_img_path', 'string', 8, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_supplier_id', 'id', 9, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_cost', 'money', 10, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_sell_price', 'money', 11, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_tax_code1', 'string', 12, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_amt_include_tax1', 'int', 13, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_tax_code2', 'string', 14, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_amt_include_tax2', 'int', 15, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_calc_tax2_after_tax1', 'int', 16, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_is_in_use', 'int', 17, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_display_seq', 'string', 18, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_is_enable_kitchen_printer', 'int', 19, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_is_allow_modifier', 'int', 20, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_is_enable_track_stock', 'int', 21, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'p_is_popular_item', 'int', 12, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'product_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'product_desc', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'product_code', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'category_id', 'id', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'product_tag', 'string', 7, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'product_img_path', 'string', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'supplier_id', 'id', 9, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'pricing_type_id', 'id', 10, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'cost', 'money', 11, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'sell_price', 'money', 12, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'tax_code1', 'string', 13, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'amt_include_tax1', 'int', 14, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'tax_code2', 'string', 15, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'amt_include_tax2', 'int', 16, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'calc_tax2_after_tax1', 'int', 17, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_in_use', 'int', 18, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'display_seq', 'string', 19, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_enable_kitchen_printer', 'int', 20, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_allow_modifier', 'int', 21, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_enable_track_stock', 'int', 22, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_popular_item', 'int', 23, 0, current_timestamp, 'admin'),
 -- prod-setup::l
 -- prod-setup::d
 
