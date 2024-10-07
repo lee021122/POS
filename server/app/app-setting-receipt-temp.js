@@ -192,7 +192,8 @@ AppSettingReceiptTemp.prototype.delete = async function (req, res) {
 
 const receiptTemp = new AppSettingReceiptTemp();
 
-// router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
+router.get('/l', receiptTemp.list.bind(receiptTemp));
 router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
+router.post('/d', receiptTemp.delete.bind(receiptTemp));
 
 module.exports = router;

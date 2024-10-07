@@ -4,9 +4,10 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
+const myConfig = require('../config/user-config.json')
 
 // Ensure that the "user-file" folder exists
-const uploadDir = path.join(__dirname, 'product-file');
+const uploadDir = path.join(__dirname, myConfig.product_folder);
 
 // Import Libraries
 const { pgSql } = require('../lib/lib-pgsql');
@@ -128,7 +129,7 @@ AppProdSetup.prototype.save = async function (req, res) {
             
             if (oldLogoImgPath && oldLogoImgPath[0].product_img_path) {
                 // Get the full path of the old image
-                const oldImagePath = path.join(__dirname, 'product-file', oldLogoImgPath[0].product_img_path.replace('/product-file/', ''));
+                const oldImagePath = path.join(__dirname, myConfig.product_folder, oldLogoImgPath[0].product_img_path.replace(`/${myConfig.product_folder}/`, ''));
                 // console.log('Full path to old image:', oldImagePath);
                 
                 // Check if the old image exists, if so, delete it
@@ -139,7 +140,7 @@ AppProdSetup.prototype.save = async function (req, res) {
         };
 
         // Now update `logo_img_path` in the params array with the new uploaded file path
-        o2[0].product_img_path = `/product-file/${uploadedFile.filename}`;
+        o2[0].product_img_path = `/${myConfig.product_folder}/${uploadedFile.filename}`;
         
         if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));

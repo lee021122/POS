@@ -183,9 +183,9 @@ create table if not exists tb_store (
 	, addr_line_1 varchar(255)
 	, addr_line_2 varchar(255)
 	, city varchar(255)
-	, state varchar(255)
+	, state uuid
 	, post_code varchar(50)
-	, country varchar(255)
+	, country uuid
 	, phone_number varchar(50)
 	, email varchar(255)
 	, website varchar(255)
@@ -362,7 +362,7 @@ create table if not exists tb_order_trans (
 	, modified_on timestamp not null
 	, modified_by varchar(255) not null
 	, tr_dt timestamp 
-	, tr_status varchar(10)
+	, tr_status varchar(50)
 	, doc_no varchar(50)
 	, remarks text
 	, override_on timestamp
@@ -402,4 +402,23 @@ create table if not exists tb_audit_log (
 	, id3 uuid
 	, app_id uuid
 	, module_code varchar(255)
+);
+
+create table if not exists tb_country (
+	country_id uuid not null primary key
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, country_name varchar(255) not null
+	, country_code varchar(50) not null
+	, is_in_use integer
+	, display_seq varchar(6)
+);
+
+create table if not exists tb_state (
+	state_id uuid not null primary key
+	, created_on timestamp not null
+	, created_by varchar(255) not null
+	, state_name varchar(255) not null
+	, is_in_use integer
+	, display_seq varchar(6)
 );

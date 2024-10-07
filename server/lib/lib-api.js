@@ -102,6 +102,10 @@ libApi.parseParams = function (validAxn, o2) {
                 case 'text':
                     value = libShared.toText(value);
                     break;
+                // case 'dt':
+                //     value = libShared.toDate(value);
+                // case 'dt2': 
+                //     value = libShared.toDateTime(value);
                 default:
                     throw new Error(`Unsupported data type: ${data_type}`);
             }

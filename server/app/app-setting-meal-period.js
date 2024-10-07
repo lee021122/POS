@@ -90,4 +90,6 @@ AppSettingMealPeriod.prototype.delete = async function(req, res) {
 
 const mealPeriod = new AppSettingMealPeriod();
 
+router.post
+
 module.exports = router;
