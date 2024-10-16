@@ -6,9 +6,9 @@ CREATE OR REPLACE PROCEDURE pr_store_save (
 	IN p_addr_line_1 character varying(255),
 	IN p_addr_line_2 character varying(255),
 	IN p_city character varying(255),
-	IN p_state character varying(255),
+	IN p_state uuid,
 	IN p_post_code character varying(50),
-	IN p_country character varying(255),
+	IN p_country uuid,
 	IN p_phone_number character varying(50),
 	IN p_email character varying(255),
 	IN p_website character varying(255),
@@ -50,21 +50,21 @@ BEGIN
 		p_current_uid => 'tester',
 		p_msg => null,
 		p_store_id => null,
-		p_store_name => '',
+		p_store_name => 'AMC Store',
 		p_addr_line_1 => '',
 		p_addr_line_2 => '',
 		p_city => '',
-		p_state => '',
+		p_state => null,
 		p_post_code => '',
-		p_country => '',
+		p_country => null,
 		p_phone_number => '',
 		p_email => '',
 		p_website => '',
 		p_gst_id => '',
 		p_sst_id => '',
-		p_business_registration_num => '',
-		p_receipt_temp_id => '',
-)
+		p_business_registration_num => null,
+		p_receipt_temp_id => '6d8d1f09-614b-4064-8fc3-d593f97939b2'
+);
 */
 
 	IF p_is_debug = 1 THEN
@@ -81,7 +81,7 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF LENGTH(COALESCE(p_receipt_temp_id, '')) = 0 THEN
+	IF LENGTH(COALESCE(p_receipt_temp_id::text, '')) = 0 THEN
 		p_msg := 'Must Select the Receipt Template!!';
 		RETURN;
 	END IF;
@@ -96,7 +96,6 @@ BEGIN
 		p_msg := 'Store Name: ' || p_store_name || ' already exists!!';
 		RETURN;
 	END IF;
-	)
 
 	IF EXISTS (
 		SELECT *
@@ -106,17 +105,6 @@ BEGIN
 		p_msg := 'Business Registration Number already exists!!';
 		RETURN;
 	END IF;
-
-	-- -------------------------------------
-	-- process
-	-- -------------------------------------
-	IF fn_to_guid(p_store_id) = fn_empty_guid() THEN
-	
-		p_store_id := gen_random_uuid();
-		
-		-- Insert new reocrd
-		INSERT INTO tb_store (
-	)
 	
 	-- -------------------------------------
 	-- process

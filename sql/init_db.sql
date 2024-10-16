@@ -422,3 +422,10 @@ create table if not exists tb_state (
 	, is_in_use integer
 	, display_seq varchar(6)
 );
+
+create table if not exists tb_last_id (
+	subject_name text
+	, last_id bigint
+	, modified_on timestamp
+	, store_id uuid
+)

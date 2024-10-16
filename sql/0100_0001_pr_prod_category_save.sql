@@ -94,7 +94,6 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	-- Create Audit Log
 	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_prod_category_save'

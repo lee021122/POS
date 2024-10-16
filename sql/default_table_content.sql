@@ -256,3 +256,19 @@ insert into tb_pricing_type (pricing_type_id, created_on, created_by, modified_o
 insert into tb_country (country_id, created_on, created_by, country_name, country_code, is_in_use)
 
 insert into tb_state (state_id, created_on, created_by, state_name, is_in_use) values 
+
+insert into tb_sys_setting (sys_setting_title, sys_setting_value, modified_on, modified_by, store_id) values 
+('CURRENT_TRANS_DATE', '2024-10-16', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
+('ORDER_NO_PREFIX', 'OR-', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
+('ORDER_NO_LENGTH', '5', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
+
+INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES
+(1, current_timestamp, 'admin', current_timestamp, 'admin', 'TS', 'Table Secvice', 1, '000001'),
+(2, current_timestamp, 'admin', current_timestamp, 'admin', 'PC', 'Pick at Counter', 1, '000002'),
+(3, current_timestamp, 'admin', current_timestamp, 'admin', 'TA', 'Take Away', 1, '000003'),
+(4, current_timestamp, 'admin', current_timestamp, 'admin', 'RS', 'Room Service', 1, '000004')
+
+INSERT into tb_tr_status (tr_status_id, created_on, created_by, modified_on, modified_by, tr_status_code, tr_status_desc, is_in_use, display_seq) VALUES
+(1, current_timestamp, 'admin', current_timestamp, 'admin', 'C', 'Confirmed', 1, '000001'),
+(2, current_timestamp, 'admin', current_timestamp, 'admin', 'X', 'Cancelled', 1, '000002')
+
