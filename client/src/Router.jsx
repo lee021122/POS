@@ -20,7 +20,7 @@ import {
 
 const AppRouter = () => {
   return (
-    <Router>
+    <Router basename="/demo1"> 
       <Routes>
         <Route path="/" element={<App />}>
           <Route path="/" element={<Dashboard />} />
