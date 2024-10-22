@@ -192,12 +192,68 @@ AppProdSetup.prototype.list = function (req, res) {
 
 };
 
-AppProdSetup.prototype.delete = function (req, res) {
+AppProdSetup.prototype.delete = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.prodObject(item));
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
 
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        if (!o2[0].product_id) {
+            return res.status(400).send(libApi.response('Invalid Product!!', 'Failed'));
+        };
+
+        const oldLogoImgPath = await pgSql.getTable('tb_product', `${pgSql.SQL_WHERE} product_id = '${o2[0].product_id}'`, ['product_img_path']); 
+        // console.log(oldLogoImgPath);
+        
+        if (oldLogoImgPath) {      
+
+            // Get the full path of the old image
+            const oldImagePath = path.join(__dirname, myConfig.product_folder, oldLogoImgPath[0].product_img_path.replace(`/${myConfig.product_folder}/`, '')); 
+                 
+            // Check if the old image exists, if so, delete it
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath); // Delete the old image
+            };
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        // console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        }
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+            
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+             
+        return res.send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    }
 };
 
 const prod = new AppProdSetup();
 
 router.post('/s', upload, prod.save.bind(prod));
+router.post('/d', prod.delete.bind(prod));
 
 module.exports = router;

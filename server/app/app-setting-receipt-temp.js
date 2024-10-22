@@ -4,9 +4,10 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
+const myConfig = require('../config/user-config.json')
 
 // Ensure that the "user-file" folder exists
-const uploadDir = path.join(__dirname, 'user-file');
+const uploadDir = path.join(__dirname, myConfig.user_folder);
 
 // Import Libraries
 const { pgSql } = require('../lib/lib-pgsql');
@@ -118,7 +119,7 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
             
             if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
                 // Get the full path of the old image
-                const oldImagePath = path.join(__dirname, 'user-file', oldLogoImgPath[0].logo_img_path.replace('/user-file/', ''));
+                const oldImagePath = path.join(__dirname, `/${myConfig.user_folder}/`, oldLogoImgPath[0].logo_img_path.replace(`/${myConfig.user_folder}/`, ''));
                 // console.log('Full path to old image:', oldImagePath);
                 
                 // Check if the old image exists, if so, delete it
@@ -144,7 +145,7 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
         };
 
         if (o2[0].display_seq) {
-            if (length(o2[0].display_seq) > 6) {
+            if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
@@ -183,11 +184,75 @@ AppSettingReceiptTemp.prototype.list = async function (req, res) {
 
 AppSettingReceiptTemp.prototype.delete = async function (req, res) {
     try {
+        const { code, axn, data, logo_img_path } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        p0.img = logo_img_path;
+        const preCode = p0.code;
 
+        let parsedData = data;
+        if (typeof data === 'string') {
+            parsedData = JSON.parse(data);
+        }
+
+        // Check parsedData is an array
+        if (!Array.isArray(parsedData)) {
+            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
+        }
+
+        const o2 = parsedData.map(item => this.receiptTempObject(item));
+        console.log(o2);
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        };
+
+        if (!o2[0].receipt_temp_id) {
+            return res.status(400).send(libApi.response('Invalid Receipt Template', 'Failed'));
+        };
+
+        const oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']); 
+        // console.log(oldLogoImgPath);
+        
+        if (oldLogoImgPath) {
+            // Get the full path of the old image
+            const oldImagePath = path.join(__dirname, `/${myConfig.user_folder}/`, oldLogoImgPath[0].logo_img_path.replace(`/${myConfig.user_folder}/`, ''));
+            // console.log('Full path to old image:', oldImagePath);
+            
+            // Check if the old image exists, if so, delete it
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath); // Delete the old image
+            }
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        // console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        }
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+            
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+             
+        return res.send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    }
+    };
 };
 
 const receiptTemp = new AppSettingReceiptTemp();

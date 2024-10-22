@@ -22,6 +22,9 @@ AppSettingMealPeriod.prototype.mealPeriodObject = function (o = {}) {
         is_in_use: null,
         display_seq: null
     };
+
+    // Merge o with d, o will overwrite d properties if provided
+    return Object.assign(d, o);
 }
 
 AppSettingMealPeriod.prototype.save = async function (req, res) {
@@ -47,7 +50,7 @@ AppSettingMealPeriod.prototype.save = async function (req, res) {
         };
 
         if (o2[0].display_seq) {
-            if (length(o2[0].display_seq) > 6) {
+            if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
@@ -90,6 +93,8 @@ AppSettingMealPeriod.prototype.delete = async function(req, res) {
 
 const mealPeriod = new AppSettingMealPeriod();
 
-router.post
+router.get('/l', mealPeriod.list.bind(mealPeriod));
+router.post('/s', mealPeriod.save.bind(mealPeriod));
+router.post('/d', mealPeriod.delete.bind(mealPeriod));
 
 module.exports = router;

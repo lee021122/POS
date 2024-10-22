@@ -61,7 +61,7 @@ BEGIN
 			meal_period_id, created_on, created_by, modified_on, modified_by, meal_period_desc,
 			is_in_use, display_seq
 		) VALUES (
-			p_meal_pepriod_id, v_now, p_current_uid, v_now, p_current_uid, p_meal_period_desc,
+			p_meal_period_id, v_now, p_current_uid, v_now, p_current_uid, p_meal_period_desc,
 			p_is_in_use, p_display_seq
 		);
 		

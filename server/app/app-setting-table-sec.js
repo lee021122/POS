@@ -51,7 +51,7 @@ AppSettingTableSec.prototype.save = async function (req, res) {
         };
 
         if (o2[0].display_seq) {
-            if (o2[0].display_se.length > 6) {
+            if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');

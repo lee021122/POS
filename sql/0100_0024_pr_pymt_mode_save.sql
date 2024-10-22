@@ -3,7 +3,7 @@ CREATE OR REPLACE PROCEDURE pr_pymt_mode_save (
 	OUT p_msg text,
 	INOUT p_pymt_mode_id uuid,
 	IN p_pymt_mode_desc character varying(255),
-	IN p_pymt_type uuid,
+	IN p_pymt_type integer,
 	IN p_for_store text,
 	IN p_is_in_use integer,
 	IN p_is_debug integer DEFAULT 0
@@ -18,9 +18,10 @@ DECLARE
 	audit_log text;
 	module_code text;
 	v_pymt_mode_desc_old character varying(255);
-	v_pymt_type_old uuid;
+	v_pymt_type_old integer;
 	v_for_store_old text;
 	v_is_in_use_old integer;
+	for_store text;
 BEGIN
 /* 0100_0024_pr_pymt_mode_save 
 
@@ -51,7 +52,7 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF LENGTH(COALESCE(p_for_store)) = 0 THEN
+	IF LENGTH(COALESCE(p_for_store, '')) = 0 THEN
 		p_msg := 'Please Select the Store!!';
 		RETURN;
 	END IF;	
@@ -63,10 +64,11 @@ BEGIN
         for_store_id uuid
     );
 	
-	INSERT INTO for_store_tb (for_store_id) 
-	VALUES (
-		 CAST(UNSET(string_to_array(p_for_store, ';;')) AS uuid)
-	);
+	INSERT INTO for_store_tb (for_store_id)
+	SELECT 
+		CAST(TRIM(value) AS uuid)
+	FROM unnest(string_to_array(p_for_store, ';;')) AS value
+	WHERE TRIM(value) IS NOT NULL AND TRIM(value) <> '';
 	
 	IF NOT EXISTS (
 		SELECT *
@@ -77,15 +79,15 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF LENGTH(COALESCE(p_pymt_type)) = 0 THEN
+	IF p_pymt_type IS NULL THEN
 		p_msg := 'Please Select the Type!!';
 		RETURN;
 	END IF;	
 	
 	IF NOT EXISTS (
 		SELECT *
-		FROM tb_sys_pymt_type
-		WHERE sys_pymt_type_id = p_pymt_type
+		FROM tb_pymt_type
+		WHERE pymt_type_id = p_pymt_type
 	) THEN 
 		p_msg := 'Invalid Type!!';
 		RETURN;
@@ -101,9 +103,9 @@ BEGIN
 		-- Insert new record
 		INSERT INTO tb_pymt_mode (
 			pymt_mode_id, created_on, created_by, modified_on, modified_by, pymt_mode_desc, 
-			pymt_type, for_store, is_in_use 
+			pymt_type_id, for_store, is_in_use 
 		) VALUES (
-			p_pymt_mode_id, v_now, p_current_id, v_now, p_current_uid, p_pymt_mode_desc,
+			p_pymt_mode_id, v_now, p_current_uid, v_now, p_current_uid, p_pymt_mode_desc,
 			p_pymt_type, p_for_store, COALESCE(p_is_in_use, 0)
 		);
 		
@@ -124,7 +126,7 @@ BEGIN
 			modified_on = v_now,
 			modified_by = p_current_uid,
 			pymt_mode_desc = p_pymt_mode_desc, 
-			pymt_type = p_pymt_type, 
+			pymt_type_id = p_pymt_type, 
 			for_store = p_for_store, 
 			is_in_use = COALESCE(p_is_in_use, 0)
 		WHERE pymt_mode_id = p_pymt_mode_id;
