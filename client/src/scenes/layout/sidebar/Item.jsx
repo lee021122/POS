@@ -1,5 +1,3 @@
-
-
 import { MenuItem } from "react-pro-sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { Typography, Box } from "@mui/material";
@@ -14,7 +12,7 @@ const Item = ({ title, path, icon }) => {
       to={path}
       icon={icon}
       rootStyles={{
-        borderRadius: "20px",
+        borderRadius: "5px",
         marginTop:"5px",
         fontWeight: "bold",
         backgroundColor: isSelected ? "#CD5C08" : "#fcfcfc", // Highlight selected item

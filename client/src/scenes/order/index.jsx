@@ -1,22 +1,16 @@
 import React, { useState } from "react";
 import { Box, useMediaQuery, useTheme, Button, Typography } from "@mui/material";
+import { tokens } from "../../theme";
+
 import {
     CategoriesBox,
     MenuPic,
 } from "../../components";
 
-import AllIcon from "../../assets/images/all.png";
 import MainCourseIcon from "../../assets/images/main.png";
-import PastaIcon from "../../assets/images/pasta.png";
-import BurgerIcon from "../../assets/images/burger.png";
-import BreakfastIcon from "../../assets/images/breakfast.png";
-import DessertIcon from "../../assets/images/dessert.png";
-import BeverageIcon from "../../assets/images/beverage.png";
-import NGK from "../../assets/images/nasi.jpeg";
 import nasi from "../../assets/images/nasi.jpg";
 
 
-import { tokens } from "../../theme";
 import OrderListing from "./OrderListing";
 import MenuOrdered from "./MenuOrdered";
 
@@ -36,6 +30,7 @@ const menuItems = [
     {id:3, title: "Nasi Goreng Cili Padi",image: nasi,price: 6.90, category: "Main Course",},
     {id:4, title: "Ice Cream",image: nasi,price: 16.90, category: "Dessert",},
     {id:5, title: "Nasi Goreng",image: nasi,price: 8.90, category: "Main Course",},
+    
 
   ];
 
@@ -152,7 +147,7 @@ function Order() {
                   p="10px"
                   ml="3.5px"
                   mr="3.5px"
-                  borderRadius="15px"
+                  borderRadius="12px"
                   boxShadow="0px 4px 12px rgba(0, 0, 0, 0.20)"
                   sx={{
                     backgroundColor: selectedCategory === category.title ? "#FFE7D1" : colors.primary[400], // Change background color if selected
@@ -278,14 +273,18 @@ function Order() {
                   alignItems="center"
                   justifyContent="center"
                   // p="15px"
-                  maxHeight="350px"
+                  height="350px"
 
                 >
-                  <Box display="flex" alignItems="center" justifyContent="center">
+                  <Box 
+                    display="flex" 
+                    alignItems="center" 
+                    justifyContent="center"
+                   >
                     <MenuPic
                       id={item.id}
                       title={item.title}
-                      image={<img src={item.image} style={{ width: "70%", height: "70%", borderRadius: "15px" }} />}
+                      image={<img src={item.image} style={{ width: "70%", height: "60%", borderRadius: "15px" }} />}
                       price={item.price}
                       category={item.category}
                       quantity={quantities[item.id] || 0} 

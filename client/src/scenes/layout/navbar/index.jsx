@@ -8,13 +8,9 @@ import {
 import { tokens, ColorModeContext } from "../../../theme";
 import { useContext } from "react";
 import {
-  DarkModeOutlined,
-  LightModeOutlined,
   MenuOutlined,
-  NotificationsOutlined,
   PersonOutlined,
   SearchOutlined,
-  SettingsOutlined,
 } from "@mui/icons-material";
 import { ToggledContext } from "../../../App";
 const Navbar = () => {
