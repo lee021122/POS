@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, useMediaQuery, useTheme, Button, Typography } from "@mui/material";
 import { tokens } from "../../theme";
+import axios from "axios";
 
 import {
     CategoriesBox,
