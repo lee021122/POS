@@ -4,7 +4,7 @@ CREATE OR REPLACE PROCEDURE pr_product_modifier_item_save (
 	INOUT p_modifier_option_id uuid,
 	IN p_modifier_group_id uuid,
 	IN p_modifier_option_name character varying(255),
-	IN p_addon_amt money,
+	IN p_addon_amt numeric(15, 2),
 	IN p_is_default integer,
 	IN p_is_debug integer DEFAULT 0
 )
@@ -24,13 +24,23 @@ DECLARE
 BEGIN
 /* 0100_0013_pr_product_modifier_item_save
 
+	CALL pr_product_modifier_item_save (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_modifier_option_id => null,
+		p_modifier_group_id => '00b3a893-a452-4d72-9f89-2868683c2834',
+		p_modifier_option_name => 'Telur Matar',
+		p_addon_amt => 1,
+		p_is_default => 0
+	);
+
 */
 
 	IF p_is_debug = 1 THEN
 		RAISE NOTICE 'pr_product_modifier_item_save - start';
 	END IF;
 	
-	module_code := 'Settings - Modifier Group';
+	module_code := 'Settings - Modifier Group Item';
 	
 	-- -------------------------------------
 	-- validation
@@ -43,7 +53,10 @@ BEGIN
 	IF EXISTS (
 		SELECT * 
 		FROM tb_modifier_option
-		WHERE modifier_option_name = p_modifier_option_name
+		WHERE 
+			modifier_option_name = p_modifier_option_name
+			-- Each Modifier Group cannot have same option name
+			AND modifier_group_id = p_modifier_group_id
 	) THEN
 		p_msg := 'Option Name: ' || p_modifier_option_name || ' already exists!!';
 		RETURN;
@@ -61,7 +74,9 @@ BEGIN
 	IF EXISTS (
 		SELECT * 
 		FROM tb_modifier_option
-		WHERE is_defualt = 1
+		WHERE 
+			modifier_group_id = p_modifier_group_id
+			AND is_default = 1
 	) THEN
 		p_msg := 'Only can set 1 option as default!!';
 		RETURN;
@@ -113,9 +128,9 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Audit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
-		, p_remarks => ' pr_product_modifier_item_save'
+		, p_remarks => 'pr_product_modifier_item_save'
 		, p_uid => p_current_uid
 		, p_id1 => p_modifier_option_id
 		, p_id2 => null

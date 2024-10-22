@@ -21,6 +21,15 @@ DECLARE
 BEGIN
 /* 0100_0010_pr_product_modifier_group_save
 
+	CALL pr_product_modifier_group_save (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_modifier_group_id => null,
+		p_modifier_group_name => 'Nasi Goreng',
+		p_is_single_modifier_choice => 0,
+		p_is_multiple_modifier_choice => 1
+	);
+
 */
 
 	IF p_is_debug = 1 THEN
@@ -40,7 +49,9 @@ BEGIN
 	IF EXISTS (
 		SELECT *
 		FROM tb_modifier_group
-		WHERE modifier_group_name = p_modifier_group_name
+		WHERE 
+			modifier_group_name = p_modifier_group_name
+			AND modifier_group_id <> fn_to_guid(p_modifier_group_id)
 	) THEN
 		p_msg := 'Modifier Group Name: ' || p_modifier_group_name || ' already exists!!';
 		RETURN;
@@ -91,9 +102,9 @@ BEGIN
 	p_msg := 'ok';
 	
 	-- Create Aufit Log
-	CALL pr_append_sys_task_inbox (
+	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
-		, p_remarks => 'pr_Product_modifier_group_save'
+		, p_remarks => 'pr_product_modifier_group_save'
 		, p_uid => p_current_uid
 		, p_id1 => p_modifier_group_id
 		, p_id2 => null
