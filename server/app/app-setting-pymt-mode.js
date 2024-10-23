@@ -117,7 +117,7 @@ AppPymtMode.prototype.list = async function(req, res) {
         const params = libApi.parseParams(validAxn, o2);
             
         // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params)
              
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
