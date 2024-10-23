@@ -9,6 +9,7 @@ import {
 
 import MainCourseIcon from "../../assets/images/main.png";
 import nasi from "../../assets/images/nasi.jpg";
+import nasi1 from "../../assets/images/nasi.jpeg";
 
 
 import OrderListing from "./OrderListing";
@@ -25,7 +26,7 @@ const CategoryType = [
 ];
 
 const menuItems = [
-    {id:1, title: "Nasi Goreng Kampung",image: nasi,price: 16.90, category: "Main Course",},
+    {id:1, title: "Nasi Goreng Kampung",image:  nasi1,price: 16.90, category: "Main Course",},
     {id:2, title: "Nasi Goreng USA",image: nasi,price: 6.90, category: "Main Course",},
     {id:3, title: "Nasi Goreng Cili Padi",image: nasi,price: 6.90, category: "Main Course",},
     {id:4, title: "Ice Cream",image: nasi,price: 16.90, category: "Dessert",},
@@ -107,11 +108,9 @@ function Order() {
           <Box
             display="grid"
             gridTemplateColumns={
-              isXlDevices
-                ? "repeat(12, 1fr)"
-                : isMdDevices
-                ? "repeat(6, 1fr)"
-                : "repeat(3, 1fr)"
+              isXlDevices? "repeat(12, 1fr)"
+                : isMdDevices ? "repeat(6, 1fr)"
+                : "repeat(1, 1fr)"
             }
             gridAutoRows="140px"
             gap="10px"
@@ -119,7 +118,13 @@ function Order() {
             {/* Category Items */}
             <Box
               backgroundColor="transparent"
-              gridColumn="span 9"
+              gridColumn={
+                isXlDevices
+                    ? "span 9"
+                    : isMdDevices
+                    ? "span 4"
+                    : "span 12"
+                }
               display="flex"
               alignItems="center"
               pl="5px"
@@ -170,91 +175,116 @@ function Order() {
             </Box>
     
             {/* Order Part */}
-            <Box
-              gridColumn= "span 3"
-              height="700px"
-              backgroundColor={colors.primary[400]}
-              border="1px solid #ccc"
-              borderRadius="5px"
-              padding="0px"
-              display="flex"
-              flexDirection="column"
-              justifyContent="space-between" 
-            >
-              <div>
-                <OrderListing order_num={"#000"} />
-                {orderedItems.map((item) => (
-                  <MenuOrdered
-                    key={item.id}
-                    quantity={quantities[item.id]}
-                    title={item.title}
-                    price={item.price * quantities[item.id]}
-                  />
-                ))}
-              </div>
-         
-              <Box display="flex" flexDirection="column" borderTop="1px solid #ccc">
-                <Box 
-                  mx="20px"
-                  my="10px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Typography 
-                    variant="h6" 
-                    color={"black"}
-                    fontWeight={"bold"} 
+            {isMdDevices && (
+              <Box
+                gridColumn= {
+                  isXlDevices
+                    ? "span 3"
+                    : isMdDevices
+                    ? "span 2"
+                    : "span 12"
+                }
+                height={
+                  isXlDevices
+                    ? "700px"
+                    : isMdDevices
+                    ? "690px"
+                    : "650px"
+                }
+                backgroundColor={colors.primary[400]}
+                border="1px solid #ccc"
+                borderRadius="5px"
+                padding="0px"
+                display="flex"
+                flexDirection="column"
+                justifyContent="space-between" 
+              >
+                <div>
+                  <OrderListing order_num={"#000"} />
+                  {orderedItems.map((item) => (
+                    <MenuOrdered
+                      key={item.id}
+                      quantity={quantities[item.id]}
+                      title={item.title}
+                      price={item.price * quantities[item.id]}
+                    />
+                  ))}
+                </div>
+
+                <Box display="flex" flexDirection="column" borderTop="1px solid #ccc">
+                  <Box 
+                    mx="20px"
+                    my="10px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography 
+                      variant="h6" 
+                      color={"black"}
+                      fontWeight={"bold"} 
+                      sx={{ 
+                        textAlign: 'left', 
+                        marginBottom: '10px' 
+                      }}>
+                      Total Price:
+                    </Typography>
+                    <Typography 
+                      variant="h6" 
+                      color={"black"} 
+                      sx={{ 
+                        textAlign: 'left', 
+                        marginBottom: '10px' 
+                      }}>
+                      RM {totalPrice.toFixed(2)}
+                    </Typography>
+                  </Box>
+
+                  <Button
+                    onClick={() => {
+                      handleButtonClick();
+                    }}
+                    variant="contained"
+                    disabled={orderedItems.length === 0}
                     sx={{ 
-                      textAlign: 'left', 
-                      marginBottom: '10px' 
-                    }}>
-                    Total Price:
-                  </Typography>
-                  <Typography 
-                    variant="h6" 
-                    color={"black"} 
-                    sx={{ 
-                      textAlign: 'left', 
-                      marginBottom: '10px' 
-                    }}>
-                    RM {totalPrice.toFixed(2)}
-                  </Typography>
+                      width: '100%',
+                      borderRadius: "0px",
+                      fontWeight: "bold",
+                      backgroundColor: "#CD5C08",
+                      color: "#FFF5E4",
+
+                      ":hover": {
+                        backgroundColor: "#FFE7D1", // Change background on hover
+                        color: "#CD5C08", // Change text color on hover
+                      },
+                      transition: "all 0.3s ease", // Smooth transition for hover effects
+                    }}
+                  >
+                    Place Order
+                  </Button>
                 </Box>
-              
+              </Box>
+            )}
 
-                <Button
-                  onClick={() => {
-                    handleButtonClick();
-                  }}
-                  variant="contained"
-                  disabled={orderedItems.length === 0}
-                  sx={{ 
-                    width: '100%',
-                    borderRadius: "0px",
-                    fontWeight: "bold",
-                    backgroundColor: "#CD5C08",
-                    color: "#FFF5E4",
-
-                    ":hover": {
-                      backgroundColor: "#FFE7D1", // Change background on hover
-                      color: "#CD5C08", // Change text color on hover
-                    },
-                    transition: "all 0.3s ease", // Smooth transition for hover effects
-                  }}
-                >
-                  Place Order
-                </Button>
-
-            </Box>
-            </Box>
 
     
             {/* Menu Items */}
             <Box
               backgroundColor="transparent"
-              gridColumn="span 9"
-              height="550px"
+              gridColumn={
+                isXlDevices
+                    ? "span 9"
+                    : isMdDevices
+                    ? "span 4"
+                    : "span 12"
+                }
+              height={
+                isXlDevices
+                  ? "550px"
+                  : isMdDevices
+                  ? "550px"
+                  : "650px"
+              }
               display="grid"
               gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
               gap="10px"
@@ -284,7 +314,7 @@ function Order() {
                     <MenuPic
                       id={item.id}
                       title={item.title}
-                      image={<img src={item.image} style={{ width: "70%", height: "60%", borderRadius: "15px" }} />}
+                      image={<img src={item.image} style={{ width: "180px", height: "180px", borderRadius: "15px" }} />}
                       price={item.price}
                       category={item.category}
                       quantity={quantities[item.id] || 0} 

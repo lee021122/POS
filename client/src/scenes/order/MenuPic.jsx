@@ -23,7 +23,7 @@ const MenuPic = ({ id, title, image, price, category, quantity, onAdd, onRemove 
               backgroundColor: "#CD5C08", 
               fontWeight: "bold", 
               width: "170px", 
-              my: "5px", 
+              mt: "10px", 
               borderRadius: "24px", 
               height: "35px",
               '&:hover': {
