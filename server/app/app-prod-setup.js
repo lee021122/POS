@@ -140,7 +140,7 @@ AppProdSetup.prototype.save = async function (req, res) {
         };
 
         // Now update `logo_img_path` in the params array with the new uploaded file path
-        o2[0].product_img_path = `/${myConfig.product_folder}/${uploadedFile.filename}`;
+        o2[0].product_img_path = `${uploadedFile.filename}`;
         
         if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
@@ -289,9 +289,32 @@ AppProdSetup.prototype.delete = async function (req, res) {
     }
 };
 
+// AppProdSetup.prototype.imageList = async function(req, res) {
+//     const imagesDir = path.join(__dirname, 'product-file');
+
+//     fs.readdir(imagesDir, (err, files) => {
+//         if (err) {
+//             return res.status(500).json({ error: 'Unable to scan directory: ' + err });
+//         }
+
+//         // Filter out non-image files if necessary
+//         const imageFiles = files.filter(file => /\.(jpg|jpeg|png|gif)$/.test(file));
+
+//         // Map to create full image URLs
+//         const images = imageFiles.map(file => ({
+//             id: file, // or use an incrementing ID if you prefer
+//             url: `http://localhost:38998/images/${file}`
+//         }));
+
+//         res.json(images);
+//     });
+// };
+
 const prod = new AppProdSetup();
 
 router.post('/s', upload, prod.save.bind(prod));
+router.post('/l', prod.list.bind(prod));
 router.post('/d', prod.delete.bind(prod));
+// router.get('/il', prod.imageList.bind(prod));
 
 module.exports = router;

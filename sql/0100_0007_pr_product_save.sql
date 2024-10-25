@@ -22,6 +22,7 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_is_allow_modifier integer,
 	IN p_is_enable_track_stock integer,
 	IN p_is_popular_item integer,
+	IN p_meal_period text,
 	IN p_is_debug integer DEFAULT 0)
     LANGUAGE 'plpgsql'
 AS $BODY$
@@ -54,6 +55,7 @@ DECLARE
 	v_is_allow_modifier_old integer;
 	v_is_enable_track_stock_old integer;
 	v_is_popular_item_old integer;
+	meal_period_record RECORD;  -- Define product_record as a RECORD types
 BEGIN
 /* 0100_0007_pr_product_save
 -- Save Product
@@ -61,15 +63,15 @@ BEGIN
 	CALL public.pr_product_save(
         p_current_uid        => 'tester', 
         p_msg                => null,           
-        p_product_id         => null,      
+        p_product_id         => '17ea1fb4-c3ef-4bad-ae51-bf51932e3752',      
         p_product_desc       => 'Nasi Goreng Kampung', 
-        p_product_code       => 'P0001',            
+        p_product_code       => 'P0003',            
         p_category_id        => 'd437bedc-4e02-428c-a3e6-f4f873cbb675',
         p_product_tag        => null,           
-        p_product_img_path   => '/path/to/image.jpg',  
+        p_product_img_path   => '1cdf8c5c-beb8-4a88-8b85-efbc734b8cee.jpeg',  
         p_supplier_id        => null, 
         p_pricing_type_id    => '7301109c-cef9-4df0-9824-9e5d304ca49f', 
-        p_cost               => 10,                
+        p_cost               => 9,                
         p_sell_price         => null,               
         p_tax_code1          => 'SC',                
         p_amt_include_tax1   => 1,                     
@@ -81,7 +83,8 @@ BEGIN
         p_is_enable_kitchen_printer => 1,              
         p_is_allow_modifier  => 1,                     
         p_is_enable_track_stock => 1,                  
-        p_is_popular_item    => 0               
+        p_is_popular_item    => 0,
+		p_meal_period => 'a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae'
     );
 */
 	
@@ -158,6 +161,31 @@ BEGIN
 	END IF;
 	
 	-- -------------------------------------
+    -- create and use temporary table
+    -- -------------------------------------
+    CREATE TEMPORARY TABLE meal_period_tb (
+        p_meal_period_id uuid
+    );
+	
+	INSERT INTO meal_period_tb (p_meal_period_id)
+	SELECT 
+		CAST(TRIM(value) AS uuid)
+	FROM unnest(string_to_array(p_meal_period, ';;')) AS value
+	WHERE TRIM(value) IS NOT NULL AND TRIM(value) <> '';
+	
+	FOR meal_period_record IN SELECT p_meal_period_id FROM meal_period_tb LOOP
+		-- Check if the product_id exists in tb_product
+		IF NOT EXISTS (
+			SELECT 1
+			FROM tb_meal_period a
+			WHERE a.meal_period_id = meal_period_record.p_meal_period_id
+		) THEN
+			p_msg := 'Invalid Meal Period!!';
+			RETURN;
+		END IF;
+	END LOOP;
+	
+	-- -------------------------------------
 	-- process
 	-- -------------------------------------
 	-- Calc the tax 
@@ -187,6 +215,16 @@ BEGIN
 			p_pricing_type_id, v_final_price, v_unit_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
 			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item
 		);
+		
+		FOR meal_period_record IN SELECT p_meal_period_id FROM meal_period_tb LOOP
+
+			INSERT INTO tb_meal_period_product (
+				created_on, created_by, modified_on, modified_by, meal_period_id, product_id
+			) VALUES (
+				v_now, p_current_uid, v_now, p_current_uid, meal_period_record.p_meal_period_id, p_product_id
+			);
+
+		END LOOP;
 		
 		-- Prepare the audit log
 		audit_log = 'Create new product: ' || p_product_desc || ' successfully.';
@@ -232,6 +270,19 @@ BEGIN
 			is_popular_item = p_is_popular_item
 		WHERE product_id = p_product_id;
 		
+		-- Update meal period product
+		DELETE FROM tb_meal_period_product WHERE product_id = p_product_id;
+		
+		FOR meal_period_record IN SELECT p_meal_period_id FROM meal_period_tb LOOP
+
+			INSERT INTO tb_meal_period_product (
+				created_on, created_by, modified_on, modified_by, meal_period_id, product_id
+			) VALUES (
+				v_now, p_current_uid, v_now, p_current_uid, meal_period_record.p_meal_period_id, p_product_id
+			);
+
+		END LOOP;
+		
 		-- Prepared Audit Log
 		audit_log = 'Updated Product Description from ' || v_product_desc_old || ' to ' || p_product_desc || ', ' ||
 					'Updated Product Code from ' || v_product_code_old || ' to ' || p_product_code || ', ' ||
@@ -275,6 +326,8 @@ BEGIN
 	IF p_is_debug = 1 THEN
 		RAISE NOTICE 'pr_product_save - end';
 	END IF;
+	
+	DROP TABLE meal_period_tb;
 	
 END
 $BODY$;

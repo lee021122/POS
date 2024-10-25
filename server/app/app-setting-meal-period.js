@@ -19,6 +19,8 @@ AppSettingMealPeriod.prototype.mealPeriodObject = function (o = {}) {
         msg: null,
         meal_period_id: null,
         meal_period_desc: null,
+        start_time: null,
+        end_time: null,
         is_in_use: null,
         display_seq: null
     };

@@ -24,9 +24,13 @@ BEGIN
 		p_tr_date => null,
 		p_doc_no => null,
 		p_order_trans_id => null
-	)
+	);
 	
 */
+	
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_order_trans_new - start';
+	END IF;
 
 	-- -------------------------------------
 	-- validation
@@ -39,6 +43,8 @@ BEGIN
 		p_msg := 'Invalid Store!!';
 		RETURN;
 	END IF;
+	
+	
 	
 	IF p_tr_date IS NULL THEN
 		p_tr_date := fn_get_current_trans_dt();
@@ -69,6 +75,9 @@ BEGIN
 	-- -------------------------------------
 	-- cleanup
 	-- -------------------------------------
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_order_trans_new - end';
+	END IF;
 
 END
 $BODY$;

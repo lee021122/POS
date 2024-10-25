@@ -91,6 +91,10 @@ AppProdCategory.prototype.list = async function(req, res) {
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
+        console.log(code);
+        
+        console.log(data);
+        
         const o2 = data.map(item => this.categoryObject(item));
         
         if (!code || code !== SERVICE) {
@@ -174,7 +178,7 @@ AppProdCategory.prototype.delete = async function(req, res) {
 const prodCat = new AppProdCategory();
 
 // Define route handler
-router.get('/l', prodCat.list.bind(prodCat));
+router.post('/l', prodCat.list.bind(prodCat));
 router.post('/s', prodCat.save.bind(prodCat));
 router.post('/d', prodCat.delete.bind(prodCat));
 

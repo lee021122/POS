@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const path = require("path");
 const userConfig = require('./config/user-config');
 const prodCat = require('./app/app-prod-category');
 const store = require('./app/app-setting-store');
@@ -16,6 +17,9 @@ const supplier = require('./app/app-supplier');
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the 'product-file' directory
+app.use('/il', express.static(path.join(__dirname, 'app/product-file')));
 
 app.use('/prodCat', prodCat);
 app.use('/store', store);

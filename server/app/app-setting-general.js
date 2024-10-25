@@ -11,7 +11,14 @@ const libShared = require('../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 
-const FILE = path.basename(__filename)
+const FILE = path.basename(__filename);
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
+
+function AppSettingGeneral() {};
+
+AppSettingGeneral.prototype.settingObject = async function(req, res) {
+
+};
+
 
 module.exports = router;

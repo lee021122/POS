@@ -36,7 +36,7 @@ BEGIN
     select * from fn_product_list (
         'tester',
         1,
-        'setting'
+        'order'
     )
 */
 
@@ -63,11 +63,12 @@ BEGIN
     
         RETURN QUERY (
 			SELECT 
-				a.product_id, null AS modified_on, null AS modified_by, a.product_desc, a.product_code, a.category_id, null AS product_tag, a.product_img_path,
-				null AS supplier_id, null AS pricing_type_id, a.cost, a.sell_price, a.tax_code1, a.amt_include_tax1, a.tax_code2, a.amt_include_tax2,
-				a.calc_tax2_after_tax1, null AS is_in_use, null AS display_seq, a.is_enable_kitchen_printer, a.is_allow_modifier, a.is_enable_track_stock, a.is_popular_item
+				a.product_id, null::timestamp AS modified_on, null::character varying modified_by, a.product_desc, a.product_code, a.category_id, 
+				null::character varying AS product_tag, a.product_img_path, null::uuid AS supplier_id, null::uuid AS pricing_type_id, a.cost, a.sell_price, 
+				a.tax_code1, a.amt_include_tax1, a.tax_code2, a.amt_include_tax2, a.calc_tax2_after_tax1, null::integer AS is_in_use, null::character varying AS display_seq, 
+			a.is_enable_kitchen_printer, a.is_allow_modifier, a.is_enable_track_stock, a.is_popular_item
 			FROM tb_product a
-			WHERE is_in_use = 1
+			WHERE a.is_in_use = 1
 			ORDER BY 
 				a.display_seq, a.product_tag, a.product_code, a.product_desc
 		);

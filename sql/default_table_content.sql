@@ -50,6 +50,8 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
 -- prod-category::l
+(gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
 -- prod-category::d
 -- (gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 -- (gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
@@ -80,6 +82,9 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_enable_track_stock', 'int', 22, 0, current_timestamp, 'admin'),
 -- (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_popular_item', 'int', 23, 0, current_timestamp, 'admin'),
 -- prod-setup::l
+(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
 -- prod-setup::d
 (gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
@@ -147,8 +152,10 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'meal_period_id', 'id', 3, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'meal_period_desc', 'string', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'start_time', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'end_time', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'is_in_use', 'int', 7, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd23a4647-0ab2-4e02-a4e9-ff87fbcd10fc', 'display_seq', 'string', 8, 0, current_timestamp, 'admin'),
 -- setting-meal-period::l
 -- setting-meal-period::d
 (gen_random_uuid(), '4227a31c-c70a-4dd8-8329-17802aac53fb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
@@ -257,10 +264,18 @@ insert into tb_country (country_id, created_on, created_by, country_name, countr
 
 insert into tb_state (state_id, created_on, created_by, state_name, is_in_use) values 
 
-insert into tb_sys_setting (sys_setting_title, sys_setting_value, modified_on, modified_by, store_id) values 
-('CURRENT_TRANS_DATE', '2024-10-16', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
-('ORDER_NO_PREFIX', 'OR-', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
-('ORDER_NO_LENGTH', '5', current_timestamp, 'admin', '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d'),
+insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_title, sys_setting_value) values 
+(current_timestamp, 'admin', current_timestamp, 'admin', 'CURRENT_TRANS_DATE', '2024-10-16'),
+--(current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_PREFIX', 'OR-'),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_LENGTH', '5'),
+-- Pay-first or Pay-later
+(current_timestamp, 'admin', current_timestamp, 'admin', 'OPERATION_MODE', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_server', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_port', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_id', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_pwd', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_use_ssl', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_able_service', '')
 
 INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES
 (1, current_timestamp, 'admin', current_timestamp, 'admin', 'TS', 'Table Secvice', 1, '000001'),
@@ -271,4 +286,3 @@ INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modifie
 INSERT into tb_tr_status (tr_status_id, created_on, created_by, modified_on, modified_by, tr_status_code, tr_status_desc, is_in_use, display_seq) VALUES
 (1, current_timestamp, 'admin', current_timestamp, 'admin', 'C', 'Confirmed', 1, '000001'),
 (2, current_timestamp, 'admin', current_timestamp, 'admin', 'X', 'Cancelled', 1, '000002')
-
