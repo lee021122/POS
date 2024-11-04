@@ -188,7 +188,7 @@ AppProdModifier.prototype.linkProduct = async function(req, res) {
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
 
         return res.send(libApi.response(result, 'Success'));
-    } catch (err) {
+    } catch (err) {2
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };

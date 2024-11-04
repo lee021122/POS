@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION fn_gen_new_doc_no (
 	p_current_uid character varying(255),
-	p_tr_type uuid,
+	p_tr_type character varying(50),
 	p_store_id uuid
 )
 RETURNS text
@@ -64,7 +64,7 @@ BEGIN
 	v_len = (SELECT sys_setting_value::INTEGER FROM tb_sys_setting WHERE sys_setting_title = 'ORDER_NO_LENGTH');
 	v_order_count = (select count(*) from tb_order_trans where tr_date = v_current_dt);
 	
-	v_doc_no = COALESCE(p_tr_type, '') || TO_CHAR(CURRENT_DATE, 'YYYYMMDD') || LPAD((COALESCE(v_order_count, 0) + 1)::text, v_len, '0');
+	v_doc_no = COALESCE(p_tr_type, '') || TO_CHAR(v_current_dt, 'YYYYMMDD') || LPAD((COALESCE(v_order_count, 0) + 1)::text, v_len, '0');
 	
 	RETURN v_doc_no;
 	

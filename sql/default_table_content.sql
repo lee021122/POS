@@ -260,9 +260,27 @@ insert into tb_pricing_type (pricing_type_id, created_on, created_by, modified_o
 (gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'Variable', 1),
 (gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'By Unit', 1)
 
-insert into tb_country (country_id, created_on, created_by, country_name, country_code, is_in_use)
+insert into tb_country (country_id, created_on, created_by, country_name, country_code, is_in_use, display_seq) VALUES
+(gen_random_uuid(), current_timestamp, 'admin', 'Malaysia', 'MY', 1, '000001'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Singapore', 'SG', 1, '000002'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Thailand', 'TH', 1, '000003');
 
-insert into tb_state (state_id, created_on, created_by, state_name, is_in_use) values 
+insert into tb_state (state_id, created_on, created_by, state_name, is_in_use, display_seq) values 
+(gen_random_uuid(), current_timestamp, 'admin', 'Kuala Lumpur', 1, '000001'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Putrajaya', 1, '000002'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Selangor', 1, '000003'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Johor', 1, '000004'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Melaka', 1, '000005'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Negeri Sembilan', 1, '000006'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Pahang', 1, '000007'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Terengganu', 1, '000008'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Perak', 1, '000009'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Penang', 1, '000010'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Kelantan', 1, '000011'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Perlis', 1, '000012'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Kedah', 1, '000013'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Sarawak', 1, '000014'),
+(gen_random_uuid(), current_timestamp, 'admin', 'Sabah', 1, '000015')
 
 insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_title, sys_setting_value) values 
 (current_timestamp, 'admin', current_timestamp, 'admin', 'CURRENT_TRANS_DATE', '2024-10-16'),
@@ -275,7 +293,10 @@ insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sy
 (current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_id', ''),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_pwd', ''),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_use_ssl', ''),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_able_service', '')
+(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_able_service', ''),
+-- Default (sell as much as) or set daily availability
+(current_timestamp, 'admin', current_timestamp, 'admin', 'QR_ORDER_AVAILABILITY', '')
+
 
 INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES
 (1, current_timestamp, 'admin', current_timestamp, 'admin', 'TS', 'Table Secvice', 1, '000001'),

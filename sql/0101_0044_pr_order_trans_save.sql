@@ -32,6 +32,8 @@ DECLARE
 	v_room_no_old character varying(50);
 	v_delivery_time_old timestamp;
 	v_delivery_next_day_old timestamp;
+	v_setting_value text;
+	v_msg2 text;
 BEGIN
 /* 
 	-- Save the Order Trans (Step 3)
@@ -112,6 +114,9 @@ BEGIN
 -- 		RETURN;
 -- 	END IF;
 
+	-- Get setting value
+	v_setting_value := (SELECT sys_setting_value FROM tb_sys_setting WHERE sys_setting_title = 'OPERATION_MODE');
+
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
@@ -177,6 +182,30 @@ BEGIN
 						'Update Delivery Next Day from ' || v_delivery_next_day_old || ' to ' || p_delivery_next_day || '.';
 		
 	END IF;
+	
+	IF v_setting_value = 'Pay-first' THEN
+			
+		-- Send order to kitchen printer
+		
+	END IF;
+	
+	-- Update the order trans table to occ, will release when payment done!!
+	UPDATE tb_order_trans_table 
+	SET 
+		order_trans_id = p_order_trans_id,
+		doc_no = p_doc_no
+	WHERE 
+		table_desc = p_table_no;
+		
+	-- Update the total amount
+	CALL pr_order_trans_refresh (
+		p_current_uid => p_current_uid,
+		p_msg => v_msg2,
+		p_order_trans_id => p_order_trans_id,
+		p_doc_no => p_doc_no,
+		p_tr_status => p_tr_status,  
+		p_is_debug => 0  
+	);
 	
 	p_msg := 'ok';
 	

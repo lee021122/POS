@@ -23,8 +23,20 @@ DECLARE
 	v_qr_code_old text;
 	v_is_in_use_old integer;
 	v_display_seq_old character varying(6);
+	v_order_msg text;
 BEGIN
 /* 0100_0039_pr_table_save
+
+	CALL pr_table_save (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_table_id => '9280b22d-0ff9-4574-8976-7aab48f71d31',
+		p_table_desc => 'T-01',
+		p_table_section_id => '81d41970-33b6-43dd-9e93-fd091bfcc2a3',
+		p_qr_code => null,
+		p_is_in_use => 1,
+		p_display_seq => '000001'
+	);
 
 */
 	
@@ -121,6 +133,19 @@ BEGIN
         , p_app_id => null
 		, p_module_code => module_code
 	);
+	
+	-- Save Order Trans Table Status
+	CALL pr_order_trans_table_init (
+		p_current_uid => p_current_uid,
+		p_msg => v_order_msg,
+		p_table_id => p_table_id,
+		p_table_desc => p_table_desc
+	);
+	
+	IF v_order_msg <> 'ok' THEN
+		p_msg := v_order_msg;
+		RETURN;
+	END IF;
 	
 	-- -------------------------------------
 	-- cleanup

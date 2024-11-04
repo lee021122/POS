@@ -46,6 +46,9 @@ DECLARE
 	v_seq integer;
 	v_now CONSTANT timestamp = current_timestamp;
 	v_today_dt CONSTANT date = current_date;
+	v_setting_value text;
+	module_code text;
+	audit_log text;
 BEGIN
 /*
 
@@ -90,6 +93,12 @@ BEGIN
 
 */
 
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_pos_add_trans_item_line - start';
+	END IF;
+	
+	module_code := 'Order - Add Item Line';
+
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
@@ -102,28 +111,56 @@ BEGIN
 		RETURN;
 	END IF;
 	
+	IF NOT EXISTS (
+		SELECT product_id
+		FROM tb_product
+		WHERE product_id = p_product_id
+	) THEN
+		p_msg := 'Invalid Product!!';
+		RETURN;
+	END IF;
+	
+	-- Get setting value
+	v_setting_value := (SELECT sys_setting_value FROM tb_sys_setting WHERE sys_setting_title = 'OPERATION_MODE');
+	
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	IF p_axn = 'cashier' THEN
 		
-		IF fn_to_guid(p_product_id) <> fn_empty_guid() THEN 
+	IF fn_to_guid(p_product_id) <> fn_empty_guid() THEN 
 		
-			p_is_pymt := 0;
-			p_pymt_mode_id = fn_empty_guid();
-			v_seq := (
-				SELECT COALESCE(MAX(seq), 0)
-				FROM tb_order_trans_item_line
-				WHERE order_trans_id = p_order_trans_id
-			) + 1;
+		p_is_pymt := 0;
+		p_pymt_mode_id = fn_empty_guid();
+		v_seq := (
+			SELECT COALESCE(MAX(seq), 0)
+			FROM tb_order_trans_item_line
+			WHERE order_trans_id = p_order_trans_id
+		) + 1;
 
-			-- Get Product Tax Setting
-			SELECT tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, cost
-			INTO v_tax_code1, v_amt_include_tax1, v_tax_code2, v_amt_include_tax2, v_calc_tax2_after_tax1, p_cost
-			FROM tb_product
-			WHERE product_id = p_product_id;
+		-- Get Product Tax Setting
+		SELECT tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, cost
+		INTO v_tax_code1, v_amt_include_tax1, v_tax_code2, v_amt_include_tax2, v_calc_tax2_after_tax1, p_cost
+		FROM tb_product
+		WHERE product_id = p_product_id;
 
-			-- Do Tax Calculation
+		-- Do Tax Calculation
+		SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
+		INTO p_amt, p_sell_price, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
+		FROM fn_tax_calculation (
+			v_tax_code1,
+			v_tax_code2,
+			v_amt_include_tax1,
+			v_amt_include_tax2,
+			v_calc_tax2_after_tax1,
+			p_qty,
+			p_cost
+		);
+
+		IF (COALESCE(p_discount_pct, 0) > 0 OR COALESCE(p_discount_amt, 0) > 0) THEN
+
+			p_total_disc_amt := p_qty * p_sell_price * COALESCE(p_discount_pct, 0) / 100 + p_qty * COALESCE(p_discount_amt);
+			p_cost := p_cost * (1 - COALESCE(p_discount_pct, 0) / 100) - COALESCE(p_discount_amt, 0);
+
 			SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
 			INTO p_amt, p_sell_price, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
 			FROM fn_tax_calculation (
@@ -136,85 +173,93 @@ BEGIN
 				p_cost
 			);
 
-			IF (COALESCE(p_discount_pct, 0) > 0 OR COALESCE(p_discount_amt, 0) > 0) THEN
-
-				p_total_disc_amt := p_qty * p_sell_price * COALESCE(p_discount_pct, 0) / 100 + p_qty * COALESCE(p_discount_amt);
-				p_cost := p_cost * (1 - COALESCE(p_discount_pct, 0) / 100) - COALESCE(p_discount_amt, 0);
-
-				SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
-				INTO p_amt, p_sell_price, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
-				FROM fn_tax_calculation (
-					v_tax_code1,
-					v_tax_code2,
-					v_amt_include_tax1,
-					v_amt_include_tax2,
-					v_calc_tax2_after_tax1,
-					p_qty,
-					p_cost
-				);
-
-			END IF;
+		END IF;
 			
-		ELSIF fn_to_guid(p_pymt_mode_id) <> fn_empty_guid() THEN 
+	ELSIF fn_to_guid(p_pymt_mode_id) <> fn_empty_guid() THEN 
 		
-			IF NOT EXISTS (
-				SELECT * 
-				FROM tb_pymt_mode
-				WHERE pymt_mode_id = p_pymt_mode_id
-			) THEN
-				p_msg := 'Invalid Payment Mode!!';
-				RETURN;
-			END IF;
+		IF NOT EXISTS (
+			SELECT * 
+			FROM tb_pymt_mode
+			WHERE pymt_mode_id = p_pymt_mode_id
+		) THEN
+			p_msg := 'Invalid Payment Mode!!';
+			RETURN;
+		END IF;
 			
-			p_product_id := fn_empty_guid();
-			p_cost := 0;
-			p_qty := 0;
-			p_sell_price := 0;
-			p_is_pymt := 1;
-			
-			p_discount_id := fn_empty_guid();
-			p_discount_pct := NULL;
-			p_discount_amt := NULL;
-			p_total_disc_amt := NULL;
+		p_product_id := fn_empty_guid();
+		p_cost := 0;
+		p_qty := 0;
+		p_sell_price := 0;
+		p_is_pymt := 1;
 		
+		IF p_remarks = 'Amount Change Due' THEN
+			v_seq := 2000;
+		ELSE 
+			v_seq := (
+				SELECT COALESCE(MAX(seq), 1000)
+				FROM tb_order_trans_item_line
+				WHERE order_trans_id = p_order_trans_id
+				AND is_pymt = 1
+			) + 1;
 		END IF;
 		
-		p_order_trans_item_line_id := gen_random_uuid();
+			
+		p_discount_id := fn_empty_guid();
+		p_discount_pct := NULL;
+		p_discount_amt := NULL;
+		p_total_disc_amt := NULL;
 		
-		-- Insert Data
-		INSERT INTO tb_order_trans_item_line (
-			order_trans_item_line_id, created_on, created_by, modified_on, modified_by, tr_date, tr_type, doc_no, product_id, qty, cost, sell_price,
-    		seq, order_trans_id, discount_id, discount_amt, discount_pct, total_disc_amt, is_pymt, pymt_mode_id, ref_no, remarks, amt, 
-			price_override_on, price_override_by, coupon_no, coupon_id, tax_code1, tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc
-		) values (
-			p_order_trans_item_line_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, p_tr_type, p_doc_no, p_product_id, p_qty, p_cost, p_sell_price,
-			v_seq, p_order_trans_id, p_discount_id, p_discount_amt, p_discount_pct, p_total_disc_amt, p_is_pymt, p_pymt_mode_id, p_ref_no, p_remarks, p_amt, 
-			null, null, p_coupon_no, p_coupon_id, v_tax_code1, v_tax_pct1, v_tax_amt1_calc, v_tax_code2, v_tax_pct2, v_tax_amt2_calc
-		);
-	
-	-- 	ELSIF p_axn = 'qr-order' THEN
-	
-		
-	
 	END IF;
+		
+	p_order_trans_item_line_id := gen_random_uuid();
+		
+	-- Insert Data
+	INSERT INTO tb_order_trans_item_line (
+		order_trans_item_line_id, created_on, created_by, modified_on, modified_by, tr_date, tr_type, doc_no, product_id, qty, cost, sell_price,
+    	seq, order_trans_id, discount_id, discount_amt, discount_pct, total_disc_amt, is_pymt, pymt_mode_id, ref_no, remarks, amt, 
+		price_override_on, price_override_by, coupon_no, coupon_id, tax_code1, tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc
+	) values (
+		p_order_trans_item_line_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, p_tr_type, p_doc_no, p_product_id, p_qty, p_cost, p_sell_price,
+		v_seq, p_order_trans_id, p_discount_id, p_discount_amt, p_discount_pct, p_total_disc_amt, p_is_pymt, p_pymt_mode_id, p_ref_no, p_remarks, p_amt, 
+		null, null, p_coupon_no, p_coupon_id, v_tax_code1, v_tax_pct1, v_tax_amt1_calc, v_tax_code2, v_tax_pct2, v_tax_amt2_calc
+	);
+		
+	IF v_setting_value = 'Pay-later' THEN
+		
+		IF EXISTS (
+			SELECT *
+			FROM tb_order_trans_item_line
+			WHERE 
+				order_trans_id = p_order_trans_id
+				AND is_pymt = 1
+		) THEN
+			
+		-- Send order to kitchen printer
+		
+		END IF;
+	END IF;
+
 	
 	p_msg := 'ok';
 	
 	-- Create Audit Log
--- 	CALL pr_sys_append_audit_log (
--- 		p_msg => audit_log
--- 		, p_remarks => 'pr_pos_add_trans_item_line'
--- 		, p_uid => p_current_uid
--- 		, p_id1 => p_order_trans_item_line_id
--- 		, p_id2 => null
--- 		, p_id3 => null
---         , p_app_id => null
--- 		, p_module_code => module_code
--- 	); 
+	CALL pr_sys_append_audit_log (
+		p_msg => audit_log
+		, p_remarks => 'pr_pos_add_trans_item_line'
+		, p_uid => p_current_uid
+		, p_id1 => p_order_trans_item_line_id
+		, p_id2 => null
+		, p_id3 => null
+     	, p_app_id => null
+		, p_module_code => module_code
+	); 
 
 	-- -------------------------------------
 	-- cleanup
 	-- -------------------------------------
+	IF p_is_debug = 1 THEN
+		RAISE NOTICE 'pr_pos_add_trans_item_line - end';
+	END IF;
 
 END
 $BODY$;
