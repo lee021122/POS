@@ -4,6 +4,7 @@ CREATE OR REPLACE PROCEDURE pr_user_group_save (
 	IN p_user_group_id integer,
 	IN p_user_group_desc character varying(255),
 	IN p_is_in_use integer,
+	IN p_display_seq character varying(6),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -17,6 +18,7 @@ DECLARE
 	module_code text;
 	v_user_group_desc_old character varying(255);
 	v_is_in_use_old integer;
+	v_display_seq_old character varying(6);
 BEGIN
 /* 0101_0001_pr_user_group_save
 
@@ -56,9 +58,9 @@ BEGIN
 			  
 		-- Insert new record
 		INSERT INTO tb_user_group (
-			user_group_id, created_on, created_by, modified_on, modified_by, user_group_desc, is_in_use
+			user_group_id, created_on, created_by, modified_on, modified_by, user_group_desc, is_in_use, display_seq
 		) VALUES (
-			p_user_group_id, v_now, p_current_uid, v_now, p_current_uid, p_user_group_desc, COALESCE(p_is_in_use, 0)
+			p_user_group_id, v_now, p_current_uid, v_now, p_current_uid, p_user_group_desc, COALESCE(p_is_in_use, 0), p_display_seq
 		);
 			  
 		audit_log := 'Added new user group: ' || p_user_group_desc || '.';
@@ -66,8 +68,8 @@ BEGIN
 	ELSE 
 			  
 		-- Get the old record for audit log purpose
-		SELECT user_group_desc, is_in_use
-		INTO v_user_group_desc_old, v_is_in_use_old
+		SELECT user_group_desc, is_in_use, display_seq
+		INTO v_user_group_desc_old, v_is_in_use_old, v_display_seq_old
 		FROM tb_user_group
 		WHERE 
 			user_group_id = p_user_group_id;
@@ -83,7 +85,8 @@ BEGIN
 			user_group_id = p_user_group_id;
 			  
 		audit_log := 'Updated User Group Description from ' || v_user_group_desc_old || ' to ' || p_user_group_desc || ', '
-			  			'Updated Is in use from ' || v_is_in_use_old || ' to ' || p_is_in_use || '.';
+			  			'Updated Is in use from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+						'Updated Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || '.';
 			  
 	END IF;
 			  
@@ -94,7 +97,7 @@ BEGIN
 		p_msg => audit_log
 		, p_remarks => 'pr_user_group_save'
 		, p_uid => p_current_uid
-		, p_id1 => p_user_group_id
+		, p_id1 => null
 		, p_id2 => null
 		, p_id3 => null
         , p_app_id => null

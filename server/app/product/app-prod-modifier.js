@@ -5,9 +5,9 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 
 // Import Libraries
-const { pgSql } = require('../lib/lib-pgsql');
-const libApi = require('../lib/lib-api');
-const libShared = require('../lib/lib-shared');
+const { pgSql } = require('../../lib/lib-pgsql');
+const libApi = require('../../lib/lib-api');
+const libShared = require('../../lib/lib-shared');
 
 const p0 = new libApi.apiCallerImg();
 
@@ -56,32 +56,32 @@ AppProdModifier.prototype.linkProductObject = function(o = {}) {
 
 // Step 1: Save the modifier group
 AppProdModifier.prototype.modifierGroupSave = async function(req, res) {
-    const { code, axn, data } = req.body;
-    p0.code = code;
-    p0.axn = axn;
-    p0.data = data;
-    const preCode = p0.code;
-    const o2 = data.map(item => this.prodModifierObject(item));
-
-    if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-    };
-
-    if (!axn) {
-        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-    };
-
-    if (!o2[0].modifier_group_name) {
-        return res.status(400).send(libApi.response('Modifier Group Name is required!!', 'Failed'));
-    };
-
-    if (!o2[0].is_single_modifier_choice || !o2[0].is_multiple_modifier_choice) {
-        return res.status(400).send(libApi.response('Please select either a single choice or multiple choices for the modifier!!', 'Failed'));
-    };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
     try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.prodModifierObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        if (!o2[0].modifier_group_name) {
+            return res.status(400).send(libApi.response('Modifier Group Name is required!!', 'Failed'));
+        };
+
+        if (!o2[0].is_single_modifier_choice || !o2[0].is_multiple_modifier_choice) {
+            return res.status(400).send(libApi.response('Please select either a single choice or multiple choices for the modifier!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
         const validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
@@ -104,32 +104,24 @@ AppProdModifier.prototype.modifierGroupSave = async function(req, res) {
 
 // Step 2: Save the Modifier Group Option
 AppProdModifier.prototype.modifierOptSave = async function(req, res) {
-    const { code, axn, data } = req.body;
-    p0.code = code;
-    p0.axn = axn;
-    p0.data = data;
-    const preCode = p0.code;
-    const o2 = data.map(item => this.modifierOptionObject(item));
-
-    if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-    };
-
-    if (!axn) {
-        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-    };
-
-    if (!o2[0].modifier_group_id) {
-        return res.status(400).send(libApi.response('Invalid Modifier Group!!', 'Failed'));
-    };
-
-    if (!o2[0].modifier_option_name) {
-        return res.status(400).send(libApi.response('Modifier Option Name is required!!', 'Failed'));
-    };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
     try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.modifierOptionObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
         const validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
@@ -137,13 +129,29 @@ AppProdModifier.prototype.modifierOptSave = async function(req, res) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+        const results = []
 
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+        for (const item of data) {            
+            // Ensure each item has required fields
+            const optionData = this.modifierOptionObject(item);
+
+            if (!optionData.modifier_group_id) {
+                return res.status(400).send(libApi.response('Invalid Modifier Group!!', 'Failed'));
+            };
+    
+            if (!optionData.modifier_option_name) {
+                return res.status(400).send(libApi.response('Modifier Option Name is required!!', 'Failed'));
+            };
+
+            // Parse parameters for the current item
+            const params = libApi.parseParams(validAxn, [optionData]);
+            
+            // Execute the stored procedure for the current item
+            const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+            results.push(result);
+        }
         
-        return res.send(libApi.response(result, 'Success'));
+        return res.send(libApi.response(results, 'Success'));
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -152,28 +160,28 @@ AppProdModifier.prototype.modifierOptSave = async function(req, res) {
 
 // Step 3: Link the Modifier Group with product
 AppProdModifier.prototype.linkProduct = async function(req, res) {
-    const { code, axn, data } = req.body;
-    p0.code = code;
-    p0.axn = axn;
-    p0.data = data;
-    const preCode = p0.code;
-    const o2 = data.map(item => this.linkProductObject(item));
-
-    if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-    };
-
-    if (!axn) {
-        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-    };
-
-    if (!o2[0].modifier_group_id) {
-        return res.status(400).send(libApi.response('Modifier Group is required!!', 'Failed'));
-    };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
     try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.linkProductObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        if (!o2[0].modifier_group_id) {
+            return res.status(400).send(libApi.response('Modifier Group is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
         const validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found

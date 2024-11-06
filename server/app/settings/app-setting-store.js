@@ -1,62 +1,70 @@
 const path = require('path');
 const express = require('express');
 const router = express.Router();
+const bodyParser = require('body-parser');
 
 // Import Libraries
-const { pgSql } = require('../lib/lib-pgsql');
-const libApi = require('../lib/lib-api');
-const libShared = require('../lib/lib-shared');
+const { pgSql } = require('../../lib/lib-pgsql');
+const libApi = require('../../lib/lib-api');
+const libShared = require('../../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
-function AppPymtMode() {};
+function AppSettingStore() {};
 
-AppPymtMode.prototype.pymtModeObject = function(o = {}) {
+AppSettingStore.prototype.storeObject = function(o = {}) {
     const d = {
         current_uid: null,
         msg: null,
-        pymt_mode_id: null,
-        pymt_mode_desc: null,
-        pymt_type: null,
-        for_store: null,
-        is_in_use: null,
-        display_seq: null
+        store_id: null,
+        store_name: null,
+        addr_line_1: null,
+        addr_line_2: null,
+        city: null,
+        state: null,
+        post_code: null,
+        country: null,
+        phone_number: null,
+        email: null,
+        website: null,
+        gst_id: null,
+        sst_id: null,
+        business_registration_num: null,
+        receipt_temp_id: null
     };
 
     // Merge o with d, o will overwrite d properties if provided
     return Object.assign(d, o);
-};
+}
 
-AppPymtMode.prototype.save = async function(req, res) {
+AppSettingStore.prototype.save = async function(req, res) {
     try {
+        // Extract and validate request data
         const { code, axn, data } = req.body;
         p0.code = code;
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = data.map(item => this.pymtModeObject(item));
+        const o2 = data.map(item => this.storeObject(item));
 
+        // Validate the request data
         if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
         if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
-        if (!o2[0].pymt_mode_desc) {
-            return res.status(400).send(libApi.response('Payment Mode Description is required', 'Failed'));
+        if (!o2[0].store_name) {
+            return res.status(400).send(libApi.response('Store Name is required!!', 'Failed'));
         };
 
-        if (o2[0].display_seq) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
+        if (!o2[0].receipt_temp_id) {
+            return res.status(400).send(libApi.response('Receipt Template is required!!', 'Failed'));
         };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
@@ -81,24 +89,26 @@ AppPymtMode.prototype.save = async function(req, res) {
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    }
+    };
 };
 
-AppPymtMode.prototype.list = async function(req, res) {
+AppSettingStore.prototype.list = async function (req, res) {
     try {
+        // Extract and validate request data
         const { code, axn, data } = req.body;
         p0.code = code;
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = data.map(item => this.pymtModeObject(item));
+        const o2 = data.map(item => this.storeObject(item));
 
+        // Validate the request data
         if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
         if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
@@ -126,26 +136,28 @@ AppPymtMode.prototype.list = async function(req, res) {
     };
 };
 
-AppPymtMode.prototype.delete = async function(req, res) {
+AppSettingStore.prototype.delete = async function (req, res) {
     try {
+        // Extract and validate request data
         const { code, axn, data } = req.body;
         p0.code = code;
         p0.axn = axn;
         p0.data = data;
         const preCode = p0.code;
-        const o2 = data.map(item => this.pymtModeObject(item));
+        const o2 = data.map(item => this.storeObject(item));
 
+        // Validate the request data
         if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
         };
 
         if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
-        if (!o2[0].pymt_mode_id) {
-            return res.status(400).send(libApi.response('Invalid Payment Mode', 'Failed'));
-        };
+        if (!o2[0].store_id) {
+            return res.status(400).send(libApi.response('Invalid Store!!', 'Failed'));
+        }
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -172,10 +184,12 @@ AppPymtMode.prototype.delete = async function(req, res) {
     };
 };
 
-const pymt = new AppPymtMode();
+// Create an instance
+const store = new AppSettingStore();
 
-router.get('/l', pymt.list.bind(pymt));
-router.post('/s', pymt.save.bind(pymt));
-router.post('/d', pymt.delete.bind(pymt));
+// Define route handler
+router.get('/l', store.list.bind(store));
+router.post('/s', store.save.bind(store));
+router.post('/d', store.delete.bind(store));
 
 module.exports = router;

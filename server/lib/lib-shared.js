@@ -1,4 +1,5 @@
 const uuid = require('uuid');
+const crypto = require('crypto')
 
 function libShared() {};
 
@@ -100,6 +101,12 @@ libShared.padFillLeft = function (str, length, char) {
     };
 
     return char.repeat(length - str.length) + str;
+};
+
+libShared.hashText = function (v) {
+    let h = crypto.createHash('sha256');
+    h.update(v, 'utf8');
+    return h.digest('hex');
 };
 
 module.exports = libShared;

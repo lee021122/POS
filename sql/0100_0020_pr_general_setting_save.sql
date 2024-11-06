@@ -11,6 +11,7 @@ AS $BODY$
 -- init
 -- -------------------------------------
 DECLARE
+	v_now CONSTANT timestamp = current_timestamp;
 	audit_log text;
 	module_code text;
 	v_setting_title character varying(255);
@@ -52,6 +53,8 @@ BEGIN
 	
 	UPDATE tb_sys_setting
 	SET 
+		modified_on = v_now,
+		modified_by = p_current_uid,
 		sys_setting_value = p_setting_value
 	WHERE sys_setting_title = p_setting_title;
 	
@@ -62,7 +65,7 @@ BEGIN
 		p_msg => audit_log
 		, p_remarks => 'pr_general_setting_save'
 		, p_uid => p_current_uid
-		, p_id1 => p_setting_title
+		, p_id1 => null
 		, p_id2 => null
 		, p_id3 => null
         , p_app_id => null

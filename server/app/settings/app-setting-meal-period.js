@@ -2,9 +2,9 @@ const path = require('path');
 const express = require('express');
 const router = express.Router();
 
-const { pgSql } = require('../lib/lib-pgsql');
-const libApi = require('../lib/lib-api');
-const libShared = require('../lib/lib-shared');
+const { pgSql } = require('../../lib/lib-pgsql');
+const libApi = require('../../lib/lib-api');
+const libShared = require('../../lib/lib-shared');
 
 const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');

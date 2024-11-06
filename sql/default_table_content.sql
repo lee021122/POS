@@ -1,47 +1,82 @@
 insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, is_in_use, display_seq, created_on, created_by) values
 -- Module: Product
-(gen_random_uuid(), 'prod-category::s', 'Product Category - Save', 'pr_prod_category_save', null, 1, '000001', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-category::l', 'Product Category - List', 'pr_prod_category_list', null, 1, '000002',  current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-category::d', 'Product Category - Delete', 'pr_prod_category_delete', null, 1, '000003', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-setup::s', 'Product - Save', 'pr_product_save', null, 1, '000004', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-setup::l', 'Product - List', 'pr_product_list', null, 1, '000005',  current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-setup::d', 'Product - Delete', 'pr_product_delete', null, 1, '000006', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-modifier-grp::s', 'Product Modifier Group - Save', 'pr_product_modifier_group_save', null, 1, '000004', current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-modifier-grp::l', 'Product Modifier Group - List', 'pr_product__list', null, 1, '000005',  current_timestamp, 'admin'),
-(gen_random_uuid(), 'prod-modifier-grp::d', 'Product Modifier Group - Delete', 'pr_product_delete', null, 1, '000006', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::s', 'Product Category - Save', 'pr_prod_category_save', null, 1, '000001', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::l', 'Product Category - List', 'pr_prod_category_list', null, 1, '000002',  current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-category::d', 'Product Category - Delete', 'pr_prod_category_delete', null, 1, '000003', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-setup::s', 'Product - Save', 'pr_product_save', null, 1, '000004', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-setup::l', 'Product - List', 'pr_product_list', null, 1, '000005',  current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-setup::d', 'Product - Delete', 'pr_product_delete', null, 1, '000006', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-modifier-grp::s', 'Product Modifier Group - Save', 'pr_product_modifier_group_save', null, 1, '000004', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-modifier-grp::l', 'Product Modifier Group - List', 'pr_product__list', null, 1, '000005',  current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'prod-modifier-grp::d', 'Product Modifier Group - Delete', 'pr_product_delete', null, 1, '000006', current_timestamp, 'admin'),
 -- Module: Settings
-(gen_random_uuid(), 'setting-general::s', 'Settings General - Save', 'pr_general_setting_save', null, 1, '000004', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-store::s', 'Settings Store - Save', 'pr_store_save', null, 1, '000005', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-store::l', 'Settings Store - List', 'pr_store_list', null, 1, '000006', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-store::d', 'Settings Store - Delete', 'pr_store_delete', null, 1, '000007', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-tax::s', 'Settings Tax - Save', 'pr_tax_save', null, 1, '000008', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-tax::l', 'Settings Tax - List', 'pr_tax_list', null, 1, '000009', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-tax::d', 'Settings Tax - Delete', 'pr_tax_delete', null, 1, '000010', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-pymt-mode::s', 'Settings Payment Mode - Save', 'pr_pymt_mode_save', null, 1, '000011', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-pymt-mode::l', 'Settings Payment Mode - List', 'pr_pymt_mode_list', null, 1, '000012', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-pymt-mode::d', 'Settings Payment Mode - Delete', 'pr_pymt_mode_delete', null, 1, '000013', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-meal-period::s', 'Settings Meal Period - Save', 'pr_meal_period_save', null, 1, '000014', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-meal-period::l', 'Settings Meal Period - List', 'pr_meal_period_list', null, 1, '000015', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-meal-period::d', 'Settings Meal Period - Delete', 'pr_meal_period_delete', null, 1, '000016', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-receipt-temp::s', 'Settings Receipt Template - Save', 'pr_receipt_temp_save', null, 1, '000017', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-receipt-temp::l', 'Settings Receipt Template - List', 'pr_receipt_temp_list', null, 1, '000018', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-receipt-temp::d', 'Settings Receipt Template - Delete', 'pr_receipt_temp_delete', null, 1, '000019', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table-sec::s', 'Settings Table Section - Save', 'pr_table_section_save', null, 1, '000026', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table-sec::l', 'Settings Table Section - List', 'pr_table_section_list', null, 1, '000027', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table-sec::d', 'Settings Table Section - Delete', 'pr_table_section_delete', null, 1, '000028', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table::s', 'Settings Table - Save', 'pr_table_save', null, 1, '000029', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table::l', 'Settings Table - List', 'pr_table_list', null, 1, '000030', current_timestamp, 'admin'),
-(gen_random_uuid(), 'setting-table::d', 'Settings Table - Delete', 'pr_table_delete', null, 1, '000031', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-general::s', 'Settings General - Save', 'pr_general_setting_save', null, 1, '000004', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-store::s', 'Settings Store - Save', 'pr_store_save', null, 1, '000005', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-store::l', 'Settings Store - List', 'pr_store_list', null, 1, '000006', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-store::d', 'Settings Store - Delete', 'pr_store_delete', null, 1, '000007', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-tax::s', 'Settings Tax - Save', 'pr_tax_save', null, 1, '000008', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-tax::l', 'Settings Tax - List', 'pr_tax_list', null, 1, '000009', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-tax::d', 'Settings Tax - Delete', 'pr_tax_delete', null, 1, '000010', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-pymt-mode::s', 'Settings Payment Mode - Save', 'pr_pymt_mode_save', null, 1, '000011', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-pymt-mode::l', 'Settings Payment Mode - List', 'pr_pymt_mode_list', null, 1, '000012', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-pymt-mode::d', 'Settings Payment Mode - Delete', 'pr_pymt_mode_delete', null, 1, '000013', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-meal-period::s', 'Settings Meal Period - Save', 'pr_meal_period_save', null, 1, '000014', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-meal-period::l', 'Settings Meal Period - List', 'pr_meal_period_list', null, 1, '000015', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-meal-period::d', 'Settings Meal Period - Delete', 'pr_meal_period_delete', null, 1, '000016', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-receipt-temp::s', 'Settings Receipt Template - Save', 'pr_receipt_temp_save', null, 1, '000017', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-receipt-temp::l', 'Settings Receipt Template - List', 'pr_receipt_temp_list', null, 1, '000018', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-receipt-temp::d', 'Settings Receipt Template - Delete', 'pr_receipt_temp_delete', null, 1, '000019', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table-sec::s', 'Settings Table Section - Save', 'pr_table_section_save', null, 1, '000026', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table-sec::l', 'Settings Table Section - List', 'pr_table_section_list', null, 1, '000027', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table-sec::d', 'Settings Table Section - Delete', 'pr_table_section_delete', null, 1, '000028', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table::s', 'Settings Table - Save', 'pr_table_save', null, 1, '000029', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table::l', 'Settings Table - List', 'pr_table_list', null, 1, '000030', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'setting-table::d', 'Settings Table - Delete', 'pr_table_delete', null, 1, '000031', current_timestamp, 'admin'),
 -- Module: Customer
-(gen_random_uuid(), 'app-customer::s', 'Customer - Save', 'pr_guest_save', null, 1, '000020', current_timestamp, 'admin'),
-(gen_random_uuid(), 'app-customer::l', 'Customer - List', 'pr_guest_list', null, 1, '000021', current_timestamp, 'admin'),
-(gen_random_uuid(), 'app-customer::d', 'Customer - Delete', 'pr_guest_delete', null, 1, '000022', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-customer::s', 'Customer - Save', 'pr_guest_save', null, 1, '000020', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-customer::l', 'Customer - List', 'pr_guest_list', null, 1, '000021', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-customer::d', 'Customer - Delete', 'pr_guest_delete', null, 1, '000022', current_timestamp, 'admin'),
 -- Module: Supplier
-(gen_random_uuid(), 'app-supplier::s', 'Supplier - Save', 'pr_supplier_save', null, 1, '000023', current_timestamp, 'admin'),
-(gen_random_uuid(), 'app-supplier::l', 'Supplier - List', 'pr_supplier_list', null, 1, '000024', current_timestamp, 'admin'),
-(gen_random_uuid(), 'app-supplier::d', 'Supplier - Delete', 'pr_supplier_delete', null, 1, '000025', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-supplier::s', 'Supplier - Save', 'pr_supplier_save', null, 1, '000023', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-supplier::l', 'Supplier - List', 'pr_supplier_list', null, 1, '000024', current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'app-supplier::d', 'Supplier - Delete', 'pr_supplier_delete', null, 1, '000025', current_timestamp, 'admin'),
+-- Module: Users
+(gen_random_uuid(), 'app-user-group::s', 'User Group - Save', 'pr_user_group_save', null, 1, '000032', current_timestamp, 'admin'),
+(gen_random_uuid(), 'app-user-group::l', 'User Group - List', 'pr_user_group_list', null, 1, '000033', current_timestamp, 'admin'),
+(gen_random_uuid(), 'app-user-group-ac::s', 'User Group Action - Save', 'pr_user_group_action_save', null, 1, '000034', current_timestamp, 'admin'),
+(gen_random_uuid(), 'app-user-group-ac::l', 'User Group Action - List', 'pr_user_group_action_list', null, 1, '000035', current_timestamp, 'admin'),
+(gen_random_uuid(), 'app-users::s', 'Users - Save', 'pr_user_save', null, 1, '000036', current_timestamp, 'admin'),
+(gen_random_uuid(), 'app-users::l', 'Users - List', 'pr_user_save', null, 1, '000037', current_timestamp, 'admin'),
 
 insert into tb_action_param (action_param_id, action_id, action_param_name, data_type, seq, is_compulsory, created_on, created_by) values
+-- app-user-group::s
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'user_group_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'user_group_desc', 'string', 4, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '49d14601-c74e-4bb2-9e6d-7538c30fc4ec', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
+-- app-user-group::l
+
+-- app-user-group-ac::s
+(gen_random_uuid(), 'b0f87455-1661-4fc9-b94b-5fe81709d339', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'b0f87455-1661-4fc9-b94b-5fe81709d339', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'b0f87455-1661-4fc9-b94b-5fe81709d339', 'user_group_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'b0f87455-1661-4fc9-b94b-5fe81709d339', 'action_id', 'id', 4, 0, current_timestamp, 'admin'),
+-- app-user-group-ac::l
+
+-- app-users::s
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'user_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'login_id', 'text', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'user_name', 'text', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'email', 'text', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'pwd', 'text', 7, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'user_group_id', 'id', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f9ebd007-3afa-45e9-a018-719f8257a9dc', 'is_active', 'int', 9, 0, current_timestamp, 'admin'),
+-- app-users::l
+
 -- prod-category::s
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
@@ -50,8 +85,8 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
 -- (gen_random_uuid(), 'fe71c456-d38f-4b0f-9ac1-ba24c2280d17', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
 -- prod-category::l
-(gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+-- (gen_random_uuid(), 'a7430527-905f-4e8c-bd7d-eb15e60ff87e', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
 -- prod-category::d
 -- (gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 -- (gen_random_uuid(), '4a5903ed-330f-47dd-9c82-6be0f7a1bf80', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
@@ -82,15 +117,19 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_enable_track_stock', 'int', 22, 0, current_timestamp, 'admin'),
 -- (gen_random_uuid(), 'e20b2f51-e2af-407d-b511-3e15f0186f36', 'is_popular_item', 'int', 23, 0, current_timestamp, 'admin'),
 -- prod-setup::l
-(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '372d4765-1e82-487e-81f7-664e6185ffdb', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
 -- prod-setup::d
-(gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'product_id', 'id', 3, 0, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+-- (gen_random_uuid(), '5fc57803-79d2-4983-a966-ed146e352591', 'product_id', 'id', 3, 0, current_timestamp, 'admin'),
 
 -- setting-general::s
+(gen_random_uuid(), '3400476f-e613-47c1-a3eb-1bce92766903', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '3400476f-e613-47c1-a3eb-1bce92766903', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3400476f-e613-47c1-a3eb-1bce92766903', 'setting_title', 'text', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3400476f-e613-47c1-a3eb-1bce92766903', 'setting_value', 'text', 4, 0, current_timestamp, 'admin'),
 -- setting-general::l
 
 -- setting-store::s
@@ -307,3 +346,9 @@ INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modifie
 INSERT into tb_tr_status (tr_status_id, created_on, created_by, modified_on, modified_by, tr_status_code, tr_status_desc, is_in_use, display_seq) VALUES
 (1, current_timestamp, 'admin', current_timestamp, 'admin', 'C', 'Confirmed', 1, '000001'),
 (2, current_timestamp, 'admin', current_timestamp, 'admin', 'X', 'Cancelled', 1, '000002')
+
+-- Default user group 
+INSERT INTO tb_user_group (user_group_id, created_on, created_by, modified_on, modified_by, user_group_desc, is_in_use, display_seq) VALUES
+(1, current_timestamp, 'admin', current_timestamp, 'admin', 'Admin', 1, '000001'),
+(2, current_timestamp, 'admin', current_timestamp, 'admin', 'Manager', 1, '000002'),
+(3, current_timestamp, 'admin', current_timestamp, 'admin', 'Cashier', 1, '000003')
