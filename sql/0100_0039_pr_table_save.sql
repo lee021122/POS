@@ -7,6 +7,7 @@ CREATE OR REPLACE PROCEDURE pr_table_save (
 	IN p_qr_code text,
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(6),
+
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -49,6 +50,8 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+
+	
 	IF LENGTH(COALESCE(p_table_desc, '')) = 0 THEN
 		p_msg := 'Table Name cannot be blank!!';
 		RETURN;
@@ -73,6 +76,8 @@ BEGIN
 		p_msg := 'Invalid Table Section!!';
 		RETURN;
 	END IF;
+
+
 	
 	-- -------------------------------------
 	-- process

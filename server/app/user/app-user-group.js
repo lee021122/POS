@@ -174,6 +174,7 @@ AppUserGroup.prototype.actionSave = async function(req, res) {
             if (!actionData.user_group_id) {
                 return res.status(400).send(libApi.response('User Group is required for each data item!', 'Failed'));
             }
+            
             if (!actionData.action_id) {
                 return res.status(400).send(libApi.response('Action is required for each data item!', 'Failed'));
             }

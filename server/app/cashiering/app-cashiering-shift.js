@@ -14,20 +14,15 @@ const p0 = new libApi.apiCaller();
 const FILE = path.basename(__filename);
 const SERVICE = FILE.replace('.js', '');
 
-function AppDayEndClosing() {};
+function AppCashiering() {};
 
-AppDayEndClosing.prototype.settingObject = function(o = {}) {
-    const d = {
+AppCashiering.prototype.cashierShiftObject = function(o = {}) {
 
-    };
-
-    return Object.assign(d, o);
 };
 
-// Day-end closing manual close
+// Open Cashiering Shift
 
-// Day-end closing auto close setup
+// Close Cashiering Shift
 
-// Day-end closing auto close
 
 module.exports = router;

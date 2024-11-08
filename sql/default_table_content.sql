@@ -321,7 +321,7 @@ insert into tb_state (state_id, created_on, created_by, state_name, is_in_use, d
 (gen_random_uuid(), current_timestamp, 'admin', 'Sarawak', 1, '000014'),
 (gen_random_uuid(), current_timestamp, 'admin', 'Sabah', 1, '000015')
 
-insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_title, sys_setting_value) values 
+insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_title, sys_setting_value, can_customize) values 
 (current_timestamp, 'admin', current_timestamp, 'admin', 'CURRENT_TRANS_DATE', '2024-10-16'),
 --(current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_PREFIX', 'OR-'),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_LENGTH', '5'),
@@ -334,7 +334,10 @@ insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sy
 (current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_use_ssl', ''),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_able_service', ''),
 -- Default (sell as much as) or set daily availability
-(current_timestamp, 'admin', current_timestamp, 'admin', 'QR_ORDER_AVAILABILITY', '')
+(current_timestamp, 'admin', current_timestamp, 'admin', 'QR_ORDER_AVAILABILITY', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_URL', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_ADMIN_PORTAL_URL', ''),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_QR_ORDER_URL', '')
 
 
 INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES

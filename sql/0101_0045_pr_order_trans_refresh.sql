@@ -54,6 +54,14 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	IF NOT EXISTS (
+		SELECT order_trans_id
+		FROM tb_order_trans
+		WHERE order_trans_id = p_order_trans_id
+	) THEN
+		p_msg := 'Invalid Bill!!';
+		RETURN;
+	END IF;
 
 	-- -------------------------------------
 	-- process
@@ -120,6 +128,8 @@ BEGIN
 	WHERE 
 		order_trans_id = p_order_trans_id 
 		AND doc_no = p_doc_no;
+		
+	p_msg := 'ok';
 
 	-- -------------------------------------
 	-- cleanup

@@ -4,6 +4,7 @@ CREATE OR REPLACE PROCEDURE pr_pos_addon_trans_set (
 	IN p_order_trans_id uuid,
 	IN p_order_trans_item_line_id uuid,
 	IN p_modifier_option_id uuid,
+	IN my_role_id integer,
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -18,7 +19,7 @@ DECLARE
 	p_order_trans_modifier_id uuid;
 	v_product_id uuid;
 BEGIN
-/*
+/* 0100_0050_pr_pos_addon_trans_set
 	
 */
 
@@ -58,7 +59,7 @@ BEGIN
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	IF NOT EXISTS (
+	IF EXISTS (
 		SELECT a.modifier_option_id
 		FROM tb_modifier_option a
 		INNER JOIN tb_modifier_group b ON b.modifier_group_id = a.modifier_group_id
@@ -105,6 +106,20 @@ BEGIN
 		END IF;
 	
 	END IF;
+	
+	p_msg := 'ok';
+	
+	-- Create Audit Log
+	CALL pr_sys_append_audit_log (
+		p_msg => audit_log
+		, p_remarks => 'pr_pos_addon_trans_set'
+		, p_uid => p_current_uid
+		, p_id1 => p_order_trans_modifier_id
+		, p_id2 => null
+		, p_id3 => null
+     	, p_app_id => null
+		, p_module_code => module_code
+	); 
 
 	-- -------------------------------------
 	-- cleanup

@@ -5,9 +5,9 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 
 // Import Libraries
-const { pgSql } = require('../lib/lib-pgsql');
-const libApi = require('../lib/lib-api');
-const libShared = require('../lib/lib-shared');
+const { pgSql } = require('../../lib/lib-pgsql');
+const libApi = require('../../lib/lib-api');
+const libShared = require('../../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 
@@ -191,7 +191,6 @@ AppOrderTrans.prototype.save = async function (req, res) {
 
 const orderTrans = new AppOrderTrans();
 
-router.post('/n', orderTrans.new.bind(orderTrans));
-
+// router.post('/n', orderTrans.new.bind(orderTrans));
 
 module.exports = router;
