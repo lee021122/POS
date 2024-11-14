@@ -17,6 +17,9 @@ CREATE OR REPLACE PROCEDURE pr_guest_save (
 	IN p_post_code character varying(50), 
 	IN p_country uuid,
 	IN p_guest_tag character varying(255),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

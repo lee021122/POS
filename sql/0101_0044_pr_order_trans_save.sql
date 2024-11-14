@@ -1,8 +1,8 @@
 CREATE OR REPLACE PROCEDURE pr_order_trans_save (
 	IN p_current_uid character varying(255),
 	OUT p_msg text,
-	IN p_order_trans_id uuid,
-	IN p_doc_no character varying(50),
+	INOUT p_order_trans_id uuid,
+	INOUT p_doc_no character varying(50),
 	IN p_tr_date date,
 	IN p_tr_type character varying(50),
 	IN p_tr_status character varying(50),
@@ -12,6 +12,9 @@ CREATE OR REPLACE PROCEDURE pr_order_trans_save (
 	IN p_room_no character varying(50),
 	IN p_delivery_time timestamp,
 	IN p_delivery_next_day timestamp,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -33,6 +36,8 @@ DECLARE
 	v_delivery_time_old timestamp;
 	v_delivery_next_day_old timestamp;
 	v_setting_value text;
+	v_new_doc_no character varying(50);
+	v_new_order_trans_id uuid;
 	v_msg2 text;
 BEGIN
 /* 
@@ -45,17 +50,20 @@ BEGIN
 		CALL pr_order_trans_save(
 			p_current_uid => 'tester',
 			p_msg => null,
-			p_order_trans_id => '0c000e65-38ab-44c6-b475-e53fcb80308b',
-			p_doc_no => 'OR-2024101600001',
+			p_order_trans_id => null,
+			p_doc_no => null,
 			p_tr_date => null,
 			p_tr_type => 'TS',  
 			p_tr_status => 'C',  
 			p_guest_id => null,
 			p_pax => 2,  -- Number of guests/pax
-			p_table_no => 'T12',  -- Example table number
+			p_table_no => 'T-01',  -- Example table number
 			p_room_no => null,  
 			p_delivery_time => null,  -- Example delivery time
 			p_delivery_next_day => NULL,  -- If applicable
+			p_rid => null,
+			p_axn => null,
+			p_url => null,
 			p_is_debug => 0  -- Debug mode off
 		);
 
@@ -74,24 +82,24 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
-	IF LENGTH(COALESCE(p_order_trans_id::TEXT, '')) = 0 THEN
-		p_msg := 'Order Trans ID cannot be blank!!';
-		RETURN;
-	END IF;
+	-- 	IF LENGTH(COALESCE(p_order_trans_id::TEXT, '')) = 0 THEN
+	-- 		p_msg := 'Order Trans ID cannot be blank!!';
+	-- 		RETURN;
+	-- 	END IF;
 	
-	IF LENGTH(COALESCE(p_doc_no, '')) = 0 THEN
-		p_msg := 'Order No cannot be blank!!';
-		RETURN;
-	END IF;
+	-- 	IF LENGTH(COALESCE(p_doc_no, '')) = 0 THEN
+	-- 		p_msg := 'Order No cannot be blank!!';
+	-- 		RETURN;
+	-- 	END IF;
 	
 	IF p_tr_date IS NULL THEN
 		p_tr_date := fn_get_current_trans_dt();
 	END IF;
 	
-	IF p_tr_date < v_today_dt THEN
-		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
-		RETURN;
-	END IF;
+	-- 	IF p_tr_date < v_today_dt THEN
+	-- 		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
+	-- 		RETURN;
+	-- 	END IF;
 	
 	-- tr_type should be Eat-in, Take Away or Room Service
 	IF LENGTH(COALESCE(p_tr_type, '')) = 0 THEN
@@ -105,27 +113,32 @@ BEGIN
 		RETURN;
 	END IF;
 	
--- 	IF NOT EXISTS (
--- 		SELECT guest_id
--- 		FROM tb_guest
--- 		WHERE guest_id = p_guest_id
--- 	) THEN
--- 		p_msg := 'Invalid Guest!!';
--- 		RETURN;
--- 	END IF;
+	IF p_guest_id IS NOT NULL THEN
+		IF NOT EXISTS (
+			SELECT 1
+			FROM tb_guest
+			WHERE guest_id = p_guest_id
+		) THEN
+			p_msg := 'Invalid Guest!!';
+			RETURN;
+		END IF;
+	END IF;
 
 	-- Get setting value
 	v_setting_value := (SELECT sys_setting_value FROM tb_sys_setting WHERE sys_setting_title = 'OPERATION_MODE');
 
 	-- -------------------------------------
 	-- process
-	-- -------------------------------------
-	IF fn_to_guid(p_order_trans_id) <> fn_empty_guid() 
-	AND NOT EXISTS (
-		SELECT doc_no
-		FROM tb_order_trans
-		WHERE doc_no = p_doc_no
-	) THEN
+	-- -------------------------------------	
+	IF fn_to_guid(p_order_trans_id) = fn_empty_guid() 
+	THEN
+	
+		SELECT fn_gen_new_doc_no.v_doc_no, fn_gen_new_doc_no.v_order_trans_id
+		INTO v_new_doc_no, v_new_order_trans_id
+		FROM fn_gen_new_doc_no(p_current_uid, p_tr_type, p_table_no);
+	
+		p_order_trans_id := v_new_order_trans_id;
+		p_doc_no := v_new_doc_no;
 		
 		-- Insert new order trans
 		INSERT INTO tb_order_trans (
@@ -193,19 +206,10 @@ BEGIN
 	UPDATE tb_order_trans_table 
 	SET 
 		order_trans_id = p_order_trans_id,
-		doc_no = p_doc_no
+		doc_no = p_doc_no,
+		is_occ = 1
 	WHERE 
 		table_desc = p_table_no;
-		
-	-- Update the total amount
-	CALL pr_order_trans_refresh (
-		p_current_uid => p_current_uid,
-		p_msg => v_msg2,
-		p_order_trans_id => p_order_trans_id,
-		p_doc_no => p_doc_no,
-		p_tr_status => p_tr_status,  
-		p_is_debug => 0  
-	);
 	
 	p_msg := 'ok';
 	

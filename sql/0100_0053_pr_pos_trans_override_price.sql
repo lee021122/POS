@@ -6,6 +6,9 @@ CREATE OR REPLACE PROCEDURE pr_pos_trans_override_price (
 	IN p_sell_price numeric(15, 4),
 	IN p_override_by character varying(255),
 	IN p_override_remarks text,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -32,6 +35,7 @@ DECLARE
 	v_tax_amt1_calc numeric(15,4);
 	v_tax_pct2 numeric(15, 2);
 	v_tax_amt2_calc numeric(15, 4);
+	module_code text;
 BEGIN
 /* 0100_0053_pr_pos_trans_override_price
 

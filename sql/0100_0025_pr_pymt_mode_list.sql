@@ -1,7 +1,9 @@
 CREATE OR REPLACE FUNCTION fn_pymt_mode_list (
 	p_current_uid character varying(255),
 	p_is_in_use integer,
-	p_store_id uuid,
+	p_rid integer,
+	p_axn character varying(255),
+	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
 	pymt_mode_id uuid,
@@ -9,7 +11,7 @@ CREATE OR REPLACE FUNCTION fn_pymt_mode_list (
 	modified_by character varying(255),
 	pymt_mode_desc character varying(255),
 	pymt_type_id integer,
-	store_name character varying(255),
+	pymt_type_desc character varying(255),
 	is_in_use integer
 )
 LANGUAGE 'plpgsql'
@@ -33,26 +35,28 @@ BEGIN
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	IF p_is_in_use = -1 THEN
-	
-		SELECT a.pymt_mode_id, a.modified_on, a.modified_by, a.pymt_mode_desc, a.pymt_type_id, b.store_name, a.is_in_use
-		FROM tb_pymt_mode a
-		INNER JOIN tb_store b ON b.store_id = ANY(regexp_split_to_array(a.for_store, ';;')::uuid[])
-		WHERE b.store_id = p_store_id
-		ORDER BY 
-			a.pymt_mode_desc;
-	
+	IF COALESCE(p_is_in_use, -1) = -1 THEN
+		
+		RETURN QUERY (
+			SELECT a.pymt_mode_id, a.modified_on, a.modified_by, a.pymt_mode_desc, a.pymt_type_id, b.pymt_type_desc, a.is_in_use
+			FROM tb_pymt_mode a
+			INNER JOIN tb_pymt_type b ON b.pymt_type_id = a.pymt_type_id
+			ORDER BY 
+				a.pymt_mode_desc
+		);
+		
 	ELSE
-	
-		PERFORM a.pymt_mode_id, null AS modified_on, null AS modified_by, a.pymt_mode_desc, null AS pymt_type_id, null AS store_name, null AS is_in_use
-		FROM tb_pymt_mode a
-		WHERE EXISTS (
-			SELECT 1
-    		FROM regexp_split_to_table(a.for_store, ';;') AS store
-			WHERE store::uuid = p_store_id
-		) AND a.is_in_use = p_is_in_use
-		ORDER BY 
-			a.pymt_mode_desc;
+		
+		RETURN QUERY (
+			SELECT 
+				a.pymt_mode_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.pymt_mode_desc, 
+				null::integer AS pymt_type_id, null::character varying AS pymt_type_desc, null::integer AS is_in_use
+			FROM tb_pymt_mode a
+			INNER JOIN tb_pymt_type b ON b.pymt_type_id = a.pymt_type_id
+			WHERE a.is_in_use = p_is_in_use
+			ORDER BY 
+				a.pymt_mode_desc
+		);
 	
 	END IF;
 

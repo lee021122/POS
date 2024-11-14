@@ -23,8 +23,12 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_is_enable_track_stock integer,
 	IN p_is_popular_item integer,
 	IN p_meal_period text,
-	IN p_is_debug integer DEFAULT 0)
-    LANGUAGE 'plpgsql'
+	IN p_rid character varying(255),
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
+	IN p_is_debug integer DEFAULT 0
+)
+LANGUAGE 'plpgsql'
 AS $BODY$
 -- -------------------------------------
 -- init
@@ -194,8 +198,8 @@ BEGIN
 	FROM fn_tax_calculation (
 		p_tax_code1 => p_tax_code1,
 		p_tax_code2 => p_tax_code2,
-		p_tax_include_tax1 => p_amt_include_tax1, 
-		p_tax_include_tax2 => p_amt_include_tax2, 
+		p_amt_include_tax1 => p_amt_include_tax1, 
+		p_amt_include_tax2 => p_amt_include_tax2, 
 		p_calc_tax2_after_tax1 => p_calc_tax2_after_tax1, 
 		p_qty => 1,
 		p_amt => p_cost	

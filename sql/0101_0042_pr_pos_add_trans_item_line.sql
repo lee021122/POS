@@ -5,6 +5,7 @@ CREATE OR REPLACE PROCEDURE pr_pos_add_trans_item_line (
 	OUT p_order_trans_item_line_id uuid,
 	IN p_tr_date date,
 	IN p_tr_type character varying(50),
+	IN p_tr_status character varying(50),
 	IN p_order_trans_id uuid,
 	IN p_doc_no character varying(255),
 	IN p_product_id uuid,
@@ -23,8 +24,9 @@ CREATE OR REPLACE PROCEDURE pr_pos_add_trans_item_line (
 	IN p_remarks character varying(255), 
 	IN p_coupon_no character varying(255),
 	IN p_coupon_id uuid,
-	IN p_store_id uuid,
-	IN p_axn character varying(50),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -47,6 +49,7 @@ DECLARE
 	v_now CONSTANT timestamp = current_timestamp;
 	v_today_dt CONSTANT date = current_date;
 	v_setting_value text;
+	v_msg2 text;
 	module_code text;
 	audit_log text;
 BEGIN
@@ -64,20 +67,21 @@ BEGIN
 			p_order_trans_item_line_id => null,
 			p_tr_date => null,
 			p_tr_type => 'TS',
-			p_order_trans_id => '0c000e65-38ab-44c6-b475-e53fcb80308b',
-			p_doc_no => 'OR-2024101600001',
-			p_product_id => '77e1b5fb-c40b-4e0c-8638-7b807589fa37',
-			p_cost => 10.00,
+			p_tr_status => 'C',
+			p_order_trans_id => '8dacb707-2417-42e7-8307-872b62a267be',
+			p_doc_no => 'TS2024101600001',
+			p_product_id => null,
+			p_cost => null,
 			p_sell_price => null,
 			p_addon_amt => null,
-			p_amt => null,
-			p_qty => 1,
+			p_amt => 12,
+			p_qty => null,
 			p_discount_id => null,
 			p_discount_amt => null,
 			p_discount_pct => null,
 			p_total_disc_amt => null,
 			p_is_pymt => null,
-			p_pymt_mode_id => null,
+			p_pymt_mode_id => '59c5e753-9e2a-48d8-84c3-55ec53606d3c',
 			p_ref_no => null,
 			p_remarks => null,
 			p_coupon_no => null,
@@ -106,18 +110,20 @@ BEGIN
 		p_tr_date := fn_get_current_trans_dt();
 	END IF;
 	
-	IF p_tr_date < v_today_dt THEN
-		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
-		RETURN;
-	END IF;
+-- 	IF p_tr_date < v_today_dt THEN
+-- 		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
+-- 		RETURN;
+-- 	END IF;
 	
-	IF NOT EXISTS (
-		SELECT product_id
-		FROM tb_product
-		WHERE product_id = p_product_id
-	) THEN
-		p_msg := 'Invalid Product!!';
-		RETURN;
+	IF p_product_id IS NOT NULL THEN 
+		IF NOT EXISTS (
+			SELECT product_id
+			FROM tb_product
+			WHERE product_id = p_product_id
+		) THEN
+			p_msg := 'Invalid Product!!';
+			RETURN;
+		END IF;
 	END IF;
 	
 	-- Get setting value
@@ -144,7 +150,7 @@ BEGIN
 		WHERE product_id = p_product_id;
 
 		-- Do Tax Calculation
-		SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
+		SELECT final_price, unit_price, tax_pct1, tax_amt1_calc, tax_pct2, tax_amt2_calc
 		INTO p_amt, p_sell_price, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
 		FROM fn_tax_calculation (
 			v_tax_code1,
@@ -161,7 +167,7 @@ BEGIN
 			p_total_disc_amt := p_qty * p_sell_price * COALESCE(p_discount_pct, 0) / 100 + p_qty * COALESCE(p_discount_amt);
 			p_cost := p_cost * (1 - COALESCE(p_discount_pct, 0) / 100) - COALESCE(p_discount_amt, 0);
 
-			SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
+			SELECT final_price, unit_price, tax_pct1, tax_amt1_calc, tax_pct2, tax_amt2_calc
 			INTO p_amt, p_sell_price, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
 			FROM fn_tax_calculation (
 				v_tax_code1,
@@ -196,7 +202,7 @@ BEGIN
 			v_seq := 2000;
 		ELSE 
 			v_seq := (
-				SELECT COALESCE(MAX(seq), 1000)
+				SELECT COALESCE(MAX(seq), 999)
 				FROM tb_order_trans_item_line
 				WHERE order_trans_id = p_order_trans_id
 				AND is_pymt = 1
@@ -209,22 +215,33 @@ BEGIN
 		p_discount_amt := NULL;
 		p_total_disc_amt := NULL;
 		
+		IF v_setting_value = 'Pay-later' THEN
+			
+			UPDATE tb_order_trans_table
+			SET 
+				order_trans_id = null,
+				doc_no = null,
+				is_occ = 0
+			WHERE table_desc = p_table_no;
+			
+		END IF;
+		
 	END IF;
 		
 	p_order_trans_item_line_id := gen_random_uuid();
 		
 	-- Insert Data
 	INSERT INTO tb_order_trans_item_line (
-		order_trans_item_line_id, created_on, created_by, modified_on, modified_by, tr_date, tr_type, doc_no, product_id, qty, cost, sell_price,
+		order_trans_item_line_id, created_on, created_by, modified_on, modified_by, tr_date, tr_type, tr_status, doc_no, product_id, qty, cost, sell_price,
     	seq, order_trans_id, discount_id, discount_amt, discount_pct, total_disc_amt, is_pymt, pymt_mode_id, ref_no, remarks, amt, 
 		price_override_on, price_override_by, coupon_no, coupon_id, tax_code1, tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc
 	) values (
-		p_order_trans_item_line_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, p_tr_type, p_doc_no, p_product_id, p_qty, p_cost, p_sell_price,
+		p_order_trans_item_line_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, p_tr_type, p_tr_status, p_doc_no, p_product_id, p_qty, p_cost, p_sell_price,
 		v_seq, p_order_trans_id, p_discount_id, p_discount_amt, p_discount_pct, p_total_disc_amt, p_is_pymt, p_pymt_mode_id, p_ref_no, p_remarks, p_amt, 
 		null, null, p_coupon_no, p_coupon_id, v_tax_code1, v_tax_pct1, v_tax_amt1_calc, v_tax_code2, v_tax_pct2, v_tax_amt2_calc
 	);
 		
-	IF v_setting_value = 'Pay-later' THEN
+	IF v_setting_value = 'Pay-first' THEN
 		
 		IF EXISTS (
 			SELECT *
@@ -236,11 +253,34 @@ BEGIN
 			
 		-- Send order to kitchen printer
 		
+		-- Update trans table is-occ to 0
+		UPDATE tb_order_trans_table
+		SET 
+			order_trans_id = null,
+			doc_no = null,
+			is_occ = 0
+		WHERE table_desc = p_table_no;
+		
 		END IF;
 	END IF;
 
 	
 	p_msg := 'ok';
+	
+	-- Update the total amount
+	CALL pr_order_trans_refresh (
+		p_current_uid => p_current_uid,
+		p_msg => v_msg2,
+		p_order_trans_id => p_order_trans_id,
+		p_doc_no => p_doc_no,
+		p_tr_status => p_tr_status,  
+		p_is_debug => 0  
+	);
+	
+	IF v_msg2 <> 'ok' THEN 
+		p_msg := 'Error happen in process!!';
+		RETURN;
+	END IF;
 	
 	-- Create Audit Log
 	CALL pr_sys_append_audit_log (

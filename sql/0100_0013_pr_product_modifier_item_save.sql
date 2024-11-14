@@ -6,6 +6,9 @@ CREATE OR REPLACE PROCEDURE pr_product_modifier_item_save (
 	IN p_modifier_option_name character varying(255),
 	IN p_addon_amt numeric(15, 2),
 	IN p_is_default integer,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 language 'plpgsql'
@@ -74,7 +77,7 @@ BEGIN
 	IF EXISTS (
 		SELECT * 
 		FROM tb_modifier_option
-		WHERE 
+		WHERE  
 			modifier_group_id = p_modifier_group_id
 			AND is_default = 1
 	) THEN

@@ -5,6 +5,9 @@ CREATE OR REPLACE PROCEDURE pr_table_section_save (
 	IN p_table_section_name character varying(255),
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(6),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

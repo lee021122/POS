@@ -3,6 +3,9 @@ CREATE OR REPLACE PROCEDURE pr_product_modifier_group_item_link_save (
 	OUT p_msg text,
 	IN p_link_item text,
 	IN p_modifier_group_id uuid,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 language 'plpgsql'

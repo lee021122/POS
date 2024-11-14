@@ -7,6 +7,7 @@ CREATE OR REPLACE PROCEDURE pr_pos_trans_void_item (
 	IN p_override_remarks text,
 	IN p_rid integer,
 	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

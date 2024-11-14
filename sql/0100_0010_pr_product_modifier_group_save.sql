@@ -5,7 +5,11 @@ CREATE OR REPLACE PROCEDURE pr_product_modifier_group_save (
 	IN p_modifier_group_name character varying(255),
 	IN p_is_single_modifier_choice integer,
 	IN p_is_multiple_modifier_choice integer,
-	IN p_is_debug integer DEFAULT 0)
+	IN p_rid character varying(255),
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
+	IN p_is_debug integer DEFAULT 0
+)
 LANGUAGE 'plpgsql'
 AS $BODY$
 -- -------------------------------------

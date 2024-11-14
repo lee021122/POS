@@ -1,6 +1,9 @@
 CREATE OR REPLACE FUNCTION fn_prod_category_list (
 	p_current_uid character varying(255),
 	p_is_in_use integer,
+	p_rid character varying(255),
+	p_axn character varying(255),
+	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
 	category_id uuid,

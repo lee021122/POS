@@ -202,6 +202,10 @@ pgSql.executeStoreProc = async function (sp_name, params) {
             throw new Error('Invalid procedure name');
         }
 
+        if (!Array.isArray(params)) {
+            throw new Error('Parameters must be an array');
+        }
+
         const query = pgp.as.format('CALL $1:name($2:csv)', [sp_name, params]);
 
         return await db.many(query);
@@ -229,5 +233,21 @@ pgSql.toSql = function (data_type, v) {
 pgSql.appendLog = async function (log_type, log_data) {
     
 };
+
+// Add this function inside your pgSql object in the library
+pgSql.runTransaction = async function (callback) {
+    try {
+        // Start the transaction
+        return await db.tx(async t => {
+            // Call the callback function passing the transaction object `t`
+            return await callback(t); // Return the result of the callback
+        });
+    } catch (err) {
+        console.error("Transaction failed:", err);
+        throw new Error("Transaction failed: " + err.message);
+    }
+};
+
+
 
 module.exports = { pgSql, db };

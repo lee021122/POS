@@ -16,6 +16,9 @@ CREATE OR REPLACE PROCEDURE pr_store_save (
 	IN p_sst_id character varying(255),
 	IN p_business_registration_num character varying(255),
 	IN p_receipt_temp_id uuid,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

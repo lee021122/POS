@@ -10,6 +10,9 @@ CREATE OR REPLACE PROCEDURE pr_receipt_temp_save (
 	IN p_is_show_customer_details integer, 
 	IN p_is_show_customer_point integer,
 	IN p_is_in_use integer,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

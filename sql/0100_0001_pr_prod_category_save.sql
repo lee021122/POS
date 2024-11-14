@@ -5,6 +5,9 @@ CREATE OR REPLACE PROCEDURE pr_prod_category_save (
 	IN p_category_desc character varying(255),
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(255),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
@@ -25,8 +28,8 @@ BEGIN
 	CALL pr_prod_category_save (
 		p_current_uid => 'tester',
 		p_msg => null,
-		p_category_id => '1412a87d-ec29-4ed7-8799-9e669a1969f2',
-		p_category_desc => 'TEG',
+		p_category_id => null,
+		p_category_desc => 'Appetizers',
 		p_is_in_use => 1,
 		p_display_seq => '000001'
 	);

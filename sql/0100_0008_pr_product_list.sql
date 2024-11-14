@@ -1,7 +1,10 @@
 CREATE OR REPLACE FUNCTION fn_product_list (
     p_current_uid character varying(255),
+	p_product_id uuid,
     p_is_in_use integer,
+	p_rid integer,
     p_axn character varying(255),
+	p_url character varying(255),
     p_is_debug integer DEFAULT 0
 ) 
 RETURNS TABLE (
@@ -35,9 +38,12 @@ BEGIN
 /*
     select * from fn_product_list (
         'tester',
+		'77e1b5fb-c40b-4e0c-8638-7b807589fa37',
         1,
-        'order'
-    )
+		null,
+        'order',
+		''
+    );
 */
 
     -- -------------------------------------
@@ -67,8 +73,10 @@ BEGIN
 				null::character varying AS product_tag, a.product_img_path, null::uuid AS supplier_id, null::uuid AS pricing_type_id, a.cost, a.sell_price, 
 				a.tax_code1, a.amt_include_tax1, a.tax_code2, a.amt_include_tax2, a.calc_tax2_after_tax1, null::integer AS is_in_use, null::character varying AS display_seq, 
 			a.is_enable_kitchen_printer, a.is_allow_modifier, a.is_enable_track_stock, a.is_popular_item
-			FROM tb_product a
-			WHERE a.is_in_use = 1
+			FROM tb_product a			
+			WHERE 
+				a.is_in_use = 1
+				AND (fn_to_guid(p_product_id) = fn_empty_guid() OR a.product_id = p_product_id)
 			ORDER BY 
 				a.display_seq, a.product_tag, a.product_code, a.product_desc
 		);

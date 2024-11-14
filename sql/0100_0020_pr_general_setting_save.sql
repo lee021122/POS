@@ -3,6 +3,9 @@ CREATE OR REPLACE PROCEDURE pr_general_setting_save (
 	OUT p_msg text,
 	IN p_setting_title character varying(255),
 	IN p_setting_value character varying(255),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

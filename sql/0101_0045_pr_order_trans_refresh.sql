@@ -13,6 +13,8 @@ AS $BODY$
 -- -------------------------------------
 DECLARE
 	v_amt numeric(15, 4);
+	v_total_tax1 numeric(15, 4);
+	v_total_tax2 numeric(15, 4);
 	v_total_tax numeric(15, 4);
 	v_rounding_adj_amt numeric(15, 4);
 	v_discount_amt numeric(15, 4);
@@ -68,12 +70,21 @@ BEGIN
 	-- -------------------------------------
 	
 	-- Calc Total Tax
-	SELECT ROUND(SUM(total_tax), 2) 
-	INTO v_total_tax 
+	SELECT ROUND(SUM(tax_amt1_calc), 2) 
+	INTO v_total_tax1
 	FROM tb_order_trans_item_line 
 	WHERE 
 		order_trans_id = p_order_trans_id 
 		AND doc_no = p_doc_no;
+		
+	SELECT ROUND(SUM(tax_amt2_calc), 2) 
+	INTO v_total_tax2
+	FROM tb_order_trans_item_line 
+	WHERE 
+		order_trans_id = p_order_trans_id 
+		AND doc_no = p_doc_no;
+		
+	v_total_tax := v_total_tax1 + v_total_tax2;
 		
 	-- Calc Total Discount Amount
 	SELECT ROUND(SUM(total_disc_amt), 2)

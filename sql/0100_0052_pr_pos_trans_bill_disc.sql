@@ -7,6 +7,9 @@ CREATE OR REPLACE PROCEDURE pr_pos_trans_bill_disc (
 	IN p_bill_discount_amt numeric(15, 2),
 	IN p_override_by character varying(255),
 	IN p_override_remarks text,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
