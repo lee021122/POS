@@ -8,6 +8,9 @@ CREATE OR REPLACE PROCEDURE pr_user_save (
 	IN p_pwd text,
 	IN p_user_group_id integer,
 	IN p_is_active integer,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

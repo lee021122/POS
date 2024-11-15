@@ -3,6 +3,9 @@ CREATE OR REPLACE PROCEDURE pr_user_group_action_save (
 	OUT p_msg text,
 	IN p_user_group_id integer,
 	IN p_action_id uuid,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

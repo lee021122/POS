@@ -42,7 +42,7 @@ DECLARE
 BEGIN
 /* 
 	-- Save the Order Trans (Step 3)
-	
+	select * from tb_order_trans_table
 	DO $$
 	DECLARE
 		v_msg text;  -- Variable to store the OUT parameter 'p_msg'

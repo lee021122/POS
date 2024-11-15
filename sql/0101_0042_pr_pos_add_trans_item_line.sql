@@ -60,21 +60,26 @@ BEGIN
 		v_msg text;
 		v_order_trans_item_line_id uuid;
 	BEGIN
+	
+	select * from tb_product
+	select * from tb_order_trans_table
+	select * from tb_order_trans_item_line
+	select * from tb_pymt_mode
+	
 		CALL pr_pos_add_trans_item_line(
 			p_current_uid => 'tester',
-			-- p_sess_id := 'session-uuid-here', -- If needed
 			p_msg => null,
 			p_order_trans_item_line_id => null,
 			p_tr_date => null,
 			p_tr_type => 'TS',
-			p_tr_status => 'C',
-			p_order_trans_id => '8dacb707-2417-42e7-8307-872b62a267be',
-			p_doc_no => 'TS2024101600001',
+			p_tr_status => 'C', 
+			p_order_trans_id => '9f1e591e-89ed-46ab-b07a-9e4602dab5c8',
+			p_doc_no => 'TS2024101600002',
 			p_product_id => null,
 			p_cost => null,
 			p_sell_price => null,
 			p_addon_amt => null,
-			p_amt => 12,
+			p_amt => 15,
 			p_qty => null,
 			p_discount_id => null,
 			p_discount_amt => null,
@@ -86,8 +91,10 @@ BEGIN
 			p_remarks => null,
 			p_coupon_no => null,
 			p_coupon_id => null,
-			p_store_id => '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d',
-			p_axn => 'cashier',
+			--p_store_id => '0f49bfb0-6414-43f1-bdc6-8c97a7290e6d',
+			p_rid => null,
+			p_axn => null,
+			p_url => null,
 			p_is_debug => 0
 		);
 

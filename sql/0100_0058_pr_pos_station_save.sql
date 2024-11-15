@@ -7,6 +7,9 @@ CREATE OR REPLACE PROCEDURE pr_pos_station_save (
 	IN p_default_printer_id uuid,
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(6),
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

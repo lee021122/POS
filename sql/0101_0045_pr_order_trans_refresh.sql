@@ -34,8 +34,8 @@ BEGIN
 		CALL pr_order_trans_refresh(
 			p_current_uid => 'tester',
 			p_msg => null,
-			p_order_trans_id => '0c000e65-38ab-44c6-b475-e53fcb80308b',
-			p_doc_no => 'OR-2024101600001',
+			p_order_trans_id => '9f1e591e-89ed-46ab-b07a-9e4602dab5c8',
+			p_doc_no => 'TS2024101600002',
 			p_tr_status => 'C',  -- Example transaction status
 			p_is_debug => 0  -- Debug mode off (optional)
 		);
@@ -102,6 +102,7 @@ BEGIN
 		order_trans_id = p_order_trans_id 
 		AND doc_no = p_doc_no
 		AND is_pymt = 0;
+	RAISE NOTICE 'v_amt: %', v_amt;
 		
 	-- Calc Total Payment
 	IF NOT EXISTS (
@@ -123,10 +124,20 @@ BEGIN
 			AND is_pymt = 0;
 	
 	ELSE 
-	
-		v_outstanding_amt := 0;
+		
+		SELECT ROUND(SUM(amt), 2)
+		INTO v_outstanding_amt
+		FROM tb_order_trans_item_line 
+		WHERE 
+			order_trans_id = p_order_trans_id 
+			AND doc_no = p_doc_no
+			AND is_pymt = 1;
+			
+		v_outstanding_amt := v_amt - v_outstanding_amt;
 	
 	END IF;
+	
+	RAISE NOTICE 'v_outstanding_amt: %', v_outstanding_amt;
 	
 	-- Update Amount
 	UPDATE tb_order_trans

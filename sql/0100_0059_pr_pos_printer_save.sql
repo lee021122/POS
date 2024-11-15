@@ -28,6 +28,7 @@ DECLARE
 	v_display_seq_old character varying(5);
 	v_is_default_old integer;
 	v_printer_type_id_old integer;
+	v_action_id uuid;
 BEGIN
 /* 0100_0059_pr_pos_printer_save
 
@@ -38,10 +39,18 @@ BEGIN
 	END IF;
 	
 	module_code := 'Setting - Pos Printer';
+-- 	v_action_id := ''
 
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	
+	-- Role Validation
+-- 	IF NOT EXISTS (
+-- 		SELECT 
+-- 		FROM tb
+-- 	)
+	
 	IF LENGTH(COALESCE(p_printer_code, '')) = 0 THEN
 		p_msg := 'Printer Code cannot be blank!!';
 		RETURN;

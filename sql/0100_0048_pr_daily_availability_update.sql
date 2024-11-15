@@ -5,6 +5,9 @@ CREATE OR REPLACE PROCEDURE pr_daily_availability_update (
 	IN p_end_dt date,
 	IN p_product_id uuid,
 	IN p_qty integer,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 ) 
 LANGUAGE 'plpgsql'

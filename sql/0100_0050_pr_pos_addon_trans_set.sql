@@ -4,7 +4,9 @@ CREATE OR REPLACE PROCEDURE pr_pos_addon_trans_set (
 	IN p_order_trans_id uuid,
 	IN p_order_trans_item_line_id uuid,
 	IN p_modifier_option_id uuid,
-	IN my_role_id integer,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'
