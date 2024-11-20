@@ -73,7 +73,7 @@ BEGIN
 			is_in_use, display_seq
 		) VALUES (
 			p_category_id, v_now, p_current_uid, v_now, p_current_uid, p_category_desc,
-			p_is_in_use, p_display_seq
+			COALESCE(p_is_in_use, 0), p_display_seq
 		);
 		
 		-- Prepare Audit Log
@@ -85,6 +85,16 @@ BEGIN
 		SELECT category_desc,is_in_use, display_seq
 		INTO v_category_desc_old, v_is_in_use_old, v_display_seq_old
 		FROM tb_prod_category
+		WHERE category_id = p_category_id;
+		
+		-- Update record
+		UPDATE tb_prod_category
+		SET
+			modified_on = v_now,
+			modified_by = p_current_uid,
+			category_desc = p_category_desc,
+			is_in_use = COALESCE(p_is_in_use, 0),
+			display_seq = p_display_seq
 		WHERE category_id = p_category_id;
 		
 		-- Prepare Audit Log

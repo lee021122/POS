@@ -7,6 +7,7 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_category_id uuid,
 	IN p_product_tag character varying(255),
 	IN p_product_img_path character varying(255),
+	IN p_inventory_type_id uuid,
 	IN p_supplier_id uuid,
 	IN p_pricing_type_id uuid,
 	IN p_cost numeric(15, 4),
@@ -23,7 +24,7 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_is_enable_track_stock integer,
 	IN p_is_popular_item integer,
 	IN p_meal_period text,
-	IN p_rid character varying(255),
+	IN p_rid integer,
 	IN p_axn character varying(255),
 	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
@@ -60,6 +61,7 @@ DECLARE
 	v_is_enable_track_stock_old integer;
 	v_is_popular_item_old integer;
 	meal_period_record RECORD;  -- Define product_record as a RECORD types
+	v_inventory_type_id_old uuid;
 BEGIN
 /* 0100_0007_pr_product_save
 -- Save Product
@@ -67,12 +69,13 @@ BEGIN
 	CALL public.pr_product_save(
         p_current_uid        => 'tester', 
         p_msg                => null,           
-        p_product_id         => '17ea1fb4-c3ef-4bad-ae51-bf51932e3752',      
-        p_product_desc       => 'Nasi Goreng Kampung', 
-        p_product_code       => 'P0003',            
+        p_product_id         => 'a00143dd-09a1-47ce-8bb5-ad3f8a28805a',      
+        p_product_desc       => 'Nasi Goreng Biasa', 
+        p_product_code       => 'P0004',            
         p_category_id        => 'd437bedc-4e02-428c-a3e6-f4f873cbb675',
         p_product_tag        => null,           
-        p_product_img_path   => '1cdf8c5c-beb8-4a88-8b85-efbc734b8cee.jpeg',  
+        p_product_img_path   => '6a004e30-2ec7-413f-a02c-28dfc1c520bc.jpeg',  
+		p_inventory_type_id  => '',
         p_supplier_id        => null, 
         p_pricing_type_id    => '7301109c-cef9-4df0-9824-9e5d304ca49f', 
         p_cost               => 9,                
@@ -83,12 +86,15 @@ BEGIN
         p_amt_include_tax2   => 1,                    
         p_calc_tax2_after_tax1 => 1,                  
         p_is_in_use          => 1,                     
-        p_display_seq        => '000001',                 
+        p_display_seq        => '000004',                 
         p_is_enable_kitchen_printer => 1,              
         p_is_allow_modifier  => 1,                     
         p_is_enable_track_stock => 1,                  
         p_is_popular_item    => 0,
-		p_meal_period => 'a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae'
+		p_meal_period => 'a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
     );
 */
 	
@@ -107,7 +113,7 @@ BEGIN
 	END IF;
 	
 	IF EXISTS (
-		SELECT *
+		SELECT product_desc
 		FROM tb_product
 		WHERE 
 			product_desc = p_product_desc
@@ -117,8 +123,13 @@ BEGIN
 		RETURN;
 	END IF;
 	
+	IF LENGTH(COALESCE(p_product_code, '')) = 0 THEN 
+		p_msg := 'Product Code cannot be blank!!';
+		RETURN;
+	END IF;
+	
 	IF EXISTS (
-		SELECT *
+		SELECT product_code
 		FROM tb_product
 		WHERE 
 			product_code = p_product_code
@@ -128,8 +139,13 @@ BEGIN
 		RETURN;
 	END IF;
 	
+	IF LENGTH(COALESCE(p_category_id, '')) = 0 THEN 
+		p_msg := 'Category cannot be blank!!';
+		RETURN;
+	END IF;
+	
 	IF NOT EXISTS (
-		SELECT *
+		SELECT category_id
 		FROM tb_prod_category
 		WHERE category_id = p_category_id
 	) THEN
@@ -145,13 +161,32 @@ BEGIN
 -- 		p_msg := 'Invalid Supplier ID!!';
 -- 		RETURN;
 -- 	END IF;
+
+	IF LENGTH(COALESCE(p_inventory_type_id, '')) = 0 THEN 
+		p_msg := 'Inventory Type cannot be blank!!';
+		RETURN;
+	END IF;
 	
 	IF NOT EXISTS (
-		SELECT *
+		SELECT inventory_type_id
+		FROM tb_inventory_type 
+		WHERE inventory_type_id = p_inventory_type_id
+	) THEN
+		p_msg := 'Invalid Inventory Type!!';
+		RETURN;
+	END IF;
+
+	IF LENGTH(COALESCE(p_pricing_type_id, '')) = 0 THEN 
+		p_msg := 'Pricing Type cannot be blank!!';
+		RETURN;
+	END IF;
+	
+	IF NOT EXISTS (
+		SELECT pricing_type_id
 		FROM tb_pricing_type 
 		WHERE pricing_type_id = p_pricing_type_id
 	) THEN
-		p_msg := 'Invalid Pricing Type';
+		p_msg := 'Invalid Pricing Type!!';
 		RETURN;
 	END IF;
 	
@@ -213,11 +248,11 @@ BEGIN
 		INSERT INTO tb_product (
 			product_id, created_on, created_by, modified_on, modified_by, product_desc, product_code, category_id, product_tag, product_img_path, supplier_id,
 			pricing_type_id, cost, sell_price, tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, is_in_use, display_seq, 
-			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item
+			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id
 		) VALUES (
 			p_product_id, v_now, p_current_uid, v_now, p_current_uid, p_product_desc, p_product_code, p_category_id, p_product_tag, p_product_img_path, p_supplier_id,
 			p_pricing_type_id, v_final_price, v_unit_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
-			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item
+			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item, p_inventory_type_id
 		);
 		
 		FOR meal_period_record IN SELECT p_meal_period_id FROM meal_period_tb LOOP
@@ -239,11 +274,12 @@ BEGIN
 		SELECT 
 			product_desc, product_code, category_id, product_tag, product_img_path, supplier_id, pricing_type_id, cost, sell_price, tax_code1,
 			amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, is_in_use, display_seq, is_enable_kitchen_printer, 
-			is_allow_modifier, is_enable_track_stock, is_popular_item
+			is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id
 		INTO 
 			v_product_desc_old, v_product_code_old, v_category_id_old, v_product_tag_old, v_product_img_path_old, v_supplier_id_old, v_pricing_type_id_old, 
 			v_cost_old, v_sell_price_old, v_tax_code1_old, v_amt_include_tax1_old, v_tax_code2_old, v_amt_include_tax2_old, v_calc_tax2_after_tax1_old, 
 			v_is_in_use_old, v_display_seq_old, v_is_enable_kitchen_printer_old, v_is_allow_modifier_old, v_is_enable_track_stock_old, v_is_popular_item_old
+			v_inventory_type_id_old
 		FROM tb_product
 		WHERE product_id = p_product_id;
 		
@@ -271,7 +307,8 @@ BEGIN
 			is_enable_kitchen_printer = p_is_enable_kitchen_printer, 
 			is_allow_modifier = p_is_allow_modifier, 
 			is_enable_track_stock = p_is_enable_track_stock, 
-			is_popular_item = p_is_popular_item
+			is_popular_item = p_is_popular_item,
+			inventory_type_id = p_inventory_type_id
 		WHERE product_id = p_product_id;
 		
 		-- Update meal period product
@@ -293,6 +330,7 @@ BEGIN
 					'Updated Category from' || v_category_id_old || ' to ' || p_category_id || ', ' ||
 					'Updated Product Tag from ' || v_product_tag_old || ' to ' || p_product_tag || ', ' ||
 					'Updated Product Image Path from ' || v_product_img_path_old || ' to ' || p_product_img_path || ', ' ||
+					'Updated Inventory Type from ' || v_inventory_type_id_old || ' to ' || p_inventory_type_id || ', ' ||
 					'Updated Supplier from ' || v_supplier_id_old || ' to ' || p_supplier_id || ', ' ||
 					'Updated Pricing Type from ' || v_pricing_type_id_old || ' to ' || p_pricing_type_id || ', ' ||
 					'Updated Cost from ' || v_cost_old || ' to ' || p_cost || ', ' ||

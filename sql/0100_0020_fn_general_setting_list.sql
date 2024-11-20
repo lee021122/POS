@@ -30,7 +30,10 @@ BEGIN
 	RETURN QUERY (
 		SELECT sys_setting_title, sys_setting_value
 		FROM tb_sys_setting
-		WHERE can_customize = 1
+		WHERE 
+			can_customize = 1
+			AND sys_setting_title <> 'smtp_mailbox_pwd'
+		ORDER BY sys_setting_id
 	);
 
 	-- -------------------------------------

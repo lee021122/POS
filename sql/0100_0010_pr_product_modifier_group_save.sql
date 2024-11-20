@@ -5,7 +5,9 @@ CREATE OR REPLACE PROCEDURE pr_product_modifier_group_save (
 	IN p_modifier_group_name character varying(255),
 	IN p_is_single_modifier_choice integer,
 	IN p_is_multiple_modifier_choice integer,
-	IN p_rid character varying(255),
+	IN p_is_in_use integer,
+	IN p_display_seq character varying(6),
+	IN p_rid integer,
 	IN p_axn character varying(255),
 	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
@@ -22,6 +24,8 @@ DECLARE
 	v_modifier_group_name_old varchar(255);
 	v_is_single_modifier_choice_old varchar(255);
 	v_is_multiple_modifier_choice_old varchar(255);
+	v_is_in_use_old integer;
+	v_display_seq_old character varying(6);
 BEGIN
 /* 0100_0010_pr_product_modifier_group_save
 
@@ -70,9 +74,11 @@ BEGIN
 		
 		-- Insert new record
 		INSERT INTO tb_modifier_group (
-			modifier_group_id, created_on, created_by, modified_on, modified_by, modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice
+			modifier_group_id, created_on, created_by, modified_on, modified_by, modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice,
+			is_in_use, display_seq
 		) VALUES (
-			p_modifier_group_id, v_now, p_current_uid, v_now, p_current_uid, p_modifier_group_name, p_is_single_modifier_choice, p_is_multiple_modifier_choice
+			p_modifier_group_id, v_now, p_current_uid, v_now, p_current_uid, p_modifier_group_name, p_is_single_modifier_choice, p_is_multiple_modifier_choice,
+			p_is_in_use, p_display_seq
 		);
 		
 		-- Prepare Audit Log
@@ -81,8 +87,8 @@ BEGIN
 	ELSE
 		
 		-- Get old record for audit log purpose
-		SELECT modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice
-		INTO v_modifier_group_name_old, v_is_single_modifier_choice_old, v_is_multiple_modifier_choice_old
+		SELECT modifier_group_name, is_single_modifier_choice, is_multiple_modifier_choice, is_in_use, display_seq
+		INTO v_modifier_group_name_old, v_is_single_modifier_choice_old, v_is_multiple_modifier_choice_old, v_is_in_use_old, v_display_seq_old
 		FROM tb_modifier_group
 		WHERE modifier_group_id = p_modifier_group_id;
 		
@@ -91,15 +97,19 @@ BEGIN
 		SET	
 			modified_on = v_now,
 			modified_by = p_current_uid,
-			modifier_group_name = p_modified_group_name,
+			modifier_group_name = p_modifier_group_name,
 			is_single_modifier_choice = p_is_single_modifier_choice,
-			is_multiple_modifier_choice = p_is_multiple_modifier_choice
+			is_multiple_modifier_choice = p_is_multiple_modifier_choice,
+			is_in_use = p_is_in_use,
+			display_seq = p_display_seq
 		WHERE modifier_group_id = p_modifier_group_id;
 	
 		-- Prepare Audit Log
-		audit_log := 'Update Modifier Group Name from ' || v_modifier_group_name_old || ' to ' || p_modified_group_name || ', ' ||
+		audit_log := 'Update Modifier Group Name from ' || v_modifier_group_name_old || ' to ' || p_modifier_group_name || ', ' ||
 						'Updated Single Modifier Choice from ' || v_is_single_modifier_choice_old || ' to ' || p_is_single_modifier_choice || ', ' ||
-						'Update Multiple Modifier Choice from ' || v_is_multiple_modifier_choice_old || ' to ' || p_is_multiple_modifier_choice || '.';
+						'Update Multiple Modifier Choice from ' || v_is_multiple_modifier_choice_old || ' to ' || p_is_multiple_modifier_choice || ', ' ||
+						'Update Is In Use from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+						'Update Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || '.';
 		
 	END IF;
 	

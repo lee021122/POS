@@ -20,6 +20,7 @@ AppSettingStore.prototype.storeObject = function(o = {}) {
         current_uid: null,
         msg: null,
         store_id: null,
+        store_code: null,
         store_name: null,
         addr_line_1: null,
         addr_line_2: null,
@@ -33,11 +34,42 @@ AppSettingStore.prototype.storeObject = function(o = {}) {
         gst_id: null,
         sst_id: null,
         business_registration_num: null,
-        receipt_temp_id: null
+        receipt_temp_id: null,
+        curr_code: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    // Merge o with d, o will overwrite d properties if provided
-    return Object.assign(d, o);
+    // Make sure the data type same as store procedure need
+    const conversionMap = {
+        current_uid: libShared.toString,
+        store_id: libShared.toUUID,         
+        store_code: libShared.toString,     
+        store_name: libShared.toString,      
+        addr_line_1: libShared.toString,
+        addr_line_2: libShared.toString,
+        city: libShared.toString,
+        state: libShared.toUUID,
+        post_code: libShared.toString,
+        country: libShared.toUUID,
+        phone_number: libShared.toString,
+        email: libShared.toString,
+        website: libShared.toString,
+        gst_id: libShared.toString,
+        sst_id: libShared.toString,
+        business_registration_num: libShared.toString,
+        receipt_temp_id: libShared.toUUID,
+        curr_code: libShared.toString,
+        rid: libShared.toInt,                   
+        axn: libShared.toString,                
+        url: libShared.toString,                
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 }
 
 AppSettingStore.prototype.save = async function(req, res) {
@@ -59,6 +91,10 @@ AppSettingStore.prototype.save = async function(req, res) {
             return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
+        if (!o2[0].store_code) {
+            return res.status(400).send(libApi.response('Store Code is required!!', 'Failed'));
+        };
+
         if (!o2[0].store_name) {
             return res.status(400).send(libApi.response('Store Name is required!!', 'Failed'));
         };
@@ -66,6 +102,12 @@ AppSettingStore.prototype.save = async function(req, res) {
         if (!o2[0].receipt_temp_id) {
             return res.status(400).send(libApi.response('Receipt Template is required!!', 'Failed'));
         };
+
+        if (!o2[0].curr_code) {
+            return res.status(400).send(libApi.response('Currency Code is required!!', 'Failed'));
+        };
+
+        o2[0].url = req.url;
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -77,15 +119,19 @@ AppSettingStore.prototype.save = async function(req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
             
         // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
              
-        return res.send(libApi.response(result, 'Success'));
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -121,13 +167,13 @@ AppSettingStore.prototype.list = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
             
         // Execute the function
-        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params)
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
              
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
@@ -157,7 +203,7 @@ AppSettingStore.prototype.delete = async function (req, res) {
 
         if (!o2[0].store_id) {
             return res.status(400).send(libApi.response('Invalid Store!!', 'Failed'));
-        }
+        };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -169,13 +215,13 @@ AppSettingStore.prototype.delete = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
             
         // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
              
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
@@ -188,8 +234,8 @@ AppSettingStore.prototype.delete = async function (req, res) {
 const store = new AppSettingStore();
 
 // Define route handler
-router.get('/l', store.list.bind(store));
+router.post('/l', store.list.bind(store));
 router.post('/s', store.save.bind(store));
-router.post('/d', store.delete.bind(store));
+// router.post('/d', store.delete.bind(store));
 
 module.exports = router;

@@ -17,12 +17,20 @@ DECLARE
 	v_now CONSTANT timestamp = current_timestamp;
 	audit_log text;
 	module_code text;
-	v_setting_title character varying(255);
-	v_setting_value character varying(255);
+	v_setting_title text;
+	v_setting_value text;
 BEGIN
 /* 0100_0020_pr_general_setting_save
 -- 
-
+	CALL pr_general_setting_save (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_setting_title => 'smtp_server1',
+		p_setting_value => 'smtp.gmail.com',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
 
 */
 

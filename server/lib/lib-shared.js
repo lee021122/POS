@@ -22,7 +22,7 @@ libShared.isUndefinedOrNull = function (v) {
  */
 libShared.toString = function (v) {
     if (libShared.isUndefinedOrNull(v)) {
-        return '';
+        return null;
     };
 
     if (typeof v === 'string') {
@@ -59,8 +59,6 @@ libShared.toInt = function(v) {
     if (!isNaN(parsed)) {
         return parsed;
     };
-    console.log(parsed);
-    
 
     return 0;
 };
@@ -84,11 +82,61 @@ libShared.toNewGuid = function() {
 }
 
 libShared.toUUID = function(v) {
-    if (v && v.length === 36) {
+    if (libShared.isUndefinedOrNull(v)) {
+        return null;
+    };
+
+    if (v.length === 36) {
         return `${v.toString()}`;
     };
 
     return null;
+};
+
+libShared.toDate = function (v) {
+    // If v is already a Date object, return it directly
+    if (v instanceof Date) {
+        return v;
+    }
+
+    // If v is null or undefined, return null
+    if (libShared.isUndefinedOrNull(v)) {
+        return null;
+    };
+
+    // Try to parse the value as a date (handle date strings or numeric timestamps)
+    const date = new Date(v);
+
+    // If the parsed date is invalid, return null
+    if (isNaN(date.getTime())) {
+        return null;
+    }
+
+    // Otherwise, return the valid date
+    return date;
+};
+
+libShared.toDateTime = function (v) {
+    // If v is already a Date object, return it directly
+    if (v instanceof Date) {
+        return v;
+    }
+
+    // If v is null or undefined, return null
+    if (libShared.isUndefinedOrNull(v)) {
+        return null;
+    };
+
+    // Try to parse the value as a datetime (handle datetime strings or numeric timestamps)
+    const dateTime = new Date(v);
+
+    // If the parsed datetime is invalid, return null
+    if (isNaN(dateTime.getTime())) {
+        return null;
+    }
+
+    // Otherwise, return the valid DateTime
+    return dateTime;
 };
 
 libShared.padFillLeft = function (str, length, char) {
@@ -108,5 +156,32 @@ libShared.hashText = function (v) {
     h.update(v, 'utf8');
     return h.digest('hex');
 };
+
+libShared.convertObjProp = function (o, defObj, conversionMap) {
+    const convert = (key, value) => {
+        console.log('Key:', key);           // Log the key
+        console.log('Value before conversion:', value); // Log value before conversion
+
+        const converter = conversionMap[key];  // Get the specific converter for this key
+        console.log('Converter function:', converter ? converter.toString() : 'No converter'); // Log the function or no converter message
+
+        if (converter) {
+            const convertedValue = converter(value);  // Apply custom conversion logic
+            console.log('Converted Value:', convertedValue); // Log the result after conversion
+            return convertedValue;
+        }
+        
+        console.log('No conversion applied. Returning original value:', value); // Log when no conversion happens
+        return value;  // If no converter, return the value as-is
+    };
+
+    return Object.keys(defObj).reduce((acc, key) => {
+        const value = o[key] !== undefined ? o[key] : defObj[key];
+        acc[key] = convert(key, value);
+        return acc;
+    }, {});
+};
+
+
 
 module.exports = libShared;

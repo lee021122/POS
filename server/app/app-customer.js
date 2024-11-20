@@ -35,11 +35,40 @@ AppCustomer.prototype.customerObject = function(o = {}) {
         state: null,
         post_code: null,
         country: null,
-        guest_tag: null
+        guest_tag: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    // Merge o with d, o will overwrite d properties if provided
-    return Object.assign(d, o);
+    // Make sure the data type same as store procedure need
+    const conversionMap = {
+        current_uid: libShared.toString,
+        guest_id: libShared.toUUID,
+        first_name: libShared.toString,
+        last_name: libShared.toString,
+        full_name: libShared.toString,
+        title: libShared.toString,
+        gender: libShared.toString,
+        phone_number: libShared.toString,
+        email: libShared.toString,
+        dob: libShared.toDate,
+        addr_line_1: libShared.toString,
+        addr_line_2: libShared.toString,
+        city: libShared.toString,
+        state: libShared.toUUID,
+        post_code: libShared.toString,
+        country: libShared.toUUID,
+        guest_tag: libShared.toString,
+        rid: libShared.toInt,                   
+        axn: libShared.toString,                
+        url: libShared.toString,                
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
 AppCustomer.prototype.save = async function (req, res) {
@@ -59,9 +88,9 @@ AppCustomer.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
-        // if (!o2[0].email_id) {
-        //     return res.status(400).send(libApi.response('Invalid Category!!', 'Failed'));
-        // };
+        if (!o2[0].phone_number) {
+            return res.status(400).send(libApi.response('Phone Number is required!!', 'Failed'));
+        };
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -72,7 +101,7 @@ AppCustomer.prototype.save = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
@@ -175,8 +204,8 @@ AppCustomer.prototype.delete = async function (req, res) {
 
 const customer = new AppCustomer();
 
-router.get('/l', customer.list.bind(customer));
+router.post('/l', customer.list.bind(customer));
 router.post('/s', customer.save.bind(customer));
-router.post('/d', customer.delete.bind(customer));
+// router.post('/d', customer.delete.bind(customer));
 
 module.exports = router;

@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require("path");
 const userConfig = require('./config/user-config');
 const prodCat = require('./app/product/app-prod-category');
+const modifier = require('./app/product/app-prod-modifier')
 const store = require('./app/settings/app-setting-store');
 const receiptTemp = require('./app/settings/app-setting-receipt-temp');
 const tax = require('./app/settings/app-setting-tax');
@@ -22,9 +23,11 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the 'product-file' directory
-app.use('/il', express.static(path.join(__dirname, 'app/product-file')));
+app.use('/il', express.static(path.join(__dirname, '..', 'product-file')));
+app.use('/sl', express.static(path.join(__dirname, '..', 'user-file')));
 
 app.use('/prodCat', prodCat);
+app.use('/mod', modifier);
 app.use('/store', store);
 app.use('/receiptTemp', receiptTemp);
 app.use('/tax', tax);

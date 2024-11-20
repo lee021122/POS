@@ -96,10 +96,10 @@ BEGIN
 		p_tr_date := fn_get_current_trans_dt();
 	END IF;
 	
-	-- 	IF p_tr_date < v_today_dt THEN
-	-- 		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
-	-- 		RETURN;
-	-- 	END IF;
+	IF p_tr_date < v_today_dt THEN
+		p_msg := 'Please make sure night audit has been done, current transaction date: ' || p_tr_date::TEXT;
+		RETURN;
+	END IF;
 	
 	-- tr_type should be Eat-in, Take Away or Room Service
 	IF LENGTH(COALESCE(p_tr_type, '')) = 0 THEN
@@ -110,6 +110,19 @@ BEGIN
 	IF p_tr_type = 'TS'
 	AND LENGTH(COALESCE(p_table_no, '')) = 0 THEN
 		p_msg := 'Must Select Table Number!!';
+		RETURN;
+	END IF;
+	
+	IF p_tr_status IS NULL THEN 
+		p_tr_status := 'C';
+	END IF;
+	
+	IF NOT EXISTS (
+		SELECT tr_status_code
+		FROM tb_tr_status
+		WHERE tr_status_code = p_tr_status
+	) THEN
+		p_msg := 'Invalid Transaction Status!!';
 		RETURN;
 	END IF;
 	

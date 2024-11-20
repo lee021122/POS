@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION fn_prod_category_list (
 	p_current_uid character varying(255),
 	p_is_in_use integer,
-	p_rid character varying(255),
+	p_rid integer,
 	p_axn character varying(255),
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
@@ -23,7 +23,7 @@ DECLARE
 BEGIN
 /* 0100_0002_fn_prod_category_list
 
-	SELECT * FROM fn_prod_category_list ('tester', 1);
+	SELECT * FROM fn_prod_category_list ('tester', 1, 0, null, null);
 
 */
 
@@ -41,6 +41,10 @@ BEGIN
 			SELECT a.category_id, a.modified_on, a.modified_by, a.category_desc, a.is_in_use, a.display_seq
 			FROM tb_prod_category a
 			ORDER BY
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,
 				a.display_seq, a.category_desc
 		);
 	
@@ -53,6 +57,10 @@ BEGIN
 			FROM tb_prod_category a
 			WHERE a.is_in_use = 1
 			ORDER BY
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,
 				a.display_seq, a.category_desc
 		);
 	

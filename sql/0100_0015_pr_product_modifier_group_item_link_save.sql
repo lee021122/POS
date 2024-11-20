@@ -71,6 +71,17 @@ BEGIN
 			p_msg := 'Invalid Product!!';
 			RETURN;
 		END IF;
+		
+		IF NOT EXISTS (
+			SELECT 1
+			FROM tb_product a
+			WHERE 
+				a.product_id = product_record.p_product_id
+				AND a.is_allow_modifier = 1
+		) THEN
+			p_msg := 'The Product not allow modifier set up!!';
+			RETURN;
+		END IF;
 	END LOOP;
 
 	-- -------------------------------------

@@ -20,13 +20,33 @@ AppSettingTable.prototype.tableObject = function(o = {}) {
         msg: null,
         table_id: null,
         table_desc: null,
+        table_section_id: null,
         qr_code: null,
         is_in_use: null,
-        display_seq: null
+        display_seq: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    // Merge o with d, o will overwrite d properties if provided
-    return Object.assign(d, o);
+    // Make sure the data type same as store procedure need
+    const conversionMap = {
+        current_uid: libShared.toString,
+        table_id: libShared.toUUID,          
+        table_desc: libShared.toString,   
+        table_section_id: libShared.toUUID,   
+        qr_code: libShared.toText,
+        is_in_use: libShared.toInt,             
+        display_seq: libShared.toString,        
+        rid: libShared.toInt,                   
+        axn: libShared.toString,                
+        url: libShared.toString,                
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
 AppSettingTable.prototype.save = async function(req, res) {
@@ -55,13 +75,15 @@ AppSettingTable.prototype.save = async function(req, res) {
             return res.status(400).send(libApi.response('Table Section is required', 'Failed'));
         };
 
-        if (o2[0].display_seq) {
+        if (o2[0].display_seq != null) {
             if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
             };
         };
+
+        o2[0].url = req.url;
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -73,7 +95,7 @@ AppSettingTable.prototype.save = async function(req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
@@ -82,7 +104,11 @@ AppSettingTable.prototype.save = async function(req, res) {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
              
-        return res.send(libApi.response(result, 'Success'));
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -193,7 +219,7 @@ AppSettingTable.prototype.printQr = async function(req, res) {
 const table = new AppSettingTable();
 
 router.post('/s', table.save.bind(table));
-router.get('/l', table.list.bind(table));
+router.post('/l', table.list.bind(table));
 router.post('/d', table.delete.bind(table));
 router.post('/g', table.genQr.bind(table));
 

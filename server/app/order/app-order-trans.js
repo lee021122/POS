@@ -49,14 +49,54 @@ AppOrderTrans.prototype.orderObjects = function(o = {}) {
         remarks: null,
         coupon_no: null,
         coupon_id: null,
-        axn: null
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    return Object.assign(d, o);
+    const conversionMap = {
+        current_uid: libShared.toString,
+        store_id: libShared.toUUID,
+        tr_date: libShared.toDate,
+        doc_no: libShared.toString,
+        order_trans_id:  libShared.toUUID,
+        tr_type: libShared.toString,
+        tr_status: libShared.toString,
+        guest_id: libShared.toUUID,
+        pax: libShared.toInt,
+        table_no: libShared.toString,
+        room_no: libShared.toString,
+        delivery_time: libShared.toDateTime,
+        delivery_next_day: libShared.toDateTime,
+        order_trans_item_line_id: libShared.toUUID,
+        product_id: libShared.toUUID,
+        cost: libShared.toFloat,
+        sell_price: libShared.toFloat,
+        addon_amt: libShared.toFloat,
+        qty: libShared.toInt,
+        discount_id: libShared.toUUID,
+        discount_amt: libShared.toFloat,
+        discount_pct: libShared.toFloat,
+        total_disc_amt: libShared.toFloat,
+        is_pymt: libShared.toInt,
+        pymt_mode_id: libShared.toUUID,
+        ref_no: libShared.toString,
+        remarks: libShared.toString,
+        coupon_no: libShared.toString,
+        coupon_id: libShared.toUUID,
+        rid: libShared.toInt,
+        axn: libShared.toString,
+        url: libShared.toString,
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
-// Generate new order_no and order_trans_id
-AppOrderTrans.prototype.new = async function(req, res) {
+// Save Order and generate new order_trans_id and doc_no as response
+AppOrderTrans.prototype.save = async function (req, res) {
     try {
         // Extract and validate request data
         const { code, axn, data } = req.body;
@@ -84,14 +124,14 @@ AppOrderTrans.prototype.new = async function(req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
         // console.log("params: ", params);
             
         // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
              
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
@@ -102,50 +142,6 @@ AppOrderTrans.prototype.new = async function(req, res) {
 
 // Save item line (include product and pymt)
 AppOrderTrans.prototype.addItemLine = async function(req, res) {
-    try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.orderObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
-                
-        // Append Error if the action is not found
-        if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
-
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
-            
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
-             
-        return res.send(libApi.response(result, 'Success'));
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    };
-};
-
-AppOrderTrans.prototype.save = async function (req, res) {
     try {
         // Extract and validate request data
         const { code, axn, data } = req.body;

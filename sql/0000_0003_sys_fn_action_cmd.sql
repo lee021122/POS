@@ -4,10 +4,10 @@ CREATE OR REPLACE FUNCTION fn_action_cmd(
 ) 
 RETURNS TABLE (
 	sql_stm text,
-	action_param_name text, 
-	data_type varchar, 
-	seq int, 
-	is_compulsory int, 
+	action_param_name character varying(255), 
+	data_type character varying(255), 
+	seq integer, 
+	is_compulsory integer, 
 	msg text
 )
 	LANGUAGE 'plpgsql'
@@ -65,7 +65,7 @@ SELECT * FROM fn_action_cmd(p_action_code => 'prod-category::s')
 			, NULL::text
 		FROM tb_action a
 		INNER JOIN tb_action_param b ON b.action_id = a.action_id
-		WHERE action_code = p_action_code
+		WHERE a.action_code = p_action_code
 		ORDER BY b.seq
 	);
 	RETURN;

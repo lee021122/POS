@@ -67,7 +67,7 @@ BEGIN
 		);
 		
 		-- Prepare Audit Log
-		audit_log := 'Added Table Section: ' || p_table_section_desc || '.';
+		audit_log := 'Added Table Section: ' || p_table_section_name || '.';
 		
 	ELSE
 	

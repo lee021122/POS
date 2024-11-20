@@ -172,8 +172,13 @@ pgSql.executeFunction = async function (fn_name, params) {
         // Construct the SQL function call dynamically
         const query = pgp.as.format('SELECT * FROM $1:name($2:csv)', [fn_name, params]);
         
+        const result = await db.many(query);
+
         // Execute the function and return the result
-        return await db.many(query);
+        return {
+            data: result,          // The result rows
+            rowCount: result.length  // Number of rows
+        };
     } catch (error) {
         console.error('Error in executeFunction:', error);
         throw error;
@@ -213,7 +218,7 @@ pgSql.executeStoreProc = async function (sp_name, params) {
         console.error('Error in executeStoreProc:', err);
         throw err;
     }
-}
+};
 
 pgSql.toSql = function (data_type, v) {
     if (data_type === pgSql.PARAMS_STRING) {
@@ -235,16 +240,21 @@ pgSql.appendLog = async function (log_type, log_data) {
 };
 
 // Add this function inside your pgSql object in the library
-pgSql.runTransaction = async function (callback) {
+pgSql.runTransaction = async function (cb) {
     try {
-        // Start the transaction
-        return await db.tx(async t => {
-            // Call the callback function passing the transaction object `t`
-            return await callback(t); // Return the result of the callback
+        // Start a new transaction
+        const result = await db.tx(async (t) => {
+            // Execute the transaction callback and pass the transaction object
+            return await cb(t); // Return the result from callback
         });
+
+        // If everything is successful, return the result
+        return result;
+
     } catch (err) {
-        console.error("Transaction failed:", err);
-        throw new Error("Transaction failed: " + err.message);
+        // If there was an error, transaction will be rolled back automatically
+        console.error('Transaction failed:', err);
+        throw new Error('Transaction failed. Rolled back.');
     }
 };
 

@@ -21,11 +21,30 @@ AppSettingTableSec.prototype.tableSecObject = function(o = {}) {
         table_section_id: null,
         table_section_name: null,
         is_in_use: null,
-        display_seq: null
+        display_seq: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    // Merge o with d, o will overwrite d properties if provided
-    return Object.assign(d, o);
+    // Make sure the data type same as store procedure need
+    const conversionMap = {
+        current_uid: libShared.toString,
+        table_section_id: libShared.toUUID,          
+        meal_period_desc: libShared.toString,    
+        start_time: libShared.toString,
+        end_time: libShared.toString,
+        is_in_use: libShared.toInt,             
+        display_seq: libShared.toString,        
+        rid: libShared.toInt,                   
+        axn: libShared.toString,                
+        url: libShared.toString,                
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
 AppSettingTableSec.prototype.save = async function (req, res) {
@@ -50,13 +69,15 @@ AppSettingTableSec.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('Table Section Name is required!!', 'Failed'));
         };
 
-        if (o2[0].display_seq) {
+        if (o2[0].display_seq != null) {
             if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
             };
         };
+
+        o2[0].url = req.url;
         
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -68,7 +89,7 @@ AppSettingTableSec.prototype.save = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
@@ -76,7 +97,11 @@ AppSettingTableSec.prototype.save = async function (req, res) {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
              
-        return res.send(libApi.response(result, 'Success'));
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -171,8 +196,8 @@ AppSettingTableSec.prototype.delete = async function (req, res) {
 
 const tableSec = new AppSettingTableSec();
 
-router.get('/l', tableSec.list.bind(tableSec));
+router.post('/l', tableSec.list.bind(tableSec));
 router.post('/s', tableSec.save.bind(tableSec));
-router.post('/d', tableSec.delete.bind(tableSec));
+// router.post('/d', tableSec.delete.bind(tableSec));
 
 module.exports = router;

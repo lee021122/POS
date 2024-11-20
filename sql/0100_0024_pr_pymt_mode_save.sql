@@ -55,10 +55,10 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF LENGTH(COALESCE(p_for_store, '')) = 0 THEN
-		p_msg := 'Please Select the Store!!';
-		RETURN;
-	END IF;	
+-- 	IF LENGTH(COALESCE(p_for_store, '')) = 0 THEN
+-- 		p_msg := 'Please Select the Store!!';
+-- 		RETURN;
+-- 	END IF;	
 	
 	-- -------------------------------------
     -- create and use temporary table
@@ -165,7 +165,7 @@ BEGIN
 		RAISE NOTICE 'pr_pymt_mode_save - end';
 	END IF;
 	
-	DROP TABLE for_store_tb;
+-- 	DROP TABLE for_store_tb;
 	
 END
 $BODY$;

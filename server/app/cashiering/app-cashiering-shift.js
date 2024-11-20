@@ -17,7 +17,11 @@ const SERVICE = FILE.replace('.js', '');
 function AppCashiering() {};
 
 AppCashiering.prototype.cashierShiftObject = function(o = {}) {
-
+    const d = {
+        current_uid: null,
+        msg: null,
+        
+    };
 };
 
 // Open Cashiering Shift

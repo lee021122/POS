@@ -33,12 +33,15 @@ BEGIN
 	CALL pr_table_save (
 		p_current_uid => 'tester',
 		p_msg => null,
-		p_table_id => '9280b22d-0ff9-4574-8976-7aab48f71d31',
-		p_table_desc => 'T-01',
+		p_table_id => null,
+		p_table_desc => 'T-02',
 		p_table_section_id => '81d41970-33b6-43dd-9e93-fd091bfcc2a3',
 		p_qr_code => null,
 		p_is_in_use => 1,
-		p_display_seq => '000001'
+		p_display_seq => '000002',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
 	);
 
 */

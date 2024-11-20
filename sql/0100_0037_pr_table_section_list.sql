@@ -38,6 +38,10 @@ BEGIN
 			SELECT a.table_section_id, a.modified_on, a.modified_by, a.table_section_name, a.is_in_use, a.display_seq
 			FROM tb_table_section a
 			ORDER BY 
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,	
 				a.display_seq, a.table_section_name
 		);
 	
@@ -48,8 +52,12 @@ BEGIN
 				a.table_section_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.table_section_name, 
 				null::integer AS is_in_use, null::character varying AS display_seq
 			FROM tb_table_section a
-			WHERE is_in_use = p_is_in_use
+			WHERE a.is_in_use = p_is_in_use
 			ORDER BY 
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,	
 				a.display_seq, a.table_section_name
 		);
 	

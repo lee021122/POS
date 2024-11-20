@@ -4,10 +4,14 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
-const myConfig = require('../../config/user-config.json')
+const currentWorkingDirectory = process.cwd();
+const configPath = path.join(currentWorkingDirectory, "config", "user-config.json");
+const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 // Ensure that the "user-file" folder exists
-const uploadDir = path.join(__dirname, myConfig.user_folder);
+const uploadDir = path.join(currentWorkingDirectory, '..', myConfig.user_folder);
+console.log(currentWorkingDirectory);
+console.log("Upload directory: ", uploadDir);
 
 // Import Libraries
 const { pgSql } = require('../../lib/lib-pgsql');
@@ -20,8 +24,19 @@ const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 // Create the directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true }); // Create the directory recursively
+try {
+    if (!fs.existsSync(uploadDir)) {
+        console.log("Directory does not exist, creating...");
+
+        // Create the directory recursively (including any parent directories if needed)
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log("Directory created successfully");
+    } else {
+        console.log("Directory already exists.");
+    }
+} catch (error) {
+    // Log error if directory creation fails
+    console.error("Error creating directory:", error);
 }
 
 // Set up storage engine for multer
@@ -74,11 +89,34 @@ AppSettingReceiptTemp.prototype.receiptTempObject = function (o ={}) {
         is_show_customer_details: null,
         is_show_customer_point: null,
         is_in_use: null,
-        display_seq: null
+        display_seq: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    // Merge o with d, o will overwrite d properties if provided
-    return Object.assign(d, o);
+    // Make sure the data type same as store procedure need
+    const conversionMap = {
+        current_uid: libShared.toString,
+        receipt_temp_id: libShared.toUUID,          
+        receipt_temp_name: libShared.toString,
+        logo_img_path: libShared.toString,
+        extra_information: libShared.toText,
+        is_show_store_name: libShared.toInt,
+        is_show_store_details: libShared.toInt,
+        is_show_customer_details: libShared.toInt,
+        is_show_customer_point: libShared.toInt,      
+        is_in_use: libShared.toInt,             
+        display_seq: libShared.toString,        
+        rid: libShared.toInt,                   
+        axn: libShared.toString,                
+        url: libShared.toString,                
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 }
 
 AppSettingReceiptTemp.prototype.save = async function (req, res) {
@@ -93,16 +131,14 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
         let parsedData = data;
         if (typeof data === 'string') {
             parsedData = JSON.parse(data);
-        }
+        };
 
         // Check parsedData is an array
         if (!Array.isArray(parsedData)) {
             return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
-        }
+        };
 
-        const o2 = parsedData.map(item => this.receiptTempObject(item));
-        console.log(o2);
-        
+        const o2 = parsedData.map(item => this.receiptTempObject(item));        
 
         // Access the uploaded file
         const uploadedFile = req.files['logo_img_path'] ? req.files['logo_img_path'][0] : null;
@@ -110,27 +146,25 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
         // Check if the file was uploaded
         if (!uploadedFile) {
             return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
-        }
+        };
 
-        if (uploadedFile) {
-            // Extract the old `logo_img_path` from the database
-            const oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']); 
-            // console.log(oldLogoImgPath);
-            
-            if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
-                // Get the full path of the old image
-                const oldImagePath = path.join(__dirname, `/${myConfig.user_folder}/`, oldLogoImgPath[0].logo_img_path.replace(`/${myConfig.user_folder}/`, ''));
-                // console.log('Full path to old image:', oldImagePath);
-                
-                // Check if the old image exists, if so, delete it
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath); // Delete the old image
-                }
+        let oldLogoImgPath = null;
+        if (o2[0].receipt_temp_id) {
+            try {
+                oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']);
+            } catch (err) {
+                console.error('Error fetching old logo_img_path:', err);
+                return res.status(500).send(libApi.response('Error fetching old logo image path', 'Failed'));
             }
-        
-            // Now update `logo_img_path` in the params array with the new uploaded file path
-            o2[0].logo_img_path = `/user-file/${uploadedFile.filename}`;
-        }
+        };
+
+        // Process the logo image path deletion if there was a previous image
+        if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
+            const oldImagePath = path.join(uploadDir, oldLogoImgPath[0].logo_img_path);
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath); // Delete the old image
+            }
+        };
         
         if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
@@ -152,6 +186,9 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
             };
         };
 
+        o2[0].logo_img_path = `${uploadedFile.filename}`;
+        o2[0].url = req.url;
+
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
         
@@ -162,16 +199,26 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
-            
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
-             
-        return res.send(libApi.response(result, 'Success'));
+       
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+        
+        // Check if the result was successful
+        if (result[0].p_msg !== 'ok') {
+            if (uploadedFile) {
+                const uploadedImagePath = path.join(uploadDir, uploadedFile.filename);
+                if (fs.existsSync(uploadedImagePath)) {
+                    fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
+                }
+            }
+
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {            
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -179,7 +226,45 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
 };
 
 AppSettingReceiptTemp.prototype.list = async function (req, res) {
-    
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.receiptTempObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        // console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+            
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+             
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 };
 
 AppSettingReceiptTemp.prototype.delete = async function (req, res) {
@@ -257,8 +342,8 @@ AppSettingReceiptTemp.prototype.delete = async function (req, res) {
 
 const receiptTemp = new AppSettingReceiptTemp();
 
-router.get('/l', receiptTemp.list.bind(receiptTemp));
+router.post('/l', receiptTemp.list.bind(receiptTemp));
 router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
-router.post('/d', receiptTemp.delete.bind(receiptTemp));
+// router.post('/d', receiptTemp.delete.bind(receiptTemp));
 
 module.exports = router;

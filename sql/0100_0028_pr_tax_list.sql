@@ -34,19 +34,31 @@ BEGIN
 	-- process
 	-- -------------------------------------
 	IF p_is_in_use = -1 THEN
-	
-		SELECT a.tax_id, a.modified_on, a.modified_by, a.tax_code, a.tax_desc, a.tax_pct, a.is_in_use, a.display_seq
-		FROM tb_tax a
-		ORDER BY 
-			a.display_seq, a.tax_code;
+		
+		RETURN QUERY (
+			SELECT a.tax_id, a.modified_on, a.modified_by, a.tax_code, a.tax_desc, a.tax_pct, a.is_in_use, a.display_seq
+			FROM tb_tax a
+			ORDER BY 
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,	
+				a.display_seq, a.tax_code
+		);
 	
 	ELSE
-	
-		SELECT a.tax_id, null AS modified_on, null AS modified_by, a.tax_code, a.tax_desc, a.tax_pct, null AS is_in_use, null AS display_seq
-		FROM tb_tax a
-		WHERE a.is_in_use = 1
-		ORDER BY 
-			a.display_seq, a.tax_code;
+		
+		RETURN QUERY (
+			SELECT a.tax_id, null AS modified_on, null AS modified_by, a.tax_code, a.tax_desc, a.tax_pct, null AS is_in_use, null AS display_seq
+			FROM tb_tax a
+			WHERE a.is_in_use = p_is_in_use
+			ORDER BY 
+				CASE 
+						WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+						ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+					END,	
+				a.display_seq, a.tax_code
+		);
 	
 	END IF;
 

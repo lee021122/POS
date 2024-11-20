@@ -25,6 +25,14 @@ DECLARE
 BEGIN
 /* 0100_0005_pr_meal_period_list
 
+	select * from fn_meal_period_list (
+		'tester',
+		-1,
+		null,
+		null,
+		null
+	);
+
 */
 
 	-- -------------------------------------
@@ -38,10 +46,15 @@ BEGIN
 	
 		RETURN QUERY (
 			SELECT 
-				a.meal_period_id, a.modified_on, a.modified_by, a.meal_period_desc, LEFT(a.start_time::character varying, 5), 
-				LEFT(a.end_time::character varying, 5), a.is_in_use, a.display_seq
+				a.meal_period_id, a.modified_on, a.modified_by, a.meal_period_desc, LEFT(a.start_time::character varying, 5)::character varying AS start_time, 
+				LEFT(a.end_time::character varying, 5)::character varying AS end_time, a.is_in_use, a.display_seq
 			FROM tb_meal_period a
-			ORDER BY a.display_seq, a.meal_period_desc
+			ORDER BY 
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,	
+				a.display_seq, a.meal_period_desc
 		);
 	
 	ELSE
@@ -51,8 +64,13 @@ BEGIN
 				a.meal_period_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.meal_period_desc, 
 				null::character varying AS start_time, null::character varying AS end_time, null::integer AS is_in_use, null::character varying AS display_seq
 			FROM tb_meal_period a
-			WHERE is_in_use = p_is_in_use
-			ORDER BY a.display_seq, a.meal_period_desc
+			WHERE a.is_in_use = p_is_in_use
+			ORDER BY 
+				CASE 
+					WHEN a.display_seq ~ '^\d+$' THEN CAST(a.display_seq AS INT)  -- If it's a number, convert to integer
+					ELSE NULL  -- If it's not a number, set to NULL so we can sort non-numeric separately
+				END,	
+				a.display_seq, a.meal_period_desc
 		);
 	
 	END IF;

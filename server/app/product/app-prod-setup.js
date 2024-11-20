@@ -4,10 +4,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
-const myConfig = require('../../config/user-config.json')
+const currentWorkingDirectory = process.cwd();
+const configPath = path.join(currentWorkingDirectory, "config", "user-config.json");
+const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 // Ensure that the "user-file" folder exists
-const uploadDir = path.join(__dirname, myConfig.product_folder);
+const uploadDir = path.join(currentWorkingDirectory, '..', myConfig.product_folder);
 
 // Import Libraries
 const { pgSql } = require('../../lib/lib-pgsql');
@@ -20,8 +22,19 @@ const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
 // Create the directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true }); // Create the directory recursively
+try {
+    if (!fs.existsSync(uploadDir)) {
+        console.log("Directory does not exist, creating...");
+
+        // Create the directory recursively (including any parent directories if needed)
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log("Directory created successfully");
+    } else {
+        console.log("Directory already exists.");
+    }
+} catch (error) {
+    // Log error if directory creation fails
+    console.error("Error creating directory:", error);
 }
 
 // Set up storage engine for multer
@@ -71,6 +84,7 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         category_id: null,
         product_tag: null,
         product_img_path: null,
+        inventory_type_id: null,
         supplier_id: null,
         pricing_type_id: null, 
         cost: null,
@@ -85,10 +99,47 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         is_enable_kitchen_printer: null,
         is_allow_modifier: null,
         is_enable_track_stock: null,
-        is_popular_item: null
+        is_popular_item: null,
+        meal_period: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    return Object.assign(d, o);
+    const conversionMap = {
+        current_uid: libShared.toString,
+        product_id: libShared.toUUID,
+        product_desc: libShared.toString,
+        product_code: libShared.toString,
+        category_id: libShared.toUUID,
+        product_tag: libShared.toString,
+        product_img_path: libShared.toString,
+        inventory_type_id: libShared.toUUID,
+        supplier_id: libShared.toUUID,
+        pricing_type_id: libShared.toUUID, 
+        cost: libShared.toFloat,
+        sell_price: libShared.toFloat,
+        tax_code1: libShared.toString, 
+        amt_include_tax1: libShared.toInt,
+        tax_code2: libShared.toString,
+        amt_include_tax2: libShared.toInt,
+        calc_tax2_after_tax1: libShared.toInt,
+        is_in_use: libShared.toInt,
+        display_seq: libShared.toString,
+        is_enable_kitchen_printer: libShared.toInt,
+        is_allow_modifier: libShared.toInt,
+        is_enable_track_stock: libShared.toInt,
+        is_popular_item: libShared.toInt,
+        meal_period: libShared.toString,
+        rid: libShared.toInt,
+        axn: libShared.toString,
+        url: libShared.toString,
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
 AppProdSetup.prototype.save = async function (req, res) {
@@ -100,20 +151,6 @@ AppProdSetup.prototype.save = async function (req, res) {
         p0.img = product_img_path;
         const preCode = p0.code;
 
-        let parsedData = data;
-        if (typeof data === 'string') {
-            parsedData = JSON.parse(data);
-        };
-
-        // Check parsedData is an array
-        if (!Array.isArray(parsedData)) {
-            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
-        };
-
-        const o2 = parsedData.map(item => this.prodObject(item));
-        console.log(o2[0].product_id);
-        
-        
         // Access the uploaded file
         const uploadedFile = req.files['product_img_path'] ? req.files['product_img_path'][0] : null;
         
@@ -122,25 +159,48 @@ AppProdSetup.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
         };
 
-        if (uploadedFile && o2[0].product_id) {
-            // Extract the old `logo_img_path` from the database
-            const oldLogoImgPath = await pgSql.getTable('tb_product', `${pgSql.SQL_WHERE} product_id = '${o2[0].product_id}'`, ['product_img_path']); 
-            // console.log(oldLogoImgPath);
-            
-            if (oldLogoImgPath && oldLogoImgPath[0].product_img_path) {
-                // Get the full path of the old image
-                const oldImagePath = path.join(__dirname, myConfig.product_folder, oldLogoImgPath[0].product_img_path.replace(`/${myConfig.product_folder}/`, ''));
-                // console.log('Full path to old image:', oldImagePath);
-                
-                // Check if the old image exists, if so, delete it
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath); // Delete the old image
-                };
-            };
+        let parsedData = data;
+        try {
+            parsedData = JSON.parse(data);
+        } catch (error) {
+            console.error('Error parsing JSON at position', error.position, ':', error.message);
+
+            if (uploadedFile) {
+                const uploadedImagePath = path.join(uploadDir, uploadedFile.filename);
+                if (fs.existsSync(uploadedImagePath)) {
+                    fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
+                }
+            }
+
+            return res.status(400).send(libApi.response('Invalid JSON format!', 'Failed'));
+        }
+        console.log(!Array.isArray(parsedData));
+        
+        // Check parsedData is an array
+        if (!Array.isArray(parsedData)) {
+            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
         };
 
-        // Now update `logo_img_path` in the params array with the new uploaded file path
-        o2[0].product_img_path = `${uploadedFile.filename}`;
+        const o2 = parsedData.map(item => this.prodObject(item));
+
+        let oldLogoImgPath = null;
+        if (o2[0].product_id) {
+            // Extract the old `product_img_path` from the database
+            try {
+                oldLogoImgPath = await pgSql.getTable('tb_product', `${pgSql.SQL_WHERE} product_id = '${o2[0].product_id}'`, ['product_img_path']);
+            } catch (err) {
+                console.error('Error fetching old product_img_path:', err);
+                return res.status(500).send(libApi.response('Error fetching old product img path', 'Failed'));
+            }
+        };
+
+        // Process the logo image path deletion if there was a previous image
+        if (oldLogoImgPath && oldLogoImgPath[0].product_img_path) {
+            const oldImagePath = path.join(uploadDir, oldLogoImgPath[0].product_img_path);
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath); // Delete the old image
+            }
+        };
         
         if (!code || code !== SERVICE) {
             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
@@ -150,17 +210,21 @@ AppProdSetup.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
         };
 
-        if (!o2[0].product_code) {
-            return res.status(400).send(libApi.response('Product Code is required!!', 'Failed'));
+        if (!o2[0].product_desc) {
+            return res.status(400).send(libApi.response('Product Description is required!!', 'Failed'));
         };
 
-        if (o2[0].display_seq) {
+        if (o2[0].display_seq != null) {
             if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
                 o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
             };
         };
+
+        // Now update `logo_img_path` in the params array with the new uploaded file path
+        o2[0].product_img_path = `${uploadedFile.filename}`;
+        o2[0].url = req.url;
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -172,16 +236,28 @@ AppProdSetup.prototype.save = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
+        console.log("params: ", params);
             
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
              
-        return res.send(libApi.response(result, 'Success'));
+        // Check if the result was successful
+        if (result[0].p_msg !== 'ok') {
+            if (uploadedFile) {
+                const uploadedImagePath = path.join(uploadDir, uploadedFile.filename);
+                if (fs.existsSync(uploadedImagePath)) {
+                    fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
+                }
+            }
+
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {            
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -215,7 +291,7 @@ AppProdSetup.prototype.list = async function (req, res) {
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);

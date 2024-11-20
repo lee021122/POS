@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION fn_product_list (
     p_current_uid character varying(255),
-	p_product_id uuid,
+	--p_product_id uuid,
     p_is_in_use integer,
 	p_rid integer,
     p_axn character varying(255),
@@ -76,7 +76,7 @@ BEGIN
 			FROM tb_product a			
 			WHERE 
 				a.is_in_use = 1
-				AND (fn_to_guid(p_product_id) = fn_empty_guid() OR a.product_id = p_product_id)
+				--AND (fn_to_guid(p_product_id) = fn_empty_guid() OR a.product_id = p_product_id)
 			ORDER BY 
 				a.display_seq, a.product_tag, a.product_code, a.product_desc
 		);

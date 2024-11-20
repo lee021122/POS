@@ -1,7 +1,7 @@
-CREATE OR REPLACE FUNCTION fn_modifier_option_list (
+CREATE OR REPLACE FUNCTION fn_product_modifier_item_list (
 	p_current_uid character varying(255),
 	p_modifier_group_id uuid,
-	p_rid character varying(255),
+	p_rid integer,
 	p_axn character varying(255),
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
@@ -27,7 +27,7 @@ BEGIN
 	SELECT *
 	FROM fn_modifier_option_list (
 		'tester',
-		'00b3a893-a452-4d72-9f89-2868683c2834',
+		'ef78dbea-3315-4f1c-bc94-4c63a2c92627',
 		null, 
 		null,
 		null
