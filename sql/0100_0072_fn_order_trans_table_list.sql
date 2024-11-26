@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_order_trans_list (
+CREATE OR REPLACE FUNCTION fn_order_trans_table_list (
 	p_current_uid character varying(255),
 	--p_tr_date date,
 	p_rid integer,

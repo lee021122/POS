@@ -54,6 +54,8 @@ AppOrderTrans.prototype.orderObject = function(o = {}) {
         bill_discount_amt: null,
         override_by: null,
         override_remarks: null,
+        start_dt: null,
+        end_dt: null,
         rid: null,
         axn: null,
         url: null,
@@ -95,6 +97,8 @@ AppOrderTrans.prototype.orderObject = function(o = {}) {
         bill_discount_amt: libShared.toFloat,
         override_by: libShared.toString,
         override_remarks: libShared.toText,
+        start_dt: libShared.toDate,
+        end_dt: libShared.toDate,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -156,10 +160,6 @@ AppOrderTrans.prototype.save = async function (req, res) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
-};
-
-AppOrderTrans.prototype.list = async function (req, res) {
-    
 };
 
 // Save item line (include product and pymt)
@@ -251,6 +251,126 @@ AppOrderTrans.prototype.addItemLine = async function(req, res) {
         });        
              
         return res.send(libApi.response('ok', 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+AppOrderTrans.prototype.addonSet = async function(req, res) {
+    try {
+        // Extract and validate request data
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.orderObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        };
+
+        if (!o2[0].order_trans_id) {
+            return res.status(400).send(libApi.response('Order Transaction Number is required', 'Failed'))
+        };
+
+        if (!o2[0].order_trans_item_line_id) {
+            return res.status(400).send(libApi.response('Order Transaction Item Line is required', 'Failed'))
+        };
+
+        if (!o2[0].modifier_option_id) {
+            return res.status(400).send(libApi.response('Modifier Option is required', 'Failed'))
+        }; 
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        // console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+            
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+             
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+AppOrderTrans.prototype.addonRemove = async function (req, res) {
+    try {
+        // Extract and validate request data
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;
+        const o2 = data.map(item => this.orderObject(item));
+
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        };
+
+        if (!o2[0].order_trans_id) {
+            return res.status(400).send(libApi.response('Order Transaction Number is required', 'Failed'))
+        };
+
+        if (!o2[0].order_trans_item_line_id) {
+            return res.status(400).send(libApi.response('Order Transaction Item Line is required', 'Failed'))
+        };
+
+        if (!o2[0].modifier_option_id) {
+            return res.status(400).send(libApi.response('Modifier Option is required', 'Failed'))
+        }; 
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        // console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+            
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+             
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -520,19 +640,237 @@ AppOrderTrans.prototype.voidItem = async function (req, res) {
 
 // Split Bill
 
-// 
+// Table Location List
+AppOrderTrans.prototype.tableLocationList = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;        
+        const o2 = data.map(item => this.orderObject(item));        
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
 
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
 
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log(params);
+        
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+// Order Transaction List
+AppOrderTrans.prototype.orderTransList = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;        
+        const o2 = data.map(item => this.orderObject(item));        
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log(params);
+        
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+// Order Transaction Item List
+AppOrderTrans.prototype.orderItemList = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;        
+        const o2 = data.map(item => this.orderObject(item));        
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log(params);
+        
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+// Order Product List
+AppOrderTrans.prototype.prodList = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;        
+        const o2 = data.map(item => this.orderObject(item));        
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log(params);
+        
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
+
+// Order Modifier List
+AppOrderTrans.prototype.modifierList = async function (req, res) {
+    try {
+        const { code, axn, data } = req.body;
+        p0.code = code;
+        p0.axn = axn;
+        p0.data = data;
+        const preCode = p0.code;        
+        const o2 = data.map(item => this.orderObject(item));        
+        
+        if (!code || code !== SERVICE) {
+            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        };
+
+        if (!axn) {
+            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        };
+
+        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+        console.log("action: ", action);
+        
+        // Find the function by using action_code
+        const validAxn = await pgSql.getAction(action);
+
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+
+        // Use the shared library function to parse parameters
+        const params = libApi.parseParams(validAxn, o2);
+        // console.log(params);
+        
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
 
 const orderTrans = new AppOrderTrans();
 
 router.post('/s', orderTrans.save.bind(orderTrans));
 router.post('/al', orderTrans.addItemLine.bind(orderTrans));
+router.post('/sa', orderTrans.addonSet.bind(orderTrans));
+router.post('/ra', orderTrans.addonRemove.bind(orderTrans));
 router.post('/bd', orderTrans.billDiscount.bind(orderTrans));
 router.post('/id', orderTrans.itemDiscount.bind(orderTrans));
 router.post('/vb', orderTrans.voidBill.bind(orderTrans));
 router.post('/vi', orderTrans.voidItem.bind(orderTrans));
 router.post('/op', orderTrans.overridePrice.bind(orderTrans));
 // router.post('/sp', orderTrans.itemDiscount.bind(orderTrans));
+router.post('/l', orderTrans.orderTransList.bind(orderTrans));
+router.post('/tl', orderTrans.tableLocationList.bind(orderTrans));
+router.post('/il', orderTrans.orderItemList.bind(orderTrans));
+router.post('/pl', orderTrans.prodList.bind(orderTrans));
+router.post('/ml', orderTrans.modifierList.bind(orderTrans));
 
 module.exports = router;

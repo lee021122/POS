@@ -22,8 +22,8 @@ BEGIN
 	CALL pr_product_availability_init (
 		p_current_uid => 'tester', 
 		p_msg => null, 
-		p_start_dt => '2024-10-28',
-		p_end_dt => '2024-11-03'
+		p_start_dt => '2024-11-26',
+		p_end_dt => '2024-11-30'
 	);
 	
 */

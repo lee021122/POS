@@ -101,6 +101,8 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('3d66bf32-523b-4cd4-a852-c7296ce9573f', 'app-order-trans::l', 'Order - View Order Transaction', 'pr_order_trans_list', 'Order Process', 1, '000073', current_timestamp, 'admin', 1),
 ('855eded5-c3a8-4b0b-a958-710d105badd6', 'app-order-trans::pl', 'Order - Product List', 'fn_order_product_list', 'Order Process', 1, '000074', current_timestamp, 'admin', 1),
 ('81a26b63-de75-47e3-88c9-1937e35507f6', 'app-order-trans::ml', 'Order - Modifier List', 'fn_order_modifier_list', 'Order Process', 1, '000075', current_timestamp, 'admin', 1),
+('bdf3b996-922a-44c2-87fb-a27902edd8ba', 'app-order-trans::tl', 'Order - View Table Location List', 'fn_order_trans_table_list', 'Order Process', 1, '000081', current_timestamp, 'admin', 0),
+('3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'app-order-trans::il', 'Order - View Order Transaction Item', 'fn_order_trans_item_list', 'Order Process', 1, '000082', current_timestamp, 'admin', 0)
 
 -- Module: Cashiering
 ('53c09823-1cc1-4f81-a29b-68b29d7870a8', 'app-cashiering-shift::o', 'Cashiering - Cashiering Shift Open', 'pr_cashiering_start', 'Cashiering Shift', 1, '000076', current_timestamp, 'admin', 0),
@@ -720,6 +722,15 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 
 -- Addon Remove
 -- app-order-trans::ra
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'order_trans_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'order_trans_item_line_id', 'id', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'modifier_option_id', 'id', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'rid', 'int', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'axn', 'string', 7, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'url', 'string', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '7700e5b1-039b-441d-ba3f-f464eda7acfa', 'is_debug', 'int', 9, 0, current_timestamp, 'admin'),
 
 -- Item Discount
 -- app-order-trans::id
@@ -812,10 +823,44 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- app-order-trans::ptk
 
 -- app-order-trans::l
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'axn', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
 
 -- app-order-trans::pl
+(gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'rid', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'url', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'is_debug', 'int', 5, 0, current_timestamp, 'admin'),
+
 
 -- app-order-trans::ml
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'product_id', 'id', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
+
+-- app-order-trans::tl
+(gen_random_uuid(), 'bdf3b996-922a-44c2-87fb-a27902edd8ba', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bdf3b996-922a-44c2-87fb-a27902edd8ba', 'rid', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bdf3b996-922a-44c2-87fb-a27902edd8ba', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bdf3b996-922a-44c2-87fb-a27902edd8ba', 'url', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bdf3b996-922a-44c2-87fb-a27902edd8ba', 'is_debug', 'int', 5, 0, current_timestamp, 'admin'),
+
+-- app-order-trans::il
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'order_trans_id', 'id', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
 
 -- app-cashiering-shift::o
 (gen_random_uuid(), '53c09823-1cc1-4f81-a29b-68b29d7870a8', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),

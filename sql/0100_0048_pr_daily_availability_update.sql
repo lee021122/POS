@@ -26,9 +26,9 @@ BEGIN
 	CALL pr_daily_availability_update (
 		p_current_uid => 'tester',
 		p_msg => null,
-		p_start_dt => '2024-10-28',
-		p_end_dt => '2024-10-28',
-		p_product_id => '77e1b5fb-c40b-4e0c-8638-7b807589fa37',
+		p_start_dt => '2024-11-26',
+		p_end_dt => '2024-11-30',
+		p_product_id => '2511994e-12d5-488d-9a9b-8c7a49621903',
 		p_qty => 50
 	);
 	

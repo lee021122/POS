@@ -71,7 +71,7 @@ BEGIN
         p_msg                => null,           
         p_product_id         => '2511994e-12d5-488d-9a9b-8c7a49621903',      
         p_product_desc       => 'Nasi Goreng Cina', 
-        p_product_code       => 'P0004',            
+        p_product_code       => 'P0005',            
         p_category_id        => 'd437bedc-4e02-428c-a3e6-f4f873cbb675',
         p_product_tag        => null,           
         p_product_img_path   => 'ab441325-0ba3-478c-9e24-b0dd5eca5f95.jpeg',  
@@ -139,7 +139,7 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF LENGTH(COALESCE(p_category_id, '')) = 0 THEN 
+	IF fn_to_guid(p_category_id) = fn_empty_guid() THEN 
 		p_msg := 'Category cannot be blank!!';
 		RETURN;
 	END IF;
@@ -176,7 +176,7 @@ BEGIN
 		RETURN;
 	END IF;
 
-	IF LENGTH(COALESCE(p_pricing_type_id, '')) = 0 THEN 
+	IF fn_to_guid(p_pricing_type_id) = fn_empty_guid() THEN 
 		p_msg := 'Pricing Type cannot be blank!!';
 		RETURN;
 	END IF;
