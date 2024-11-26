@@ -221,53 +221,63 @@ AppUserGroup.prototype.actionSave = async function(req, res) {
         }
 
         // Use the runTransaction function
-        await pgSql.runTransaction(async t => {
-            const promises = data.map(async (item) => {
-                const actionData = this.userGroupObject(item);
+        const result = await pgSql.runTransaction(async (t) => {
+            // Prepare an array to hold individual promises
+            const promises = [];
 
-                if (!actionData.user_group_id) {
-                    throw new Error('User Group is required for each data item!');
-                }
+            // Execute the stored procedure for each item in the data array
+            for (const item of data) {
+                // Ensure each item has required fields
+                const lineData = this.orderObject(item);
                 
-                if (!actionData.action_id) {
-                    throw new Error('Action is required for each data item!');
-                }
+                if (!lineData.order_trans_id) {
+                    return res.status(400).send(libApi.response('Order Transaction Number is required!', 'Failed'));
+                };
+        
+                if (!lineData.doc_no) {
+                    return res.status(400).send(libApi.response('Order Number is required', 'Failed'));
+                };
+        
+                if (!lineData.tr_type) {
+                    return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
+                };
 
                 // Parse parameters for the current item
-                const params = libApi.parseParams(validAxn, [actionData]);
-
-                try {
-                    // Use the transaction object `t` to execute the query within the transaction
-                    const result = await t.any(pgSql.executeStoreProc(validAxn.data[0].sql_stm, params));
-                    console.log("Result!!!!!: ", result);
+                const params = libApi.parseParams(validAxn, [lineData]);
                     
-                    // Handle the result
-                    for (const r of result) {
-                        if (r.p_msg !== 'ok') {
-                            throw new Error(r.p_msg);
+                // Create a promise for executing the stored procedure and add it to the array
+                const promise = t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8)`, params)
+                    .then((result) => { 
+                        if (result[0].p_msg !== 'ok') {
+                            return { data: result[0].p_msg, message: "Failed" };
+                        } else {
+                            return { data: result[0].p_msg, message: "Success" };
                         }
-                    }
+                    })
+                    .catch((error) => { 
+                        console.error('Error occurred in stored procedure execution:', error.message, { item, params });
+                        // Log the full error object to capture stack trace and other details
+                        console.error(error);
+                        return { data: error, message: "Failed" }
+                    });
+                
+                promises.push(promise);
+            };
 
-                    return { status: 'Success', message: 'Item processed successfully' };
-                } catch (error) {
-                    console.error("Error executing stored procedure:", error);
-                    throw new Error(error.message || error);
-                }
-            });
-
-            // Wait for all promises to resolve
+            // Use Promise.all to execute all promises concurrently
             const results = await Promise.all(promises);
 
-            // If any operation failed, throw an error to trigger rollback
-            const failedResult = results.find(result => result.status === 'Failed');
-            if (failedResult) {
-                throw new Error(failedResult.message);
-            }
+            // Check each result for errors after all promises have resolved
+            for (const result3 of results) {
+                if (result3.message !== 'Success') {
+                    return res.status(400).send(libApi.response(result3.data, 'Failed'));
+                };
+            };
 
-            return true;  // Commit the transaction if everything is successful
-        });
-
-        // Send success response
+            // If everything is successful, return the results
+            return results;
+        });        
+             
         return res.send(libApi.response('ok', 'Success'));
     } catch (err) {
         console.error("Error during actionSave:", err);

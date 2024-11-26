@@ -17,7 +17,7 @@ function msgAddrObject(emailAddr) {
         let pos = emailAddr.indexOf('<');
         this.name = pos > 0 ? emailAddr.substring(0, pos).trim() : null;
         this.email = pos > 0 ? emailAddr.substring(pos + 1, emailAddr.indexOf('>')).trim() : emailAddr;
-    }
+    };
 }
 
 /**

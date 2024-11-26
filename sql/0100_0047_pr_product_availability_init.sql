@@ -3,6 +3,9 @@ CREATE OR REPLACE PROCEDURE pr_product_availability_init (
 	OUT p_msg text, 
 	IN p_start_dt date,
 	IN p_end_dt date,
+	IN p_rid integer,
+	IN p_axn character varying(255),
+	IN p_url character varying(255),
 	IN p_is_debug integer DEFAULT 0
 )
 LANGUAGE 'plpgsql'

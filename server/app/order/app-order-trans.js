@@ -16,7 +16,6 @@ const SERVICE = FILE.replace('.js', '');
 
 function AppOrderTrans() {};
 
-
 AppOrderTrans.prototype.orderObject = function(o = {}) {
     const d = {
         current_uid: null,
