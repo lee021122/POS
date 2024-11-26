@@ -1,7 +1,7 @@
 {
     "db": {
         "host": "localhost",
-        "port": 5432,
+        "port": 5050,
         "name": "pos2",
         "user": "leehao",
         "password": "leehao", 

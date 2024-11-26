@@ -25,6 +25,7 @@ AppUserGroup.prototype.userGroupObject = function(o = {}) {
         user_group_desc: null,
         is_in_use: null,
         display_seq: null,
+        
         action_id: null
     };
 

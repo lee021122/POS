@@ -105,8 +105,8 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 -- Module: Cashiering
 ('53c09823-1cc1-4f81-a29b-68b29d7870a8', 'app-cashiering-shift::o', 'Cashiering - Cashiering Shift Open', 'pr_cashiering_start', 'Cashiering Shift', 1, '000076', current_timestamp, 'admin', 0),
 ('6e14aa79-422d-4c81-814a-74d58b908ae0', 'app-cashiering-shift::c', 'Cashiering - Cashiering Shift Close', 'pr_cashiering_close', 'Cashiering Shift', 1, '000077', current_timestamp, 'admin', 0),
-('13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'app-cashiering-shift::cp', 'Cashiering - Cashiering Shift Close Prepare Statement', 'pr_cashiering_prepare', 'Cashiering Shift', 1, '000078', current_timestamp, 'admin', 0),
-('1d3bdedd-7f39-4316-9116-375379b49219', 'app-cashiering-shift::sc', 'Cashiering - Current Cashiering Shift Show', 'pr_cashiering_current', 'Cashiering Shift', 1, '000079', current_timestamp, 'admin', 0),
+('13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'app-cashiering-shift::cp', 'Cashiering - Cashiering Shift Close Prepare Statement', 'fn_cashiering_prepare', 'Cashiering Shift', 1, '000078', current_timestamp, 'admin', 0),
+('1d3bdedd-7f39-4316-9116-375379b49219', 'app-cashiering-shift::sc', 'Cashiering - Current Cashiering Shift Show', 'fn_cashiering_current', 'Cashiering Shift', 1, '000079', current_timestamp, 'admin', 0),
 ('883e499e-6b3d-4ad2-9960-47a1db316565', 'app-cashiering-shift::fc', 'Cashiering - Cashiering Shift Force Close', 'pr_cashiering_force_close', 'Cashiering Shift', 1, '000080', current_timestamp, 'admin', 0)
 
 -- Module: Day-end Closing
@@ -198,10 +198,11 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '42fb72be-22d0-4f39-95db-377367c2d00f', 'is_debug', 'int', 12, 0, current_timestamp, 'admin'),
 -- prod-modifier::gl
 (gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'rid', 'int', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'axn', 'string', 3, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'url', 'string', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'is_debug', 'int', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '86548e95-e944-4ca7-8a17-ea70674a764c', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
 -- prod-modifier::gos
 (gen_random_uuid(), 'c2332147-f3fc-415c-aa91-7bb3cd720cdb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), 'c2332147-f3fc-415c-aa91-7bb3cd720cdb', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
@@ -689,7 +690,7 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'sell_price', 'money', 11, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'addon_amt', 'money', 12, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'amt', 'money', 13, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'qty', 'integer', 14, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'qty', 'int', 14, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'discount_id', 'id', 15, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'discount_amt', 'money', 16, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'discount_pct', 'money', 17, 0, current_timestamp, 'admin'),
@@ -700,11 +701,10 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'remarks', 'string', 22, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'coupon_no', 'string', 23, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'coupon_id', 'id', 24, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'doc_no', 'string', 25, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'rid', 'int', 26, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'axn', 'string', 27, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'url', 'string', 28, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'is_debug', 'int', 29, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'rid', 'int', 25, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'axn', 'string', 26, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'url', 'string', 27, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'fe0a9ce3-4e99-49ea-8520-eab8e947bbe6', 'is_debug', 'int', 28, 0, current_timestamp, 'admin'),
 
 -- Set Addon
 -- app-order-trans::sa
@@ -732,6 +732,10 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'discount_id', 'id', 7, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'override_by', 'string', 8, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'override_remarks', 'text', 9, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'rid', 'int', 10, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'axn', 'string', 11, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'url', 'string', 12, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'is_debug', 'int', 13, 0, current_timestamp, 'admin'),
 
 -- Bill Discount
 -- app-order-trans::bd
@@ -837,17 +841,16 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 
 -- app-cashiering-shift::cp
 (gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'tr_date', 'dt', 3, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'user_ip', 'string', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'rid', 'int', 5, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'axn', 'string', 6, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'url', 'string', 7, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'is_debug', 'int', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'tr_date', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'user_ip', 'string', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'axn', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
 
 -- app-cashiering-shift::sc
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'cashier_id', 'string', 2, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'tr_date', 'dt', 3, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'axn', 'string', 5, 0, current_timestamp, 'admin'),

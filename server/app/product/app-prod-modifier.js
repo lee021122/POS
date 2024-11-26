@@ -190,8 +190,8 @@ AppProdModifier.prototype.modifierOptSave = async function(req, res) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
 
-         // Put the process inside a transaction
-         const result = await pgSql.runTransaction(async (t) => {
+        // Put the process inside a transaction
+        const result = await pgSql.runTransaction(async (t) => {
             // Prepare an array to hold individual promises
             const promises = [];
 
@@ -327,7 +327,11 @@ AppProdModifier.prototype.linkProduct = async function(req, res) {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
 
-        return res.send(libApi.response(result, 'Success'));
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));

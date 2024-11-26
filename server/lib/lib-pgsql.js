@@ -114,6 +114,7 @@ Object.defineProperty(pgSql, 'SQL_ACTION', { get: function () { return 'fn_actio
  * @param {Array} cols
  * @param {Array} params 
  * @returns 
+ * // Normal Select Statement
  */
 pgSql.getTable = async function (tb_name, sql, cols) {
     try {
@@ -161,7 +162,7 @@ pgSql.validProcName = async function (proc_name) {
     return regex.test(proc_name);
 }
 
-
+// Run Function
 pgSql.executeFunction = async function (fn_name, params) {
     try {
         // Ensure function name is safe to use
@@ -201,6 +202,7 @@ pgSql.getAction = async function (axn_code) {
     }
 };
 
+// Call Store Procedure
 pgSql.executeStoreProc = async function (sp_name, params) {
     try {
         if (!pgSql.validProcName(sp_name)) {
@@ -220,20 +222,20 @@ pgSql.executeStoreProc = async function (sp_name, params) {
     }
 };
 
-pgSql.toSql = function (data_type, v) {
-    if (data_type === pgSql.PARAMS_STRING) {
-        return `'${v}'`
-    } else if (data_type === pgSql.PARAMS_INTEGER) {
-        return libShared.toInt(v);
-    } else if (data_type === pgSql.PARAMS_MONEY) {
-        return libShared.toFloat(v);
-    } 
-    // else if (data_type === pgSql.PARAMS_DATE) {
-    //     return 
-    // } else if (data_type === pgSql.PARAMS_DATETIME) {
-    //     return 
-    // }
-}
+// pgSql.toSql = function (data_type, v) {
+//     if (data_type === pgSql.PARAMS_STRING) {
+//         return `'${v}'`
+//     } else if (data_type === pgSql.PARAMS_INTEGER) {
+//         return libShared.toInt(v);
+//     } else if (data_type === pgSql.PARAMS_MONEY) {
+//         return libShared.toFloat(v);
+//     } 
+//     // else if (data_type === pgSql.PARAMS_DATE) {
+//     //     return 
+//     // } else if (data_type === pgSql.PARAMS_DATETIME) {
+//     //     return 
+//     // }
+// }
 
 pgSql.appendLog = async function (log_type, log_data) {
     

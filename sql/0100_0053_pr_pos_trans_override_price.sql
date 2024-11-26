@@ -35,9 +35,26 @@ DECLARE
 	v_tax_amt1_calc numeric(15,4);
 	v_tax_pct2 numeric(15, 2);
 	v_tax_amt2_calc numeric(15, 4);
+	v_doc_no character varying(50);
+	v_now CONSTANT timestamp = current_timestamp;
+	v_msg text;
 	module_code text;
+	audit_log text;
 BEGIN
 /* 0100_0053_pr_pos_trans_override_price
+
+	CALL pr_pos_trans_override_price (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_order_trans_id => '0ab06e15-76cf-4d32-9ec1-82eaf07e7f28',
+		p_order_trans_item_line_id => 'a882a696-5fb5-4256-8c20-740b92b1fa3a',
+		p_sell_price => 5,
+		p_override_by => null,
+		p_override_remarks => 'testing123456789',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
 
 */
 
@@ -50,16 +67,43 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	IF fn_to_guid(p_order_trans_id) = fn_empty_guid()
+	OR NOT EXISTS (
+		SELECT order_trans_id
+		FROM tb_order_trans
+		WHERE
+			order_trans_id = p_order_trans_id
+	) THEN
+		p_msg := 'Invalid Bill!!';
+		RETURN;
+	END IF; 
+	
+	IF fn_to_guid(p_order_trans_item_line_id) = fn_empty_guid()
+	OR NOT EXISTS (
+		SELECT order_trans_item_line_id
+		FROM tb_order_trans_item_line
+		WHERE
+			order_trans_id = p_order_trans_id
+			AND order_trans_item_line_id = p_order_trans_item_line_id
+	) THEN
+		p_msg := 'Invalid Item Line!!';
+		RETURN;
+	END IF;
+	
 	IF COALESCE(p_sell_price, 0) <= 0 THEN
 		p_msg := 'Invalid Amount!!';
 		RETURN;
 	END IF;
 	
+	IF p_override_by IS NULL THEN
+		p_override_by := p_current_uid;
+	END IF;
+	
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	SELECT tr_type, tr_status, tr_date, qty, product_id
-	INTO v_tr_type, v_tr_status, v_tr_date, v_qty, v_product_id
+	SELECT tr_type, tr_status, tr_date, qty, product_id, doc_no
+	INTO v_tr_type, v_tr_status, v_tr_date, v_qty, v_product_id, v_doc_no
 	FROM tb_order_trans_item_line
 	WHERE 
 		order_trans_id = p_order_trans_id 
@@ -82,13 +126,13 @@ BEGIN
 			FROM tb_product
 			WHERE product_id = v_product_id;
 			
-			SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
+			SELECT final_price, unit_price, tax_pct1, tax_amt1_calc, tax_pct2, tax_amt2_calc
 			INTO v_amt, v_unit_price_new, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
 			FROM fn_tax_calculation (
 				p_tax_code1 => v_tax_code1,
 				p_tax_code2 => v_tax_code2,
-				p_tax_include_tax1 => v_amt_include_tax1,
-				p_tax_include_tax2 => v_amt_include_tax2,
+				p_amt_include_tax1 => v_amt_include_tax1,
+				p_amt_include_tax2 => v_amt_include_tax2,
 				p_calc_tax2_after_tax1 => v_calc_tax2_after_tax1,
 				p_qty => v_qty,
 				p_amt => p_sell_price

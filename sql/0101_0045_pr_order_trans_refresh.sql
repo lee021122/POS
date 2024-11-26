@@ -137,8 +137,6 @@ BEGIN
 	
 	END IF;
 	
-	RAISE NOTICE 'v_outstanding_amt: %', v_outstanding_amt;
-	
 	-- Update Amount
 	UPDATE tb_order_trans
 	SET
@@ -150,6 +148,20 @@ BEGIN
 	WHERE 
 		order_trans_id = p_order_trans_id 
 		AND doc_no = p_doc_no;
+		
+	IF v_outstanding_amt = 0 THEN
+		
+		-- Update trans table is-occ to 0
+		UPDATE tb_order_trans_table
+		SET 
+			order_trans_id = null,
+			doc_no = null,
+			is_occ = 0
+		WHERE 
+			order_trans_id = p_order_trans_id
+			AND doc_no = p_doc_no;
+			
+	END IF;
 		
 	p_msg := 'ok';
 

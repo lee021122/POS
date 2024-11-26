@@ -11,7 +11,7 @@ CREATE OR REPLACE PROCEDURE pr_pos_trans_item_disc (
 	IN p_rid integer,
 	IN p_axn character varying(255),
 	IN p_url character varying(255),
-	IN p_is_default integer DEFAULT 0
+	IN p_is_debug integer DEFAULT 0
 ) 
 LANGUAGE 'plpgsql'
 AS $BODY$
@@ -37,12 +37,28 @@ DECLARE
 	v_unit_price_new numeric(15, 4);
 	v_tax_amt1_calc numeric(15, 4);
 	v_tax_amt2_calc numeric(15, 4);
+	v_product_id uuid;
 	v_msg text;
 	v_now CONSTANT timestamp = current_timestamp;
 	audit_log text;
 	module_code text;
 BEGIN
 /*
+
+	CALL pr_pos_trans_item_disc (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_order_trans_id => '0ab06e15-76cf-4d32-9ec1-82eaf07e7f28',
+		p_order_trans_item_line_id => 'a882a696-5fb5-4256-8c20-740b92b1fa3a', 
+		p_discount_amt => null,
+		p_discount_pct => 50,
+		p_discount_id => null,
+		p_override_by => null,
+		p_override_remarks => 'testing',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
 
 */
 	
@@ -55,6 +71,17 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	IF fn_to_guid(p_order_trans_id) = fn_empty_guid()
+	OR NOT EXISTS (
+		SELECT order_trans_id
+		FROM tb_order_trans
+		WHERE
+			order_trans_id = p_order_trans_id
+	) THEN
+		p_msg := 'Invalid Bill!!';
+		RETURN;
+	END IF; 
+	
 	IF fn_to_guid(p_order_trans_item_line_id) = fn_empty_guid()
 	OR NOT EXISTS (
 		SELECT order_trans_item_line_id
@@ -67,28 +94,32 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF p_discount_pct <= 0 THEN
+	IF p_discount_pct <= 0 AND COALESCE(p_discount_amt, NULL::numeric) = NULL THEN
 		p_msg := 'Discount percent must greater than 0!!';
 		RETURN;
 	END IF;
 	
-	IF p_discount_amt <= 0 THEN
+	IF p_discount_amt <= 0 AND COALESCE(p_discount_pct, NULL::numeric) = NULL THEN
 		p_msg := 'Discount amount must greater than 0!!';
 		RETURN;
+	END IF;
+	
+	IF p_override_by IS NULL THEN
+		p_override_by := p_current_uid;
 	END IF;
 
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	SELECT b.tax_code1, b.tax_code2, b.amt_include_tax1, b.amt_include_tax2, b.calc_tax2_after_tax1, b.cost, a.qty, a.amt, a.tr_status, a.doc_no
-	INTO v_tax_code1, v_tax_code2, v_amt_include_tax1, v_amt_include_tax2, v_calc_tax2_after_tax1, v_cost_old, v_qty, v_sell_amt_old, v_tr_status, v_doc_no
+	SELECT b.tax_code1, b.tax_code2, b.amt_include_tax1, b.amt_include_tax2, b.calc_tax2_after_tax1, b.cost, a.qty, a.amt, a.tr_status, a.doc_no, a.product_id
+	INTO v_tax_code1, v_tax_code2, v_amt_include_tax1, v_amt_include_tax2, v_calc_tax2_after_tax1, v_cost_old, v_qty, v_sell_amt_old, v_tr_status, v_doc_no, v_product_id
 	FROM tb_order_trans_item_line a
 	INNER JOIN tb_product b ON b.product_id = a.product_id
 	WHERE
 		a.order_trans_id = p_order_trans_id
 		AND a.order_trans_item_line_id = p_order_trans_item_line_id;
 		
-	v_disc_amt := v_sell_amt_old * COALESCE(p_diacount_pct, 0) / 100 + COALESCE(p_discount_amt, 0);
+	v_disc_amt := v_sell_amt_old * COALESCE(p_discount_pct, 0) / 100 + COALESCE(p_discount_amt, 0);
 	
 	v_sell_amt_new := v_sell_amt_old * (1 - COALESCE(p_discount_pct, 0) / 100) * (1 - COALESCE(p_discount_amt, 0) / v_sell_amt_old);
 	
@@ -98,13 +129,13 @@ BEGIN
 	END IF;
 	
 	-- Recalculate the tax
-	SELECT final_price, unit_price, tax_pct1, tax_amt_calc1, tax_pct2, tax_amt_calc2
+	SELECT final_price, unit_price, tax_pct1, tax_amt1_calc, tax_pct2, tax_amt2_calc
 	INTO v_amt, v_unit_price_new, v_tax_pct1, v_tax_amt1_calc, v_tax_pct2, v_tax_amt2_calc
 	FROM fn_tax_calculation (
 		p_tax_code1 => v_tax_code1,
 		p_tax_code2 => v_tax_code2,
-		p_tax_include_tax1 => v_amt_include_tax1,
-		p_tax_include_tax2 => v_amt_include_tax2,
+		p_amt_include_tax1 => v_amt_include_tax1,
+		p_amt_include_tax2 => v_amt_include_tax2,
 		p_calc_tax2_after_tax1 => v_calc_tax2_after_tax1,
 		p_qty => v_qty,
 		p_amt => v_sell_amt_new
@@ -148,6 +179,11 @@ BEGIN
 	END IF;
 	
 	p_msg := 'ok';
+	
+	audit_log := 'Item Discount - running by: ' || p_override_by::text || ', ' ||
+					'Discount Percent: ' || p_discount_pct::text || ', ' ||
+					'Discount Amount: ' || p_discount_amt::text || ', ' ||
+					'Item: ' || v_product_id::text || '.';
 	
 	-- Create Audit Log
 	CALL pr_sys_append_audit_log (

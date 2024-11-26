@@ -47,12 +47,12 @@ BEGIN
 		p_amt_include_tax2 => 1, 
 		p_calc_tax2_after_tax1 => 0, 
 		p_qty => 1,
-		p_amt => 9	
+		p_amt => 8	
 	); 
 	
 */
     -- Ensure qty is not zero or negative
-    IF p_qty <= 0 THEN 
+    IF COALESCE(p_qty, 0) <= 0 THEN 
         p_qty := 1; 
     END IF;
 

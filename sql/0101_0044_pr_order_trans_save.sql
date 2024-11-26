@@ -94,6 +94,12 @@ BEGIN
 	
 	IF p_tr_date IS NULL THEN
 		p_tr_date := fn_get_current_trans_dt();
+	ELSE	
+		-- check tr_date cannot bigger than current_dt
+		IF p_tr_date > v_today_dt THEN
+			p_msg := 'Transaction Date cannot greater than current date!!';
+			RETURN;
+		END IF;
 	END IF;
 	
 	IF p_tr_date < v_today_dt THEN

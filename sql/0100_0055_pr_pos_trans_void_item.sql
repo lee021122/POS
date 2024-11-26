@@ -24,9 +24,22 @@ DECLARE
 	v_qty integer;
 	v_product_id uuid;
 	v_amt_old numeric(15, 4);
+	v_doc_no character varying(50);
 	v_msg text;
 BEGIN
 /*
+
+	CALL pr_pos_trans_void_item (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_order_trans_id => '0ab06e15-76cf-4d32-9ec1-82eaf07e7f28',
+		p_order_trans_item_line_id => 'a882a696-5fb5-4256-8c20-740b92b1fa3a',
+		p_override_by => null,
+		p_override_remarks => 'testing12345',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
 
 */
 
@@ -39,22 +52,38 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
-	IF NOT EXISTS (
+	IF fn_to_guid(p_order_trans_id) = fn_empty_guid()
+	OR NOT EXISTS (
+		SELECT order_trans_id
+		FROM tb_order_trans
+		WHERE
+			order_trans_id = p_order_trans_id
+	) THEN
+		p_msg := 'Invalid Bill!!';
+		RETURN;
+	END IF; 
+	
+	IF fn_to_guid(p_order_trans_item_line_id) = fn_empty_guid()
+	OR NOT EXISTS (
 		SELECT order_trans_item_line_id
-		FROM tb_order_trans_item_line 
-		WHERE 
+		FROM tb_order_trans_item_line
+		WHERE
 			order_trans_id = p_order_trans_id
 			AND order_trans_item_line_id = p_order_trans_item_line_id
 	) THEN
 		p_msg := 'Invalid Item Line!!';
 		RETURN;
 	END IF;
+	
+	IF p_override_by IS NULL THEN
+		p_override_by := p_current_uid;
+	END IF;
 
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	SELECT tr_status, tr_date, qty, product_id, amt
-	INTO v_tr_status, v_tr_date, v_qty, v_product_id, v_amt_old
+	SELECT tr_status, tr_date, qty, product_id, amt, doc_no
+	INTO v_tr_status, v_tr_date, v_qty, v_product_id, v_amt_old, v_doc_no
 	FROM tb_order_trans_item_line
 	WHERE 
 		order_trans_id = p_order_trans_id 
@@ -67,7 +96,7 @@ BEGIN
 		tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc, void_on, void_by
 	)
 	SELECT 
-		order_trans_item_line_id, created_on, created_by, tr_date, tr_type, tr_status, doc_no, product_id, qty, cost, sell_price, seq, order_trans_id, discount_id,
+		order_trans_item_line_id, created_on, created_by, tr_date, tr_type, 'X', doc_no, product_id, qty, cost, sell_price, seq, order_trans_id, discount_id,
 		discount_amt, discount_pct, total_disc_amt, is_pymt, pymt_mode_id, ref_no, remarks, amt, price_override_on, price_override_by, coupon_no, tax_code1, 
 		tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc, v_now, p_override_by
 	FROM tb_order_trans_item_line
@@ -94,8 +123,6 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	p_msg := 'ok';
-		
 	p_msg := 'ok';
 	
 	-- Create Audit Log

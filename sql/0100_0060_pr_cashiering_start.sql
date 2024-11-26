@@ -22,6 +22,16 @@ DECLARE
 BEGIN
 /* 0100_0060_pr_cashiering_start
 
+	CALL pr_cashiering_start (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_tr_date => '20241122',
+		p_user_ip => '127.0.0.1', 			
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
+
 */
 
 	IF p_is_debug = 1 THEN
@@ -46,7 +56,7 @@ BEGIN
 	SELECT pos_station_id
 	INTO v_pos_station_id
 	FROM tb_pos_station
-	WHERE pos_station_id = p_user_ip;
+	WHERE ip = p_user_ip;
 	
 	IF v_pos_station_id IS NULL THEN
 		v_pos_station_id = '???';
@@ -78,7 +88,7 @@ BEGIN
 	INSERT INTO tb_cashiering (
 		cashiering_id, created_on, created_by, modified_on, modified_by, tr_date, pos_station_ip, cashier_id, ip, start_on
 	) VALUES (
-		p_cashiering_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, v_pos_station_id, p_current_uid, v_now
+		p_cashiering_id, v_now, p_current_uid, v_now, p_current_uid, p_tr_date, v_pos_station_id, p_current_uid, p_user_ip, v_now
 	);
 	
 	audit_log := 'Start Cashiering Shirt on ' || v_now::text || 

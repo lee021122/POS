@@ -24,6 +24,18 @@ DECLARE
 BEGIN
 /* 0100_0061_pr_cashiering_close
 
+	CALL pr_cashiering_close (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_tr_date => '2024-11-22',
+		p_user_ip => '127.0.0.1',
+		p_remarks => null,
+		p_total_collection => null,
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
+
 */
 
 	IF p_is_debug = 1 THEN
@@ -49,7 +61,7 @@ BEGIN
 	SELECT pos_station_id
 	INTO v_pos_station_id
 	FROM tb_pos_station
-	WHERE pos_station_id = p_user_ip;
+	WHERE ip = p_user_ip;
 	
 	IF v_pos_station_id IS NULL THEN
 		v_pos_station_id = '???';

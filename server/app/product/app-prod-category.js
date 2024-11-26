@@ -76,7 +76,7 @@ AppProdCategory.prototype.save = async function (req, res) {
             };
         };
 
-        o2[0].url = req.url;
+        o2[0].url = req.baseUrl;
         
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         console.log("action: ", action);

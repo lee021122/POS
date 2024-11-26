@@ -16,8 +16,12 @@ const tableSec = require('./app/settings/app-setting-table-sec');
 const customer = require('./app/app-customer');
 const supplier = require('./app/app-supplier');
 const generalSet = require('./app/settings/app-setting-general');
+const cashier = require('./app/cashiering/app-cashiering-shift');
 const usergrp = require('./app/user/app-user-group');
 const user = require('./app/user/app-users');
+
+// Order process
+const order = require('./app/order/app-order-trans');
 
 app.use(cors());
 app.use(express.json());
@@ -41,6 +45,9 @@ app.use('/spl', supplier);
 app.use('/gs', generalSet);
 app.use('/ug', usergrp);
 app.use('/u', user);
+
+app.use('/ord', order)
+app.use('/csh', cashier);
 
 app.listen(userConfig.PORT, () => {
     console.log(`Server running on PORT: ${userConfig.PORT}`);

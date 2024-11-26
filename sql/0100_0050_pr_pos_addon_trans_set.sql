@@ -23,6 +23,17 @@ DECLARE
 BEGIN
 /* 0100_0050_pr_pos_addon_trans_set
 	
+	CALL pr_pos_addon_trans_set (
+		p_current_uid => 'tester',
+		p_msg => null,
+		p_order_trans_id => 'a426559b-c5e4-4e62-8185-44582732107c',
+		p_order_trans_item_line_id => '9b3f16b1-c812-46c5-a143-5f449f7372b4',
+		p_modifier_option_id => 'dc4320cf-2188-4a9b-9760-abfe8a4c1c67',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
+	
 */
 
 	IF p_is_debug = 1 THEN
@@ -34,6 +45,15 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	IF NOT EXISTS (
+		SELECT order_trans_item_line_id
+		FROM tb_order_trans_item_line
+		WHERE order_trans_item_line_id = p_order_trans_item_line_id
+	) THEN
+		p_msg := 'Invalid Item Line';
+		RETURN;
+	END IF;
+	
 	IF fn_to_guid(p_modifier_option_id) = fn_empty_guid() THEN
 		p_msg := 'Modifier Option cannot be blank!!';
 		RETURN;

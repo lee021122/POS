@@ -69,13 +69,13 @@ BEGIN
 	CALL public.pr_product_save(
         p_current_uid        => 'tester', 
         p_msg                => null,           
-        p_product_id         => 'a00143dd-09a1-47ce-8bb5-ad3f8a28805a',      
-        p_product_desc       => 'Nasi Goreng Biasa', 
+        p_product_id         => '2511994e-12d5-488d-9a9b-8c7a49621903',      
+        p_product_desc       => 'Nasi Goreng Cina', 
         p_product_code       => 'P0004',            
         p_category_id        => 'd437bedc-4e02-428c-a3e6-f4f873cbb675',
         p_product_tag        => null,           
-        p_product_img_path   => '6a004e30-2ec7-413f-a02c-28dfc1c520bc.jpeg',  
-		p_inventory_type_id  => '',
+        p_product_img_path   => 'ab441325-0ba3-478c-9e24-b0dd5eca5f95.jpeg',  
+		p_inventory_type_id  => '07b41650-bd18-42a9-a2e3-4ac76534301b',
         p_supplier_id        => null, 
         p_pricing_type_id    => '7301109c-cef9-4df0-9824-9e5d304ca49f', 
         p_cost               => 9,                
@@ -91,7 +91,7 @@ BEGIN
         p_is_allow_modifier  => 1,                     
         p_is_enable_track_stock => 1,                  
         p_is_popular_item    => 0,
-		p_meal_period => 'a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae',
+		p_meal_period => '488d591e-9441-434f-a366-db1369c767c5;;a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae',
 		p_rid => null,
 		p_axn => null,
 		p_url => null
@@ -162,7 +162,7 @@ BEGIN
 -- 		RETURN;
 -- 	END IF;
 
-	IF LENGTH(COALESCE(p_inventory_type_id, '')) = 0 THEN 
+	IF fn_to_guid(p_inventory_type_id) = fn_empty_guid() THEN 
 		p_msg := 'Inventory Type cannot be blank!!';
 		RETURN;
 	END IF;
