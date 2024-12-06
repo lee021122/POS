@@ -8,6 +8,7 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_product_tag character varying(255),
 	IN p_product_img_path character varying(255),
 	IN p_inventory_type_id uuid,
+	IN p_sku_code character varying(50),
 	IN p_supplier_id uuid,
 	IN p_pricing_type_id uuid,
 	IN p_cost numeric(15, 4),
@@ -22,8 +23,10 @@ CREATE OR REPLACE PROCEDURE public.pr_product_save(
 	IN p_is_enable_kitchen_printer integer,
 	IN p_is_allow_modifier integer,
 	IN p_is_enable_track_stock integer,
+	IN p_is_enable_daily_avail integer,
 	IN p_is_popular_item integer,
 	IN p_meal_period text,
+	IN p_pos_printer text,
 	IN p_rid integer,
 	IN p_axn character varying(255),
 	IN p_url character varying(255),
@@ -39,7 +42,6 @@ DECLARE
 	audit_log text;
 	module_code text;
 	v_final_price numeric(15, 4);
-	v_unit_price numeric(15, 4);
 	v_product_desc_old character varying;
 	v_product_code_old character varying;
 	v_category_id_old uuid;
@@ -59,9 +61,13 @@ DECLARE
 	v_is_enable_kitchen_printer_old integer;
 	v_is_allow_modifier_old integer;
 	v_is_enable_track_stock_old integer;
+	v_is_enable_daily_avail_old integer;
 	v_is_popular_item_old integer;
 	meal_period_record RECORD;  -- Define product_record as a RECORD types
+	pos_printer_record RECORD;
 	v_inventory_type_id_old uuid;
+	v_sku_code_old character varying(50);
+	v_msg text;
 BEGIN
 /* 0100_0007_pr_product_save
 -- Save Product
@@ -206,6 +212,10 @@ BEGIN
         p_meal_period_id uuid
     );
 	
+	CREATE TEMPORARY TABLE pos_printer_tb (
+        p_pos_printer_id uuid
+    );
+	
 	INSERT INTO meal_period_tb (p_meal_period_id)
 	SELECT 
 		CAST(TRIM(value) AS uuid)
@@ -224,12 +234,30 @@ BEGIN
 		END IF;
 	END LOOP;
 	
+	INSERT INTO pos_printer_tb (p_pos_printer_id)
+	SELECT 
+		CAST(TRIM(value) AS uuid)
+	FROM unnest(string_to_array(p_pos_printer, ';;')) AS value
+	WHERE TRIM(value) IS NOT NULL AND TRIM(value) <> '';
+	
+	FOR pos_printer_record IN SELECT p_pos_printer_id FROM pos_printer_tb LOOP
+		-- Check if the product_id exists in tb_product
+		IF NOT EXISTS (
+			SELECT 1
+			FROM tb_pos_printer a
+			WHERE a.pos_printer_id = pos_printer_record.p_pos_printer_id
+		) THEN
+			p_msg := 'Invalid POS Printer!!';
+			RETURN;
+		END IF;
+	END LOOP;
+	
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
 	-- Calc the tax 
-	SELECT final_price, unit_price
-	INTO v_final_price, v_unit_price
+	SELECT final_price
+	INTO v_final_price
 	FROM fn_tax_calculation (
 		p_tax_code1 => p_tax_code1,
 		p_tax_code2 => p_tax_code2,
@@ -237,7 +265,7 @@ BEGIN
 		p_amt_include_tax2 => p_amt_include_tax2, 
 		p_calc_tax2_after_tax1 => p_calc_tax2_after_tax1, 
 		p_qty => 1,
-		p_amt => p_cost	
+		p_amt => p_sell_price	
 	);
 	
 	IF fn_to_guid(p_product_id) = fn_empty_guid() THEN
@@ -248,11 +276,11 @@ BEGIN
 		INSERT INTO tb_product (
 			product_id, created_on, created_by, modified_on, modified_by, product_desc, product_code, category_id, product_tag, product_img_path, supplier_id,
 			pricing_type_id, cost, sell_price, tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, is_in_use, display_seq, 
-			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id
+			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id, sku_code
 		) VALUES (
 			p_product_id, v_now, p_current_uid, v_now, p_current_uid, p_product_desc, p_product_code, p_category_id, p_product_tag, p_product_img_path, p_supplier_id,
-			p_pricing_type_id, v_final_price, v_unit_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
-			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item, p_inventory_type_id
+			p_pricing_type_id, p_cost, v_final_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
+			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item, p_inventory_type_id, p_sku_code
 		);
 		
 		FOR meal_period_record IN SELECT p_meal_period_id FROM meal_period_tb LOOP
@@ -261,6 +289,16 @@ BEGIN
 				created_on, created_by, modified_on, modified_by, meal_period_id, product_id
 			) VALUES (
 				v_now, p_current_uid, v_now, p_current_uid, meal_period_record.p_meal_period_id, p_product_id
+			);
+
+		END LOOP;
+		
+		FOR pos_printer_record IN SELECT p_pos_printer_id FROM pos_printer_tb LOOP
+
+			INSERT INTO tb_pos_printer_product (
+				created_on, created_by, modified_on, modified_by, pos_printer_id, product_id
+			) VALUES (
+				v_now, p_current_uid, v_now, p_current_uid, pos_printer_record.p_pos_printer_id, p_product_id
 			);
 
 		END LOOP;
@@ -274,12 +312,12 @@ BEGIN
 		SELECT 
 			product_desc, product_code, category_id, product_tag, product_img_path, supplier_id, pricing_type_id, cost, sell_price, tax_code1,
 			amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, is_in_use, display_seq, is_enable_kitchen_printer, 
-			is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id
+			is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id, sku_code
 		INTO 
 			v_product_desc_old, v_product_code_old, v_category_id_old, v_product_tag_old, v_product_img_path_old, v_supplier_id_old, v_pricing_type_id_old, 
 			v_cost_old, v_sell_price_old, v_tax_code1_old, v_amt_include_tax1_old, v_tax_code2_old, v_amt_include_tax2_old, v_calc_tax2_after_tax1_old, 
 			v_is_in_use_old, v_display_seq_old, v_is_enable_kitchen_printer_old, v_is_allow_modifier_old, v_is_enable_track_stock_old, v_is_popular_item_old
-			v_inventory_type_id_old
+			v_inventory_type_id_old, v_sku_code_old
 		FROM tb_product
 		WHERE product_id = p_product_id;
 		
@@ -295,8 +333,8 @@ BEGIN
 			product_img_path = p_product_img_path,
 			supplier_id = p_supplier_id,
 			pricing_type_id = p_pricing_type_id,
-			cost = v_final_price,
-			sell_price = v_unit_price,
+			cost = p_cost,
+			sell_price = v_final_price,
 			tax_code1 = p_tax_code1,
 			amt_include_tax1 = p_amt_include_tax1,
 			tax_code2 = p_tax_code2, 
@@ -308,7 +346,8 @@ BEGIN
 			is_allow_modifier = p_is_allow_modifier, 
 			is_enable_track_stock = p_is_enable_track_stock, 
 			is_popular_item = p_is_popular_item,
-			inventory_type_id = p_inventory_type_id
+			inventory_type_id = p_inventory_type_id,
+			sku_code = p_sku_code
 		WHERE product_id = p_product_id;
 		
 		-- Update meal period product
@@ -324,6 +363,19 @@ BEGIN
 
 		END LOOP;
 		
+		-- Update pos printer product
+		DELETE FROM tb_pos_printer_product WHERE product_id = p_product_id;
+		
+		FOR pos_printer_record IN SELECT p_pos_printer_id FROM pos_printer_tb LOOP
+
+			INSERT INTO tb_pos_printer_product (
+				created_on, created_by, modified_on, modified_by, pos_printer_id, product_id
+			) VALUES (
+				v_now, p_current_uid, v_now, p_current_uid, pos_printer_record.p_pos_printer_id, p_product_id
+			);
+
+		END LOOP;
+		
 		-- Prepared Audit Log
 		audit_log = 'Updated Product Description from ' || v_product_desc_old || ' to ' || p_product_desc || ', ' ||
 					'Updated Product Code from ' || v_product_code_old || ' to ' || p_product_code || ', ' ||
@@ -331,10 +383,11 @@ BEGIN
 					'Updated Product Tag from ' || v_product_tag_old || ' to ' || p_product_tag || ', ' ||
 					'Updated Product Image Path from ' || v_product_img_path_old || ' to ' || p_product_img_path || ', ' ||
 					'Updated Inventory Type from ' || v_inventory_type_id_old || ' to ' || p_inventory_type_id || ', ' ||
+					'Updated SKU Code from ' || v_sku_code_old || ' to ' || p_sku_code || ', ' ||
 					'Updated Supplier from ' || v_supplier_id_old || ' to ' || p_supplier_id || ', ' ||
 					'Updated Pricing Type from ' || v_pricing_type_id_old || ' to ' || p_pricing_type_id || ', ' ||
 					'Updated Cost from ' || v_cost_old || ' to ' || p_cost || ', ' ||
-					'Updated Sell Price from ' || v_sell_price_old || ' to ' || v_unit_price || ', ' ||
+					'Updated Sell Price from ' || v_sell_price_old || ' to ' || v_final_price || ', ' ||
 					'Updated Tax Code 1 from ' || v_tax_code1_old || ' to ' || p_tax_code1 || ', ' ||
 					'Updated Amount Include Tax 1 from ' || v_amt_include_tax1_old || ' to ' || p_amt_include_tax1 || ', ' ||
 					'Updated Tax Code 2 from ' || v_tax_code2_old || ' to ' || p_tax_code2 || ', ' ||
@@ -346,6 +399,18 @@ BEGIN
 					'Updated Allow Modifier from ' || v_is_allow_modifier_old || ' to ' || p_is_allow_modifier || ', ' ||
 					'Updated Enable Track Stock from ' || v_is_enable_track_stock_old || ' to ' || p_is_enable_track_stock || ', ' ||
 					'Updated Is Popular Item from ' || v_is_popular_item_old || ' to ' || p_is_popular_item || '.'; 
+	END IF;
+	
+	IF fn_to_guid(p_inventory_type_id) = '6b24a5e7-e060-43b4-a2fb-555817e510e0'
+	AND COALESCE(p_is_enable_track_stock, 0) = 1 
+	THEN
+	
+		CALL pr_inventory_init (
+			p_current_uid => p_current_uid,
+			p_msg => v_msg,
+			p_product_id => p_product_id
+		);
+	
 	END IF;
 	
 	p_msg = 'ok';

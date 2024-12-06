@@ -19,6 +19,7 @@ const generalSet = require('./app/settings/app-setting-general');
 const cashier = require('./app/cashiering/app-cashiering-shift');
 const usergrp = require('./app/user/app-user-group');
 const user = require('./app/user/app-users');
+const rpt = require('./app/report/app-report');
 
 // Order process
 const order = require('./app/order/app-order-trans');
@@ -45,6 +46,7 @@ app.use('/spl', supplier);
 app.use('/gs', generalSet);
 app.use('/ug', usergrp);
 app.use('/u', user);
+app.use('/rpt', rpt);
 
 app.use('/ord', order)
 app.use('/csh', cashier);

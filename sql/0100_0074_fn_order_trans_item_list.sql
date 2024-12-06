@@ -7,9 +7,9 @@ CREATE OR REPLACE FUNCTION fn_order_trans_item_list (
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
 	order_trans_item_line_id uuid, 
-	modified_on timestamp without time zone, 
+	modified_on text, 
 	modified_by character varying, 
-	tr_date date, 
+	tr_date text, 
 	tr_type character varying, 
 	tr_status character varying, 
 	doc_no character varying, 
@@ -56,8 +56,9 @@ BEGIN
 	-- -------------------------------------
 	RETURN QUERY (
 		SELECT 
-			a.order_trans_item_line_id, a.modified_on, a.modified_by, a.tr_date, a.tr_type, a.tr_status, a.doc_no, a.product_id, b.product_desc, a.qty, 
-			a.sell_price, a.amt, a.tax_code1, a.tax_pct1, a.tax_amt1_calc, a.tax_code2, a.tax_pct2, a.tax_amt2_calc, a.pymt_mode_id, c.pymt_mode_desc
+			a.order_trans_item_line_id, to_char(a.modified_on, 'YYYY-MM-DD hh:MI:SS AM'), a.modified_by, to_char(a.tr_date, 'YYYY-MM-DD'), a.tr_type, a.tr_status, 
+			a.doc_no, a.product_id, b.product_desc, a.qty, a.sell_price, a.amt, a.tax_code1, a.tax_pct1, a.tax_amt1_calc, a.tax_code2, a.tax_pct2, a.tax_amt2_calc, 
+			a.pymt_mode_id, c.pymt_mode_desc
 		FROM tb_order_trans_item_line a
 		LEFT JOIN tb_product b ON b.product_id = a.product_id
 		LEFT JOIN tb_pymt_mode c ON c.pymt_mode_id = a.pymt_mode_id

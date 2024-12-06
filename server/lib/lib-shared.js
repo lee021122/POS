@@ -1,10 +1,19 @@
 const uuid = require('uuid');
 const crypto = require('crypto')
+const moment = require("moment-timezone")
 
 function libShared() {};
 
-libShared.money = '$'
+libShared.money = 'RM'
 libShared.imgFormat = ['.jpeg', '.jpg', '.png', '.gif', '.ico', '.bmp', '.tif', '.tiff', '.jpe', '.jfif'];
+
+// Timezone
+const timezone = 'Asia/Kuala_Lumpur';
+
+// Encrypt Logic
+const algorithm = 'aes-256-cbc'; // Encryption algorithm
+const key = crypto.randomBytes(32); // Must be 32 bytes for aes-256
+const iv = crypto.randomBytes(16); // Initialization vector
 
 /**
  * // Handle undefined and null
@@ -93,7 +102,7 @@ libShared.toUUID = function(v) {
     return null;
 };
 
-libShared.toDate = function (v) {
+libShared.toDate = function (v, timezone) {
     // If v is already a Date object, return it directly
     if (v instanceof Date) {
         return v;
@@ -105,10 +114,10 @@ libShared.toDate = function (v) {
     };
 
     // Try to parse the value as a date (handle date strings or numeric timestamps)
-    const date = new Date(v);
+    const date = moment.tz(v, timezone);
 
     // If the parsed date is invalid, return null
-    if (isNaN(date.getTime())) {
+    if (!date.isValid) {
         return null;
     }
 
@@ -128,10 +137,10 @@ libShared.toDateTime = function (v) {
     };
 
     // Try to parse the value as a datetime (handle datetime strings or numeric timestamps)
-    const dateTime = new Date(v);
+    const dateTime = moment.tz(v, timezone);
 
     // If the parsed datetime is invalid, return null
-    if (isNaN(dateTime.getTime())) {
+    if (!dateTime.isValid()) {
         return null;
     }
 
@@ -159,19 +168,19 @@ libShared.hashText = function (v) {
 
 libShared.convertObjProp = function (o, defObj, conversionMap) {
     const convert = (key, value) => {
-        console.log('Key:', key);           // Log the key
-        console.log('Value before conversion:', value); // Log value before conversion
+        //console.log('Key:', key);           // Log the key
+        //console.log('Value before conversion:', value); // Log value before conversion
 
         const converter = conversionMap[key];  // Get the specific converter for this key
-        console.log('Converter function:', converter ? converter.toString() : 'No converter'); // Log the function or no converter message
+        //console.log('Converter function:', converter ? converter.toString() : 'No converter'); // Log the function or no converter message
 
         if (converter) {
             const convertedValue = converter(value);  // Apply custom conversion logic
-            console.log('Converted Value:', convertedValue); // Log the result after conversion
+            //console.log('Converted Value:', convertedValue); // Log the result after conversion
             return convertedValue;
         }
         
-        console.log('No conversion applied. Returning original value:', value); // Log when no conversion happens
+        //console.log('No conversion applied. Returning original value:', value); // Log when no conversion happens
         return value;  // If no converter, return the value as-is
     };
 
@@ -182,6 +191,33 @@ libShared.convertObjProp = function (o, defObj, conversionMap) {
     }, {});
 };
 
+/**
+ * Encrypts a given text.
+ * @param {string} text - The plain text to encrypt.
+ * @returns {string} - The encrypted text in base64 format.
+ */
+libShared.encrypt = function (text) {
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    let encrypted = cipher.update(text, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    return `${iv.toString('base64')}:${encrypted}`; // Include IV with the ciphertext
+};
+
+/**
+ * Decrypts a given encrypted text.
+ * @param {string} encryptedData - The encrypted text in base64 format.
+ * @returns {string} - The decrypted plain text.
+ */
+libShared.decrypt = function (encryptedData) {
+    const [ivString, encryptedText] = encryptedData.split(':');
+    const ivBuffer = Buffer.from(ivString, 'base64');
+    const decipher = crypto.createDecipheriv(algorithm, key, ivBuffer);
+    let decrypted = decipher.update(encryptedText, 'base64', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+};
+
+console.log(libShared.toNewGuid());
 
 
 module.exports = libShared;

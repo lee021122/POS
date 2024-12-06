@@ -242,23 +242,26 @@ pgSql.appendLog = async function (log_type, log_data) {
 };
 
 // Add this function inside your pgSql object in the library
-pgSql.runTransaction = async function (cb) {
+pgSql.runTransaction = async function (operations) {
     try {
-        // Start a new transaction
+        // Start a transaction using `db.tx` (transaction)
         const result = await db.tx(async (t) => {
-            // Execute the transaction callback and pass the transaction object
-            return await cb(t); // Return the result from callback
+            // Inside the transaction, `t` is the transaction context which behaves like `db`
+            // `operations` is expected to be a function that will contain all transactional queries
+            // Each operation will be executed using the `t` object to ensure it's part of the transaction.
+
+            // Call the provided operations function and pass the transaction context
+            return await operations(t);
         });
 
-        // If everything is successful, return the result
+        // Return the result if everything goes fine
         return result;
-
-    } catch (err) {
-        // If there was an error, transaction will be rolled back automatically
-        console.error('Transaction failed:', err);
-        throw new Error('Transaction failed. Rolled back.');
+    } catch (error) {
+        console.error('Error occurred in transaction:', error);
+        throw error; // Rethrow the error so it can be handled by the caller
     }
 };
+
 
 
 

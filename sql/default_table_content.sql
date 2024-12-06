@@ -109,13 +109,27 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('6e14aa79-422d-4c81-814a-74d58b908ae0', 'app-cashiering-shift::c', 'Cashiering - Cashiering Shift Close', 'pr_cashiering_close', 'Cashiering Shift', 1, '000077', current_timestamp, 'admin', 0),
 ('13ec0e3c-02b4-4ade-b197-d8a14257c3a5', 'app-cashiering-shift::cp', 'Cashiering - Cashiering Shift Close Prepare Statement', 'fn_cashiering_prepare', 'Cashiering Shift', 1, '000078', current_timestamp, 'admin', 0),
 ('1d3bdedd-7f39-4316-9116-375379b49219', 'app-cashiering-shift::sc', 'Cashiering - Current Cashiering Shift Show', 'fn_cashiering_current', 'Cashiering Shift', 1, '000079', current_timestamp, 'admin', 0),
-('883e499e-6b3d-4ad2-9960-47a1db316565', 'app-cashiering-shift::fc', 'Cashiering - Cashiering Shift Force Close', 'pr_cashiering_force_close', 'Cashiering Shift', 1, '000080', current_timestamp, 'admin', 0)
+('883e499e-6b3d-4ad2-9960-47a1db316565', 'app-cashiering-shift::fc', 'Cashiering - Cashiering Shift Force Close', 'pr_cashiering_force_close', 'Cashiering Shift', 1, '000080', current_timestamp, 'admin', 0),
 
 -- Module: Day-end Closing
 
 -- Module: Dashboard
 
 -- Module: Reports
+('ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'app-report::dar', 'Report - Daily Availability Report', 'fn_rpt_daily_availability', 'Report', 0, '000083', current_timestamp, 'admin', 0),
+('d26ee328-d90d-4cd5-92b2-19e96c402e60', 'app-report::iss', 'Report - Item Sales Summary', 'fn_rpt_daily_availability', 'Report', 0, '000084', current_timestamp, 'admin', 0),
+('07074c6f-f8b4-4b52-9942-0aa58637f045', 'app-report::ds', 'Report - Daily Summary', 'fn_rpt_daily_availability', 'Report', 0, '000085', current_timestamp, 'admin', 0),
+('300ae174-59f9-4f92-93df-2c1c625319eb', 'app-report::ils', 'Report - Invoice Listing Summary', 'fn_rpt_invoice_listing_summ', 'Report', 0, '000086', current_timestamp, 'admin', 0),
+('6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'app-report::i86', 'Report - Item 86', 'fn_rpt_item86', 'Report', 0, '000087', current_timestamp, 'admin', 1),
+('a064d444-48a9-4d22-b6c6-763be83a5bb0', 'app-report::ccr', 'Report - Cashiering Collection Report', 'fn_rpt_cashiering_collection', 'Report', 0, '000088', current_timestamp, 'admin', 0),
+('583e859c-dc9e-43cd-a0e9-1e39212405c6', 'app-report::ivr', 'Report - Item Void Report', 'fn_rpt_item_void', 'Report', 0, '000089', current_timestamp, 'admin', 0),
+('9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'app-report::bvr', 'Report - Bill Void Report', 'fn_rpt_bill_void', 'Report', 0, '000090', current_timestamp, 'admin', 0),
+('6c72bbbe-2cda-492f-a23b-2a25854d877d', 'app-report::dr', 'Report - Discount Report', 'fn_rpt_discount', 'Report', 0, '000091', current_timestamp, 'admin', 0),
+('f3468548-f8e0-497e-85aa-58aeea6085a9', 'app-report::str', 'Report - Service Tax Report', 'fn_rpt_service_tax', 'Report', 0, '000092', current_timestamp, 'admin', 0),
+('4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'app-report::sstr', 'Report - Sales & Service Tax Report', 'fn_rpt_sst', 'Report', 0, '000093', current_timestamp, 'admin', 0),
+('d46d4192-ddcc-44f1-9b20-23f4247185d1', 'app-report::rss', 'Report - Restaurant Sales Summary', 'fn_rpt_restaurant_sales_summ', 'Report', 0, '000094', current_timestamp, 'admin', 0)
+
+
 
 select * from tb_action
 
@@ -153,26 +167,29 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'product_tag', 'string', 7, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'product_img_path', 'string', 8, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'inventory_type_id', 'id', 9, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'supplier_id', 'id', 10, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'pricing_type_id', 'id', 11, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'cost', 'money', 12, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'sell_price', 'money', 13, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'tax_code1', 'string', 14, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'amt_include_tax1', 'int', 15, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'tax_code2', 'string', 16, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'amt_include_tax2', 'int', 17, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'calc_tax2_after_tax1', 'int', 18, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_in_use', 'int', 19, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'display_seq', 'string', 20, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_enable_kitchen_printer', 'int', 21, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_allow_modifier', 'int', 22, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_enable_track_stock', 'int', 23, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_popular_item', 'int', 24, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'meal_period', 'text', 25, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'rid', 'int', 26, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'axn', 'string', 27, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'url', 'string', 28, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_debug', 'int', 29, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'sku_code', 'string', 10, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'supplier_id', 'id', 11, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'pricing_type_id', 'id', 12, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'cost', 'money', 13, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'sell_price', 'money', 14, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'tax_code1', 'string', 15, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'amt_include_tax1', 'int', 16, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'tax_code2', 'string', 17, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'amt_include_tax2', 'int', 18, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'calc_tax2_after_tax1', 'int', 19, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_in_use', 'int', 20, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'display_seq', 'string', 21, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_enable_kitchen_printer', 'int', 22, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_allow_modifier', 'int', 23, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_enable_track_stock', 'int', 24, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_enable_daily_avail ', 'int', 25, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_popular_item', 'int', 26, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'meal_period', 'text', 27, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'pos_printer', 'text', 28, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'rid', 'int', 29, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'axn', 'string', 30, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'url', 'string', 31, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'is_debug', 'int', 32, 0, current_timestamp, 'admin'),
 -- prod-setup::l
 (gen_random_uuid(), '346690c3-55c7-4f64-bf7f-f8fd3ddc6790', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), '346690c3-55c7-4f64-bf7f-f8fd3ddc6790', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
@@ -900,9 +917,19 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'axn', 'string', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'url', 'string', 6, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'is_debug', 'int', 7, 0, current_timestamp, 'admin')
+(gen_random_uuid(), '1d3bdedd-7f39-4316-9116-375379b49219', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
 
 -- app-cashiering-shift::fc
+
+
+-- app-report::das
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
 
 
 insert into tb_pricing_type (pricing_type_id, created_on, created_by, modified_on, modified_by, pricing_type_desc, is_in_use) values
@@ -975,5 +1002,11 @@ INSERT INTO tb_pos_printer_type (printer_type_id, created_on, created_by, printe
 
 -- Default Inventory Type
 INSERT INTO tb_inventory_type (inventory_type_id, created_on, created_by, modified_on, modified_by, inventory_type_desc, is_in_use, display_seq) values
-(gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'Pyhsical Inventory', 1, '000001'),
-(gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'Daily Product Availability', 1, '000002')
+('6b24a5e7-e060-43b4-a2fb-555817e510e0', current_timestamp, 'admin', current_timestamp, 'admin', 'Pyhsical Inventory', 1, '000001'),
+('07b41650-bd18-42a9-a2e3-4ac76534301b', current_timestamp, 'admin', current_timestamp, 'admin', 'Daily Product Availability', 1, '000002')
+
+-- Default Mail Type
+INSERT INTO tb_mail_type (mail_type_id, created_on, created_by, mail_type_desc, is_in_use) VALUES
+(1, current_timestamp, 'admin', 'Notification', 1),
+(2, current_timestamp, 'admin', 'Scheduler Report', 1),
+(3, current_timestamp, 'admin', 'Receipt', 1)

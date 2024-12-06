@@ -26,10 +26,13 @@ BEGIN
 	CALL pr_daily_availability_update (
 		p_current_uid => 'tester',
 		p_msg => null,
-		p_start_dt => '2024-11-26',
-		p_end_dt => '2024-11-30',
+		p_start_dt => '2024-12-04',
+		p_end_dt => '2024-12-31',
 		p_product_id => '2511994e-12d5-488d-9a9b-8c7a49621903',
-		p_qty => 50
+		p_qty => 10,
+		p_rid => null,
+		p_axn => null,
+		p_url => null
 	);
 	
 */
@@ -51,6 +54,16 @@ BEGIN
 	
 	END IF; 
 	
+	IF p_start_dt < fn_get_current_trans_dt() THEN
+		p_msg := 'Cannot set past date availability!!';
+		RETURN;
+	END IF;
+	
+	IF p_end_dt < p_start_dt THEN
+		p_msg := 'Invalid Date Range!!';
+		RETURN;
+	END IF;
+	
 	IF NOT EXISTS (
 		SELECT product_id 
 		FROM tb_product 
@@ -70,6 +83,7 @@ BEGIN
 	FROM tb_product_availability
 	WHERE product_id = p_product_id;
 	
+	-- Update the availability by using remaining qty + new adding qty
 	IF EXISTS (
 		SELECT product_id
 		FROM tb_product_availability
@@ -78,7 +92,7 @@ BEGIN
 	) THEN
 	
 		UPDATE tb_product_availability
-		SET qty = p_qty
+		SET qty = COALESCE(v_qty_old, 0) + p_qty
 		WHERE product_id = p_product_id;
 		
 	ELSE
@@ -88,7 +102,7 @@ BEGIN
 	
 	END IF;
 	
-	audit_log := 'Update product: ' || p_product_id || ' daily availability from ' || COALESCE(v_qty_old, 0)::text ||  ' to ' || p_qty::text || '.';
+	audit_log := 'Update product: ' || p_product_id || ' daily availability from ' || COALESCE(v_qty_old, 0)::text ||  ' to ' || (COALESCE(v_qty_old, 0) + p_qty)::text || '.';
 	
 	p_msg := 'ok';
 	

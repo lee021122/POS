@@ -47,7 +47,7 @@ DECLARE
 	v_cost numeric(15, 4);
 	v_seq integer;
 	v_new_amt numeric(15, 4);
-	v_new_cost numeric(15, 4);
+	v_new_sell_price numeric(15, 4);
 	v_now CONSTANT timestamp = current_timestamp;
 	v_today_dt CONSTANT date = current_date;
 	
@@ -250,7 +250,7 @@ BEGIN
 		FROM tb_product
 		WHERE product_id = p_product_id;
 		
-		v_new_amt := p_cost + COALESCE(p_addon_amt, 0);
+		v_new_amt := p_sell_price + COALESCE(p_addon_amt, 0);
 
 		-- Do Tax Calculation
 		SELECT final_price, unit_price, tax_pct1, tax_amt1_calc, tax_pct2, tax_amt2_calc
@@ -268,7 +268,7 @@ BEGIN
 		IF (COALESCE(p_discount_pct, 0) > 0 OR COALESCE(p_discount_amt, 0) > 0) THEN
 			
 			p_total_disc_amt := (p_qty * p_sell_price * COALESCE(p_discount_pct, 0) / 100) + COALESCE(p_discount_amt, 0);
-			v_new_cost := p_cost * (1 - COALESCE(p_discount_pct, 0) / 100) - COALESCE(p_discount_amt, 0);
+			v_new_sell_price := p_sell_price * (1 - COALESCE(p_discount_pct, 0) / 100) - COALESCE(p_discount_amt, 0);
 			
 			RAISE NOTICE 'Discount Pct: %, Discount Amt: %, Qty: %, Sell Price: %, Total Disc Amt: %, Cost: %', p_discount_pct, p_discount_amt, p_qty, p_sell_price, p_total_disc_amt, p_cost;
 			
@@ -281,7 +281,7 @@ BEGIN
 				v_amt_include_tax2,
 				v_calc_tax2_after_tax1,
 				p_qty,
-				v_new_cost
+				v_new_sell_price
 			);
 
 		END IF;
@@ -379,8 +379,8 @@ BEGIN
 			ref_no = p_ref_no, 
 			remarks = p_remarks, 
 			amt = p_amt, 
-			price_override_on = v_now, 
-			price_override_by = p_current_uid, 
+			price_override_on = v_price_override_on_old, 
+			price_override_by = v_price_override_by_old, 
 			coupon_no = p_coupon_no, 
 			coupon_id = p_coupon_id, 
 			tax_code1 = v_tax_code1, 

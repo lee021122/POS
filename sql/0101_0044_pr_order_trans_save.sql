@@ -57,7 +57,7 @@ BEGIN
 			p_tr_status => 'C',  
 			p_guest_id => null,
 			p_pax => 2,  -- Number of guests/pax
-			p_table_no => 'T-01',  -- Example table number
+			p_table_no => 'T-04',  -- Example table number
 			p_room_no => null,  
 			p_delivery_time => null,  -- Example delivery time
 			p_delivery_next_day => NULL,  -- If applicable
@@ -82,15 +82,33 @@ BEGIN
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
-	-- 	IF LENGTH(COALESCE(p_order_trans_id::TEXT, '')) = 0 THEN
-	-- 		p_msg := 'Order Trans ID cannot be blank!!';
-	-- 		RETURN;
-	-- 	END IF;
+	IF fn_to_guid(p_order_trans_id) = fn_empty_guid() 
+	AND EXISTS (
+		SELECT order_trans_table_id
+		FROM tb_order_trans_table
+		WHERE 
+			table_desc = p_table_no
+			AND order_trans_id IS NOT NULL
+			AND doc_no IS NOT NULL
+			
+	) THEN
+		p_msg := 'Order Trans ID cannot be blank!!';
+		RETURN;
+	END IF;
 	
-	-- 	IF LENGTH(COALESCE(p_doc_no, '')) = 0 THEN
-	-- 		p_msg := 'Order No cannot be blank!!';
-	-- 		RETURN;
-	-- 	END IF;
+	IF LENGTH(COALESCE(p_doc_no, '')) = 0 
+	AND EXISTS (
+		SELECT order_trans_table_id
+		FROM tb_order_trans_table
+		WHERE 
+			table_desc = p_table_no
+			AND order_trans_id IS NOT NULL
+			AND doc_no IS NOT NULL
+			
+	) THEN
+		p_msg := 'Order Trans ID cannot be blank!!';
+		RETURN;
+	END IF;
 	
 	IF p_tr_date IS NULL THEN
 		p_tr_date := fn_get_current_trans_dt();
@@ -195,7 +213,7 @@ BEGIN
 			tr_type = p_tr_type,
 			tr_status = p_tr_status,
 			guest_id = p_guest_id,
-			pax = p_pax_id,
+			pax = p_pax,
 			table_no = p_table_no,
 			room_no = p_room_no,
 			delivery_time = p_delivery_time,
