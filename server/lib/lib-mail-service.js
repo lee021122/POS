@@ -155,7 +155,8 @@ async function sendEmail(o) {
         return { status: 'Failed', message: mailResult.response };
     };
 };
->>>>>>> parent of b3131ec (Revert "Add mail service, notif and fix bug")
+
+
 
 module.exports = {
     MailClient,
