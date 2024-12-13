@@ -43,10 +43,20 @@ function msgObject() {
 /**
  * Mail client for sending emails.
  */
-<<<<<<< HEAD
-function MailClient({ host, port, secure, auth }) {
-=======
 async function MailClient(oAuth) {
+    // let oAuthService, oAuthMailbox, oAuthClient, oAuthClientSecret, oAuthToken;
+    // try {
+    //     const result = await pgSql.executeFunction('fn_get_mail_setting', [null]);
+
+    //     oAuthService = result.data[0].smtp_service;
+    //     oAuthMailbox = result.data[0].smtp_mailbox;
+    //     oAuthClient = result.data[0].smtp_client;
+    //     oAuthClientSecret = result.data[0].smtp_client_secret;
+    //     oAuthToken = result.data[0].smtp_token;
+    // } catch (err) {
+    //     return err;
+    // }
+
     const oAuth2Client = new OAuth2(
         oAuth.oAuthClient,
         oAuth.oAuthClientSecret,
@@ -66,37 +76,45 @@ async function MailClient(oAuth) {
         });
     });
 
->>>>>>> parent of b3131ec (Revert "Add mail service, notif and fix bug")
     const transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth
+        service: oAuth.oAuthService,
+        auth: {
+            type: 'OAuth2',
+            user: oAuth.oAuthMailbox,
+            clientId: oAuth.oAuthClient,
+            clientSecret: oAuth.oAuthClientSecret,
+            refreshToken: oAuth.oAuthToken,
+            accessToken: accessToken
+        }
     });
 
-    /**
-     * Send an email.
-     * @param {msgObject} msg
-     */
-    this.sendMail = async function (msg) {
-        try {
-            const mailOptions = {
-                from: msg.from.toString(),
-                to: Array.isArray(msg.to) ? msg.to.map(r => r.toString()).join(',') : msg.to,
-                cc: msg.cc ? (Array.isArray(msg.cc) ? msg.cc.map(r => r.toString()).join(',') : msg.cc) : undefined,
-                bcc: msg.bcc ? (Array.isArray(msg.bcc) ? msg.bcc.map(r => r.toString()).join(',') : msg.bcc) : undefined,
-                subject: msg.subject,
-                html: msg.bodyHtml,
-                attachments: msg.attachments
+    return {
+        sendMail: async function (msg) {
+            try {
+                const mailOptions = {
+                    from: msg.from.toString(),
+                    to: Array.isArray(msg.to) ? msg.to.map(r => r.toString()).join(',') : msg.to,
+                    cc: msg.cc ? (Array.isArray(msg.cc) ? msg.cc.map(r => r.toString()).join(',') : msg.cc) : [],
+                    bcc: msg.bcc ? (Array.isArray(msg.bcc) ? msg.bcc.map(r => r.toString()).join(',') : msg.bcc) : [],
+                    subject: msg.subject,
+                    html: msg.bodyHtml,
+                    attachments: msg.attachments
+                };
+                await transporter.sendMail(mailOptions);
+                return {
+                    status: 'Success'
+                };
+            } catch (err) {
+                console.error('Failed to send email:', err);
+                return { 
+                    status: 'Failed', 
+                    error: err.message, 
+                    code: err.code, 
+                    response: err.response 
+                };
             };
-            await transporter.sendMail(mailOptions);
-        } catch (err) {
-            console.error('Failed to send email:', err);
         }
     };
-<<<<<<< HEAD
-}
-=======
 };
 
 async function sendEmail(o) {
@@ -157,10 +175,9 @@ async function sendEmail(o) {
 };
 
 
-
 module.exports = {
     MailClient,
     msgAddrObject,
-    msgObject
+    msgObject,
+    sendEmail
 };
-
