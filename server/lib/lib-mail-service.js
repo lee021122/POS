@@ -166,18 +166,10 @@ async function sendEmail(o) {
     };
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 531aaa3 (Add mail service, notif and fix bug)
-
 module.exports = {
     msgAddrObject,
     msgObject,
-<<<<<<< HEAD
-=======
     MailClient,
->>>>>>> 531aaa3 (Add mail service, notif and fix bug)
     sendEmail
 };
 

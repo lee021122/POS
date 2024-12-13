@@ -1,4 +1,9 @@
 const libShared = require('./lib-shared');
+const path = require("path");
+const fs = require("fs");
+const currentWorkingDirectory = process.cwd();
+const configPath = path.join(currentWorkingDirectory, "../config", "db-user.json");
+const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 const initOptions = {
     /**
@@ -62,12 +67,12 @@ const initOptions = {
 const pgp = require('pg-promise')(initOptions)
 
 const cn = {
-    host: 'localhost',
-    port: 5432,
-    database: 'pos2',
-    user: 'leehao',
-    password: 'leehao',
-    max: 30 // use up to 30 connections
+    host: myConfig.db.host,
+    port: myConfig.db.port,
+    database: myConfig.db.name,
+    user: myConfig.db.user,
+    password: myConfig.db.password,
+    max: myConfig.db.max_conn_pool// use up to 30 connections
 }
 const db = pgp(cn);
 

@@ -29,8 +29,6 @@ try {
         // Create the directory recursively (including any parent directories if needed)
         fs.mkdirSync(uploadDir, { recursive: true });
         console.log("Directory created successfully");
-    } else {
-        console.log("Directory already exists.");
     }
 } catch (error) {
     // Log error if directory creation fails
@@ -85,6 +83,7 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         product_tag: null,
         product_img_path: null,
         inventory_type_id: null,
+        sku_code: null,
         supplier_id: null,
         pricing_type_id: null, 
         cost: null,
@@ -99,8 +98,10 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         is_enable_kitchen_printer: null,
         is_allow_modifier: null,
         is_enable_track_stock: null,
+        is_enable_daily_avail: null,
         is_popular_item: null,
         meal_period: null,
+        pos_printer: null,
         rid: null,
         axn: null,
         url: null,
@@ -116,6 +117,7 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         product_tag: libShared.toString,
         product_img_path: libShared.toString,
         inventory_type_id: libShared.toUUID,
+        sku_code: libShared.toString,
         supplier_id: libShared.toUUID,
         pricing_type_id: libShared.toUUID, 
         cost: libShared.toFloat,
@@ -130,8 +132,10 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         is_enable_kitchen_printer: libShared.toInt,
         is_allow_modifier: libShared.toInt,
         is_enable_track_stock: libShared.toInt,
+        is_enable_daily_avail: libShared.toInt,
         is_popular_item: libShared.toInt,
         meal_period: libShared.toString,
+        pos_printer: libShared.toString,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -151,6 +155,18 @@ AppProdSetup.prototype.save = async function (req, res) {
         p0.img = product_img_path;
         const preCode = p0.code;
 
+        let parsedData = data;
+        if (typeof data === 'string') {
+            parsedData = JSON.parse(data);
+        };
+        
+        // Check parsedData is an array
+        if (!Array.isArray(parsedData)) {
+            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
+        };
+
+        const o2 = parsedData.map(item => this.prodObject(item));   
+
         // Access the uploaded file
         const uploadedFile = req.files['product_img_path'] ? req.files['product_img_path'][0] : null;
         
@@ -158,30 +174,6 @@ AppProdSetup.prototype.save = async function (req, res) {
         if (!uploadedFile) {
             return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
         };
-
-        let parsedData = data;
-        try {
-            parsedData = JSON.parse(data);
-        } catch (error) {
-            console.error('Error parsing JSON at position', error.position, ':', error.message);
-
-            if (uploadedFile) {
-                const uploadedImagePath = path.join(uploadDir, uploadedFile.filename);
-                if (fs.existsSync(uploadedImagePath)) {
-                    fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
-                }
-            }
-
-            return res.status(400).send(libApi.response('Invalid JSON format!', 'Failed'));
-        }
-        console.log(!Array.isArray(parsedData));
-        
-        // Check parsedData is an array
-        if (!Array.isArray(parsedData)) {
-            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
-        };
-
-        const o2 = parsedData.map(item => this.prodObject(item));
 
         let oldLogoImgPath = null;
         if (o2[0].product_id) {
@@ -193,6 +185,7 @@ AppProdSetup.prototype.save = async function (req, res) {
                 return res.status(500).send(libApi.response('Error fetching old product img path', 'Failed'));
             }
         };
+        console.log(oldLogoImgPath);
 
         // Process the logo image path deletion if there was a previous image
         if (oldLogoImgPath && oldLogoImgPath[0].product_img_path) {

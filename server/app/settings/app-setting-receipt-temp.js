@@ -31,8 +31,6 @@ try {
         // Create the directory recursively (including any parent directories if needed)
         fs.mkdirSync(uploadDir, { recursive: true });
         console.log("Directory created successfully");
-    } else {
-        console.log("Directory already exists.");
     }
 } catch (error) {
     // Log error if directory creation fails
@@ -178,7 +176,7 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
             return res.status(400).send(libApi.response('Receipt Template Name is required!!', 'Failed'));
         };
 
-        if (o2[0].display_seq) {
+        if (o2[0].display_seq != null) {
             if (o2[0].display_seq.length > 6) {
                 return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
             } else {
