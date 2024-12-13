@@ -5,7 +5,7 @@ const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const currentWorkingDirectory = process.cwd();
-const configPath = path.join(currentWorkingDirectory, "config", "user-config.json");
+const configPath = path.join(currentWorkingDirectory, "../config", "user-config.json");
 const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 // Ensure that the "user-file" folder exists

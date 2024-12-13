@@ -122,9 +122,9 @@ BEGIN
 	ELSE
 		
 		-- Get old record for audit log purpose
-		SELECT pymt_mode_desc, pymt_type, is_in_use 
+		SELECT pymt_mode_desc, pymt_type_id, is_in_use 
 		INTO v_pymt_mode_desc_old, v_pymt_type_old, v_is_in_use_old
-		FROM tb_payment_mode
+		FROM tb_pymt_mode
 		WHERE pymt_mode_id = p_pymt_mode_id;
 		
 		-- Update the Record

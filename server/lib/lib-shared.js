@@ -217,7 +217,4 @@ libShared.decrypt = function (encryptedData) {
     return decrypted;
 };
 
-console.log(libShared.toNewGuid());
-
-
 module.exports = libShared;

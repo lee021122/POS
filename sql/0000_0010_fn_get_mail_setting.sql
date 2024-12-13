@@ -2,11 +2,11 @@ CREATE OR REPLACE FUNCTION fn_get_mail_setting (
 	store_id uuid,
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	smtp_server text,
-	smtp_port text,
-	smtp_mailbox_id text,
-	smtp_mailbox_pwd text,
-	smtp_use_ssl text,
+	smtp_service text,
+	smtp_mailbox text,
+	smtp_client text,
+	smtp_client_secret text,
+	smtp_token text,
 	smtp_able_service text
 ) 
 LANGUAGE 'plpgsql'
@@ -18,12 +18,12 @@ AS $$
 -- init
 -- -------------------------------------
 DECLARE
-	v_smtp_server text;
-	v_smtp_port integer;
-	v_smtp_mailbox_id text;
-	v_smtp_mailbox_pwd text;
-	v_smtp_use_ssl integer;
-	v_smtp_able_service integer;
+	v_smtp_service text;
+	v_smtp_mailbox text;
+	v_smtp_client text;
+	v_smtp_client_secret text;
+	v_smtp_token text;
+	v_smtp_able_service text;
 BEGIN
 /* 0000_0010_fn_get_mail_setting
 
@@ -43,47 +43,49 @@ BEGIN
 	
 	-- SMTP_SERVER
 	SELECT sys_setting_value
-	INTO v_smtp_server
+	INTO v_smtp_service
 	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_server';
-	
-	-- SMTP_SERVER
-	SELECT sys_setting_value::integer
-	INTO v_smtp_port
-	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_port';
+	WHERE sys_setting_title = 'SMTP_SERVICE';
 	
 	-- SMTP_SERVER
 	SELECT sys_setting_value
-	INTO v_smtp_mailbox_id
+	INTO v_smtp_mailbox
 	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_mailbox_id';
+	WHERE sys_setting_title = 'SMTP_MAILBOX';
 	
 	-- SMTP_SERVER
 	SELECT sys_setting_value
-	INTO v_smtp_mailbox_pwd
+	INTO v_smtp_client
 	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_mailbox_pwd';
+	WHERE sys_setting_title = 'SMTP_CLIENT';
 	
 	-- SMTP_SERVER
-	SELECT sys_setting_value::integer
-	INTO v_smtp_use_ssl
+	SELECT sys_setting_value
+	INTO v_smtp_client_secret
 	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_use_ssl';
+	WHERE sys_setting_title = 'SMTP_CLIENT_SECRET';
 	
 	-- SMTP_SERVER
-	SELECT sys_setting_value::integer
+	SELECT sys_setting_value
+	INTO v_smtp_token
+	FROM tb_sys_setting
+	WHERE sys_setting_title = 'SMTP_TOKEN';
+	
+	-- SMTP_SERVER
+	SELECT sys_setting_value
 	INTO v_smtp_able_service
 	FROM tb_sys_setting
-	WHERE sys_setting_title = 'smtp_able_service';
+	WHERE sys_setting_title = 'IS_ACTIVE_MAIL_SERVICE';
 	
-	SELECT
-		v_smtp_server,
-		v_smtp_port,
-		v_smtp_mailbox_id,
-		v_smtp_mailbox_pwd,
-		v_smtp_use_ssl,
-		v_smtp_able_service;
+	RETURN QUERY (
+		SELECT
+			v_smtp_service,
+			v_smtp_mailbox,
+			v_smtp_client,
+			v_smtp_client_secret,
+			v_smtp_token,
+			v_smtp_able_service
+	);
 	
 	-- -------------------------------------
 	-- cleanup

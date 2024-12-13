@@ -8,7 +8,7 @@ const tempDir = path.join(currentWorkingDirectory, '..', 'temp');
 // Create the directory if it doesn't exist
 try {
     if (!fs.existsSync(tempDir)) {
-        console.log("Directory does not exist, creating...");
+        //console.log("Directory does not exist, creating...");
 
         // Create the directory recursively (including any parent directories if needed)
         fs.mkdirSync(tempDir, { recursive: true });
@@ -108,23 +108,6 @@ libRpt.saveWorkbook = function (excel) {
         });
     });
 };
-
-// libRpt.saveWorkbook = function(excel, filePath) {
-//     return new Promise((resolve, reject) => {
-//         const outputStream = fs.createWriteStream(filePath);
-
-//         excel.workBooks.commit(outputStream)
-//             .then(() => {
-//                 resolve(filePath);
-//             })
-//             .catch((err) => {
-//                 reject(err);
-//             });
-//     });
-// };
-
-
-
 
 libRpt.getWorksheetCount = function(excel) {    
     return excel.workBooks._worksheets.length;  // Get the length of the worksheets array
@@ -278,153 +261,5 @@ libRpt.writeDataRows = function (excel, headerConfig, dataConfig, startRow = 2) 
         currentRow++; // Move to the next row
     });
 };
-
-// (async () => {
-//     const libInstance = new libRpt.interface();
-//     const fileName = 'StyledHeaderReport.xlsx';
-//     const sheet = 'Test';
-
-//     // Initialize the workbook and worksheet
-//     libRpt.newWorkbook(libInstance, fileName);
-//     libRpt.newWorkSheet(libInstance, sheet);
-
-//     // Define header configuration in a single array
-//     const headerConfig = [  
-//             { 
-//                 excel_field: 'E1', 
-//                 excel_field_name: 'Product Availability Report', 
-//                 font_size: 16,
-//                 font_color: "FF0070BC",
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             { 
-//                 excel_field: 'D3', 
-//                 excel_field_name: 'Store Code:', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             { 
-//                 excel_field: 'E3', 
-//                 excel_field_name: 'ABC Store',  // Need Update
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             {
-//                 excel_field: 'D4', 
-//                 excel_field_name: 'Period:', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             { 
-//                 excel_field: 'E4', 
-//                 excel_field_name: '05 Dec - 11 Dec 2024',
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             { 
-//                 excel_field: 'D5', 
-//                 excel_field_name: 'Printed On:', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'
-//             },
-//             { 
-//                 excel_field: 'E5', 
-//                 excel_field_name: '05/12/2024 15:22:37 PM', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle' 
-//             },
-//             { 
-//                 excel_field: 'D6',
-//                 excel_field_name: 'Printed By: ', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'  
-//             },
-//             { 
-//                 excel_field: 'E6', 
-//                 excel_field_name: 'leehao.chin@theeverlygroup.com', 
-//                 font_size: 12,
-//                 is_bold: true,
-//                 hor_align: 'right',
-//                 ver_align: 'middle'   
-//             }
-//         ].map((config) => {            
-//             return Object.assign(new libRpt.rptContentObj(), config); // Map configs to rptContentObj
-//         });
-
-//     const titleConfig = [
-//         { excel_field: 'A8', excel_field_name: 'Category Description', db_field: 'category_desc', width: 20 },
-//             { excel_field: 'B8', excel_field_name: 'Product Description', db_field: 'product_desc', width: 20 },
-//             { excel_field: 'C8', excel_field_name: 'Date', db_field: 'dt', width: 15 },
-//             { excel_field: 'D8', excel_field_name: 'Quantity', db_field: 'qty', width: 20 },
-//             { excel_field: 'E8', excel_field_name: 'Sold', db_field: 'sold', width: 30 },
-//     ].map((config) => {
-//         return Object.assign(new libRpt.rptContentObj(), config)
-//     });
-
-    
-//     const dataRows =[
-//         {
-//             "product_desc": "Nasi Goreng Biasa",
-//             "category_desc": "Main Course",
-//             "dt": "2024-11-28",
-//             "qty": 0,
-//             "sold": 0
-//         },
-//         {
-//             "product_desc": "Nasi Goreng Cina",
-//             "category_desc": "Main Course",
-//             "dt": "2024-11-28",
-//             "qty": 60,
-//             "sold": 0
-//         },
-//         {
-//             "product_desc": "Nasi Goreng Kampung",
-//             "category_desc": "Main Course",
-//             "dt": "2024-11-28",
-//             "qty": 0,
-//             "sold": 0
-//         },
-//         {
-//             "product_desc": "Nasi Goreng Pattaya",
-//             "category_desc": "Main Course",
-//             "dt": "2024-11-28",
-//             "qty": 0,
-//             "sold": 0
-//         },
-//         {
-//             "product_desc": "Nasi Goreng Tomyam",
-//             "category_desc": "Main Course",
-//             "dt": "2024-11-28",
-//             "qty": 0,
-//             "sold": 0
-//         }
-//     ];
-
-//     // Use the headerConfig to set headers in the worksheet
-//     libRpt.setHeader(libInstance, headerConfig, true);
-
-//     libRpt.setHeader(libInstance, titleConfig); // Title row with no data
-//     libRpt.writeDataRows(libInstance, titleConfig, dataRows, 9);
-
-//     // Save the workbook
-//     await libRpt.saveWorkbook(libInstance, fileName);
-//     console.log(`Report saved as ${fileName}`);
-// })();
 
 module.exports = libRpt;

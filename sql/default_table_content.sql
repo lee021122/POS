@@ -129,9 +129,35 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'app-report::sstr', 'Report - Sales & Service Tax Report', 'fn_rpt_sst', 'Report', 0, '000093', current_timestamp, 'admin', 0),
 ('d46d4192-ddcc-44f1-9b20-23f4247185d1', 'app-report::rss', 'Report - Restaurant Sales Summary', 'fn_rpt_restaurant_sales_summ', 'Report', 0, '000094', current_timestamp, 'admin', 0)
 
-
-
-select * from tb_action
+INSERT INTO tb_acn_rlt_tb (created_on, created_by, action_id, rlt_tb) VALUES 
+(current_timestamp, 'admin', '1296c008-4372-485f-91cf-81a544f476c2', 'tb_prod_category'),
+(current_timestamp, 'admin', 'bcc1296e-0f45-4d02-be5b-f110a1681c0c', 'tb_product'),
+(current_timestamp, 'admin', '42fb72be-22d0-4f39-95db-377367c2d00f', 'tb_modifier_group'),
+(current_timestamp, 'admin', 'c2332147-f3fc-415c-aa91-7bb3cd720cdb', 'tb_modifier_option'),
+(current_timestamp, 'admin', '199aa45b-7db2-4d2e-9910-f61861b09b4a', 'tb_modifier_item_link'),
+(current_timestamp, 'admin', '234acc1f-6311-46d2-9d27-9b156e529e46', 'tb_product_availability'),
+(current_timestamp, 'admin', 'c9bf4e0b-b404-442e-9050-8b0294ff6cbb', 'tb_sys_setting'),
+(current_timestamp, 'admin', 'bd23cb72-e6be-4e1c-b61f-d9c6a21adc85', 'tb_store'),
+(current_timestamp, 'admin', 'b1b87b82-7bdd-4720-8b1a-a7f7c906aefc', 'tb_tax'),
+(current_timestamp, 'admin', 'a4c5b496-c22c-430e-9fd5-7de7c8e92acd', 'tb_pymt_mode'),
+(current_timestamp, 'admin', '7f1fdef5-737d-4fdb-9539-7e8071fccb56', 'tb_meal_period'),
+(current_timestamp, 'admin', 'c9b99fa5-de79-4196-89b6-8aea912143a5', 'tb_receipt_temp'),
+(current_timestamp, 'admin', '9ec74f79-a1c0-4ff8-ad0c-b97d91771644', 'tb_table_section'),
+(current_timestamp, 'admin', '4d91c40a-feef-47e5-b542-dba002510b62', 'tb_table'),
+(current_timestamp, 'admin', '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'tb_pos_station'),
+(current_timestamp, 'admin', '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'tb_pos_printer'),
+(current_timestamp, 'admin', '04032095-2a06-4ac3-bbb0-4873a56b1856', 'tb_guest'),
+(current_timestamp, 'admin', 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'tb_user_group'),
+(current_timestamp, 'admin', 'c1ff314c-10e6-4203-804b-f406790765ad', 'tb_user_group_action'),
+(current_timestamp, 'admin', '543abc1b-a347-4ab0-85d1-664362579925', 'tb_users'),
+(current_timestamp, 'admin', '31544af9-4b84-45fe-9a1d-1807785cd2cf', 'tb_ordre_trans_item_line'),
+(current_timestamp, 'admin', 'e4443c40-8521-4bbd-a9ae-3d444e7a0cd2', 'tb_order_trans'),
+(current_timestamp, 'admin', 'c7e32761-34a0-44b8-8746-91e40d875a68', 'tb_order_trans_item_line_void'),
+(current_timestamp, 'admin', '5a4b20a0-f7d3-425d-b093-022c8160eb6b', 'tb_order_trans_void_log'),
+(current_timestamp, 'admin', 'a4ae5797-8bf4-422a-9d75-4234d6eda663', 'tb_order_trans_item_line'),
+(current_timestamp, 'admin', '53c09823-1cc1-4f81-a29b-68b29d7870a8', 'tb_cashiering'),
+(current_timestamp, 'admin', '6e14aa79-422d-4c81-814a-74d58b908ae0', 'tb_cashiering'),
+(current_timestamp, 'admin', '883e499e-6b3d-4ad2-9960-47a1db316565', '')
 
 insert into tb_action_param (action_param_id, action_id, action_param_name, data_type, seq, is_compulsory, created_on, created_by) values
 -- prod-category::s

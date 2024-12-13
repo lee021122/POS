@@ -2,7 +2,11 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const path = require("path");
-const userConfig = require('./config/user-config');
+const fs = require("fs");
+const currentWorkingDirectory = process.cwd();
+const configPath = path.join(currentWorkingDirectory, '../config', 'user-config.json')
+const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
 const prodCat = require('./app/product/app-prod-category');
 const modifier = require('./app/product/app-prod-modifier')
 const store = require('./app/settings/app-setting-store');
@@ -14,12 +18,13 @@ const pymt = require('./app/settings/app-setting-pymt-mode');
 const table = require('./app/settings/app-setting-table');
 const tableSec = require('./app/settings/app-setting-table-sec');
 const customer = require('./app/app-customer');
-const supplier = require('./app/app-supplier');
+// const supplier = require('./app/app-supplier');
 const generalSet = require('./app/settings/app-setting-general');
 const cashier = require('./app/cashiering/app-cashiering-shift');
 const usergrp = require('./app/user/app-user-group');
 const user = require('./app/user/app-users');
 const rpt = require('./app/report/app-report');
+const mail = require('./app/app-mail-service');
 
 // Order process
 const order = require('./app/order/app-order-trans');
@@ -42,15 +47,16 @@ app.use('/pm', pymt);
 app.use('/ts', tableSec);
 app.use('/t', table);
 app.use('/cus', customer);
-app.use('/spl', supplier);
+// app.use('/spl', supplier);
 app.use('/gs', generalSet);
 app.use('/ug', usergrp);
 app.use('/u', user);
 app.use('/rpt', rpt);
+app.use('/m', mail);
 
 app.use('/ord', order)
 app.use('/csh', cashier);
 
-app.listen(userConfig.PORT, () => {
-    console.log(`Server running on PORT: ${userConfig.PORT}`);
+app.listen(myConfig.PORT, () => {
+    console.log(`Server running on PORT: ${myConfig.PORT}`);
 });

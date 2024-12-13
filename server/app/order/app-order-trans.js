@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
+const { sendEmail } = require('../../lib/lib-mail-service');
 
 const p0 = new libApi.apiCaller();
 
@@ -56,6 +57,7 @@ AppOrderTrans.prototype.orderObject = function(o = {}) {
         modifier_option_id: null,
         start_dt: null,
         end_dt: null,
+        undo: null,
         rid: null,
         axn: null,
         url: null,
@@ -100,6 +102,7 @@ AppOrderTrans.prototype.orderObject = function(o = {}) {
         modifier_option_id: libShared.toUUID,
         start_dt: libShared.toDate,
         end_dt: libShared.toDate,
+        undo: libShared.toInt,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -712,10 +715,6 @@ AppOrderTrans.prototype.voidBill = async function (req, res) {
             return res.status(400).send(libApi.response('Action is required', 'Failed'));
         };
 
-        // if (!o2[0].tr_type) {
-        //     return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
-        // };
-
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
         
@@ -734,8 +733,27 @@ AppOrderTrans.prototype.voidBill = async function (req, res) {
             
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-             
-        return res.send(libApi.response(result, 'Success'));
+        
+        // Notification 
+        if (result[0].p_msg === 'ok') {
+            const mail = await pgSql.getTable('tb_mail', `${pgSql.SQL_WHERE} fld_id1 = '${o2[0].order_trans_id}'`, ['mail_id']);
+            const o = {
+                current_uid: o2[0].current_uid,
+                msg: o2[0].msg,
+                mail_id: mail[0].mail_id
+            }
+            try {
+                await sendEmail(o);
+            } catch (err) {
+                console.log(err);
+                // Append Log to log file
+            };
+
+            return res.send(libApi.response(result[0].p_msg, 'Success'));
+        } else {
+            return res.send(libApi.response(result[0].p_msg, 'Failed'));
+        };
+       
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));

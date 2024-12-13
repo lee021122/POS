@@ -93,10 +93,6 @@ AppSettingGeneral.prototype.save = async function(req, res) {
                     return res.status(400).send(libApi.response('Value is required for each data item!', 'Failed'));
                 };
 
-                if (settingData.setting_title === 'smtp_mailbox_pwd') {
-                    settingData.setting_value = libShared.encrypt(settingData.setting_value);
-                };
-
                 // Parse parameters for the current item
                 const params = libApi.parseParams(validAxn, [settingData]);
                 

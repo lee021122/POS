@@ -7,9 +7,9 @@ const bodyParser = require('body-parser');
 const uploadDir = path.join(__dirname, 'user-file');
 
 // Import Libraries
-const { pgSql } = require('../lib/lib-pgsql');
-const libApi = require('../lib/lib-api');
-const libShared = require('../lib/lib-shared');
+const { pgSql } = require('../../lib/lib-pgsql');
+const libApi = require('../../lib/lib-api');
+const libShared = require('../../lib/lib-shared');
 
 const p0 = new libApi.apiCaller();
 

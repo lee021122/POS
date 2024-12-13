@@ -1,6 +1,11 @@
 const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
+
+const { pgSql } = require('./lib-pgsql');
+
+const OAuth2 = google.auth.OAuth2;
 
 /**
  * Address object for handling email addresses.
@@ -44,19 +49,6 @@ function msgObject() {
  * Mail client for sending emails.
  */
 async function MailClient(oAuth) {
-    // let oAuthService, oAuthMailbox, oAuthClient, oAuthClientSecret, oAuthToken;
-    // try {
-    //     const result = await pgSql.executeFunction('fn_get_mail_setting', [null]);
-
-    //     oAuthService = result.data[0].smtp_service;
-    //     oAuthMailbox = result.data[0].smtp_mailbox;
-    //     oAuthClient = result.data[0].smtp_client;
-    //     oAuthClientSecret = result.data[0].smtp_client_secret;
-    //     oAuthToken = result.data[0].smtp_token;
-    // } catch (err) {
-    //     return err;
-    // }
-
     const oAuth2Client = new OAuth2(
         oAuth.oAuthClient,
         oAuth.oAuthClientSecret,
@@ -174,10 +166,18 @@ async function sendEmail(o) {
     };
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 531aaa3 (Add mail service, notif and fix bug)
 
 module.exports = {
-    MailClient,
     msgAddrObject,
     msgObject,
+<<<<<<< HEAD
+=======
+    MailClient,
+>>>>>>> 531aaa3 (Add mail service, notif and fix bug)
     sendEmail
 };
+
