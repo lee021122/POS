@@ -25,6 +25,7 @@ const usergrp = require('./app/user/app-user-group');
 const user = require('./app/user/app-users');
 const rpt = require('./app/report/app-report');
 const mail = require('./app/app-mail-service');
+const other = require('./app/other/app-other')
 
 // Order process
 const order = require('./app/order/app-order-trans');
@@ -53,8 +54,9 @@ app.use('/ug', usergrp);
 app.use('/u', user);
 app.use('/rpt', rpt);
 app.use('/m', mail);
+app.use('/oth', other);
 
-app.use('/ord', order)
+app.use('/ord', order);
 app.use('/csh', cashier);
 
 app.listen(myConfig.PORT, () => {

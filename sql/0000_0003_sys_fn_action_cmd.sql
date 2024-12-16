@@ -65,7 +65,7 @@ SELECT * FROM fn_action_cmd(p_action_code => 'prod-category::s')
 			, NULL::text
 		FROM tb_action a
 		INNER JOIN tb_action_param b ON b.action_id = a.action_id
-		WHERE a.action_code = p_action_code
+		WHERE a.action_code = p_action_code AND is_in_use = 1
 		ORDER BY b.seq
 	);
 	RETURN;

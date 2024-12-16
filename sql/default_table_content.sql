@@ -112,15 +112,26 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('883e499e-6b3d-4ad2-9960-47a1db316565', 'app-cashiering-shift::fc', 'Cashiering - Cashiering Shift Force Close', 'pr_cashiering_force_close', 'Cashiering Shift', 1, '000080', current_timestamp, 'admin', 0),
 
 -- Module: Day-end Closing
+('97ccfb72-3ce5-45c7-9032-7683fedd5e5a', 'app-day-end-closing::c', 'Day End Closing - Check', 'fn_day_end_close_prepare', 'Day End Closing', 1, '000095', current_timestamp, 'admin', 1),
+('987f34fb-983c-4e53-b8bb-1fd4efeae974', 'app-day-end-closing::d', 'Day End Closing - Do day end closing', 'pr_day_end_close', 'Day End Closing', 1, '000096', current_timestamp, 'admin', 0),
+
+-- Module - Notification
+('56891f62-3e3e-4412-82e5-2d50a5c6c670', 'app-notif::l', 'Notification - View Notification', 'fn_notif_list', 'Notification', 1, '000097', current_timestamp, 'admin', 0),
+('0229c031-6d02-42a3-863e-16ef262f87e1', 'app-notif::s', 'Notification - Notification Save', 'pr_notif_save', 'Notification', 1, '000098', current_timestamp, 'admin', 0),
+
+-- Module - Schedule Report
+('378a64e1-c2c6-4613-aa72-ffd02a72c5c2', 'app-sch-rpt::l', 'Schedule Report - View Schedule Report', 'fn_sch_rpt_list', 'Schedule Report', 1, '000099', current_timestamp, 'admin', 0),
+('652676f4-1584-49b9-a6d3-e5e86347358b', 'app-sch-rpt::s', 'Schedule Report - Schedule Report Save', 'pr_sch_rpt_save', 'Schedule Report', 1, '000100', current_timestamp, 'admin', 0),
 
 -- Module: Dashboard
+('269a7bc9-03c4-4b08-b630-56ca05a9d14a', 'app-dashboard::l', 'Dashboard - View POS Dashboard', 'fn_pos_dashboard', 'Dashboard', 1, '000101', current_timestamp, 'admin', 0),
 
 -- Module: Reports
 ('ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'app-report::dar', 'Report - Daily Availability Report', 'fn_rpt_daily_availability', 'Report', 0, '000083', current_timestamp, 'admin', 0),
 ('d26ee328-d90d-4cd5-92b2-19e96c402e60', 'app-report::iss', 'Report - Item Sales Summary', 'fn_rpt_daily_availability', 'Report', 0, '000084', current_timestamp, 'admin', 0),
 ('07074c6f-f8b4-4b52-9942-0aa58637f045', 'app-report::ds', 'Report - Daily Summary', 'fn_rpt_daily_availability', 'Report', 0, '000085', current_timestamp, 'admin', 0),
 ('300ae174-59f9-4f92-93df-2c1c625319eb', 'app-report::ils', 'Report - Invoice Listing Summary', 'fn_rpt_invoice_listing_summ', 'Report', 0, '000086', current_timestamp, 'admin', 0),
-('6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'app-report::i86', 'Report - Item 86', 'fn_rpt_item86', 'Report', 0, '000087', current_timestamp, 'admin', 1),
+('6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'app-report::i86', 'Report - Item 86', 'fn_rpt_item86', 'Report', 0, '000087', current_timestamp, 'admin', 0),
 ('a064d444-48a9-4d22-b6c6-763be83a5bb0', 'app-report::ccr', 'Report - Cashiering Collection Report', 'fn_rpt_cashiering_collection', 'Report', 0, '000088', current_timestamp, 'admin', 0),
 ('583e859c-dc9e-43cd-a0e9-1e39212405c6', 'app-report::ivr', 'Report - Item Void Report', 'fn_rpt_item_void', 'Report', 0, '000089', current_timestamp, 'admin', 0),
 ('9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'app-report::bvr', 'Report - Bill Void Report', 'fn_rpt_bill_void', 'Report', 0, '000090', current_timestamp, 'admin', 0),

@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION fn_action_list (
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
 	action_id uuid,
-	action_desc character varying(255)
+	action_desc text
 ) 
 LANGUAGE 'plpgsql'
 AS $$
@@ -17,6 +17,8 @@ DECLARE
 
 BEGIN
 /* 0100_0070_fn_action_list
+	
+	SELECT * from fn_action_list ('tester', null, null, null)
 
 */
 

@@ -23,7 +23,7 @@ DECLARE
 	v_doc_no_old character varying(50);
 	v_sent_to text;
 	v_cc_to text;
-	v_bcc_to text;
+	v_bcc_to text; mn
 	v_style text;
 	v_subject text;
 	v_body text;
