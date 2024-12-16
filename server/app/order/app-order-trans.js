@@ -171,6 +171,8 @@ AppOrderTrans.prototype.save = async function (req, res) {
 
 // Save item line (Only handle payment)!!
 AppOrderTrans.prototype.addItemLine = async function(req, res) {
+    let validAxn;
+
     // Extract and validate request data
     const { code, axn, data } = req.body;
     p0.code = code;
@@ -184,11 +186,11 @@ AppOrderTrans.prototype.addItemLine = async function(req, res) {
     if (!axn) {
         return res.status(400).send(libApi.response('Action is required', 'Failed'));
     };
+
     const action = p0.code.concat('::').concat(axn).toLowerCase().trim();
     // console.log("action: ", action);
     
     // Find the function by using action_code
-    let validAxn;
     try {
         validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
@@ -202,62 +204,47 @@ AppOrderTrans.prototype.addItemLine = async function(req, res) {
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     }
     
-    await pgSql.runTransaction(async (t) => {
-        // Prepare an array to hold individual promises
-        const promises = [];
-        // Execute the stored procedure for each item in the data array
-        for (const item of data) {
-            // Ensure each item has required fields
-            const lineData = this.orderObject(item);
-            
-            if (!lineData.order_trans_id) {
-                return res.status(400).send(libApi.response('Order Transaction Number is required!', 'Failed'));
-            };
-    
-            if (!lineData.doc_no) {
-                return res.status(400).send(libApi.response('Order Number is required', 'Failed'));
-            };
-    
-            if (!lineData.tr_type) {
-                return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
-            };
-            // Parse parameters for the current item
-            const params = libApi.parseParams(validAxn, [lineData]);
+    try {
+        await pgSql.runTransaction(async (t) => {
+            // Execute the stored procedure for each item in the data array
+            for (const item of data) {
+                // Ensure each item has required fields
+                const lineData = this.orderObject(item);
                 
-            // Create a promise for executing the stored procedure and add it to the array
-            const promise = t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12, $13, $14, $15, $16, $17, $18, $19, $20,$21, $22, $23, $24, $25, $26, $27, $28)`, params)
-                .then((result) => { 
-                    if (result[0].p_msg !== 'ok') {
-                        return { data: result[0].p_msg, message: "Failed" };
-                    } else {
-                        return { data: result[0].p_msg, message: "Success" };
-                    }
-                })
-                .catch((error) => { 
-                    console.error('Error occurred in stored procedure execution:', error.message, { item, params });
-                    // Log the full error object to capture stack trace and other details
-                    console.error(error);
-                    return { data: error, message: "Failed" }
-                });
-            
-            promises.push(promise);
-        };
-        // Use Promise.all to execute all promises concurrently
-        const results = await Promise.all(promises);
-        // Check each result for errors after all promises have resolved
-        for (const result of results) {
-            if (result.message !== 'Success') {
-                return res.status(400).send(libApi.response(result.data, 'Failed'));
+                if (!lineData.order_trans_id) {
+                    return res.status(400).send(libApi.response('Order Transaction Number is required!', 'Failed'));
+                };
+        
+                if (!lineData.doc_no) {
+                    return res.status(400).send(libApi.response('Order Number is required', 'Failed'));
+                };
+        
+                if (!lineData.tr_type) {
+                    return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
+                };
+
+                // Parse parameters for the current item
+                const params = libApi.parseParams(validAxn, [lineData]);
+                    
+                // Create a promise for executing the stored procedure and add it to the array
+                const result = await t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12, $13, $14, $15, $16, $17, $18, $19, $20,$21, $22, $23, $24, $25, $26, $27, $28)`, params)
+                
+                if (result[0].p_msg !== 'ok') {
+                    throw new Error(result[0].p_msg);
+                };
             };
-        };
-        // If everything is successful, return the results
-        return results;
-    });        
-         
-    return res.send(libApi.response('ok', 'Success'));
+        });
+
+        return res.send(libApi.response('ok', 'Success'));
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
 };
 
 AppOrderTrans.prototype.addonSet = async function(req, res) {
+    let validAxn;
+
     // Extract and validate request data
     const { code, axn, data } = req.body;
     p0.code = code;
@@ -289,7 +276,6 @@ AppOrderTrans.prototype.addonSet = async function(req, res) {
     // console.log("action: ", action);
     
     // Find the function by using action_code
-    let validAxn;
     try {
         validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
@@ -307,11 +293,9 @@ AppOrderTrans.prototype.addonSet = async function(req, res) {
     const params = libApi.parseParams(validAxn, o2);
     // console.log("params: ", params);
         
-    // Execute the function
-    const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-         
     try {
-        result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
 
         if (result[0].p_msg !== 'ok') {
             return res.status(500).send(libApi.response(result, 'Failed'));
@@ -330,10 +314,10 @@ AppOrderTrans.prototype.processTransaction = async function (req, res) {
 
     // Basic validation
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        return res.status(500).send(libApi.response('Code is required', 'Failed'));
     }
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        return res.status(500).send(libApi.response('Action is required', 'Failed'));
     }
 
     const action = `${code}::${axn}`.toLowerCase().trim();
@@ -343,49 +327,45 @@ AppOrderTrans.prototype.processTransaction = async function (req, res) {
     try {
         validAxn = await pgSql.getAction(action);
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         }
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     }
-    
-    // Run main transaction
+
     try {
+        // Run main transaction
         await pgSql.runTransaction(async (t) => {
             for (const item of data) {
-                console.log("Items: ", item);
+                console.log("Processing Item:", item);
 
                 if (!item.tr_type) {
-                    return res.status(500).send(libApi.response('Transaction Type is required', 'Failed'));
+                    throw new Error('Transaction Type is required!!');
                 };
 
-                const parsedData =this.orderObject(item);
-                
-                // Handle the main order
+                const parsedData = this.orderObject(item);
                 const params = libApi.parseParams(validAxn, [parsedData]);
-                const mainResult = await t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12, $13, $14, $15, $16, $17)`, params);
-                console.log("Main Result: ". mainResult);
-                
+
+                const mainResult = await t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`, params);
+
                 if (mainResult[0].p_msg !== 'ok') {
-                    return res.status(500).send(libApi.response(mainResult[0].p_msg, 'Failed'));
+                    throw new Error(mainResult[0].p_msg);
                 };
 
-                // Extract `order_trans_id` and `doc_no`
-                const { p_order_trans_id, p_doc_no } = mainResult[0];                
-                
+                const { p_order_trans_id, p_doc_no } = mainResult[0];
+
                 // Process `item_line` if present
                 if (item.item_line && Array.isArray(item.item_line)) {
                     for (const lineItem of item.item_line) {
-                        console.log('Processing item_line:', lineItem);
+                        console.log("Processing Item Line:", lineItem);
 
-                        // Validation of code & axn
                         if (!lineItem.code || lineItem.code !== SERVICE) {
-                            return res.status(400).send(libApi.response('Code is required', 'Failed'));
+                            throw new Error('Code is required');
                         };
 
                         if (!lineItem.axn) {
-                            return res.status(400).send(libApi.response('Action is required', 'Failed'));
+                            throw new Error('Action is required');
                         };
 
                         const lineAction = `${lineItem.code}::${lineItem.axn}`.toLowerCase().trim();
@@ -393,82 +373,30 @@ AppOrderTrans.prototype.processTransaction = async function (req, res) {
                         const parsedLineItem = this.orderObject(lineItem.data[0]);
                         parsedLineItem.order_trans_id = p_order_trans_id;
                         parsedLineItem.doc_no = p_doc_no;
-                        
-                        // Compulsory Parameter Check
+
                         if (!parsedLineItem.order_trans_id) {
-                            return res.status(400).send(libApi.response('Order Transaction ID is required', 'Failed'));
+                            throw new Error('Order Transaction ID is required');
                         };
 
                         if (!parsedLineItem.doc_no) {
-                            return res.status(400).send(libApi.response('Order No is required', 'Failed'));
+                            throw new Error('Order No is required');
                         };
 
-                        if (!parsedLineItem.tr_type) {
-                            return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'));
-                        };
-                        
                         const lineParams = libApi.parseParams(validLineAxn, [parsedLineItem]);
 
-                        const lineResult = await t.any(`CALL ${validLineAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12, $13, $14, $15, $16, $17, $18, $19, $20,$21, $22, $23, $24, $25, $26, $27, $28)`, lineParams);
-                        
+                        const lineResult = await t.any(`CALL ${validLineAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)`, lineParams);
+
                         if (lineResult[0].p_msg !== 'ok') {
-                            return res.status(400).send(libApi.response(lineResult[0].p_msg, 'Failed'));
+                            throw new Error(lineResult[0].p_msg);
                         };
-
-                        const { p_order_trans_item_line_id } = lineResult[0];
-                        
-                        // Process `modifier` if present
-                        if (lineItem.data[0].modifier && Array.isArray(lineItem.data[0].modifier)) {
-                            // console.log("Hello i am here 111111111111111");
-                            
-                            for (const mod of lineItem.data[0].modifier) {
-                                console.log('Processing modifier:', mod);
-
-                                // Validation of code & axn
-                                if (!mod.code || mod.code !== SERVICE) {
-                                    return res.status(400).send(libApi.response('Code is required', 'Failed'));
-                                };
-
-                                if (!mod.axn) {
-                                    return res.status(400).send(libApi.response('Action is required', 'Failed'));
-                                };
-
-                                const modAction = `${mod.code}::${mod.axn}`.toLowerCase().trim();
-                                const validModAxn = await pgSql.getAction(modAction);
-                                const parsedMod = this.orderObject(mod.data[0]);
-                                parsedMod.order_trans_id = p_order_trans_id;
-                                parsedMod.order_trans_item_line_id = p_order_trans_item_line_id;
-                                
-                                // Compulsory Parameter Check
-                                if (!parsedMod.order_trans_id) {
-                                    return res.status(400).send(libApi.response('Order Transaction ID is required', 'Failed'));
-                                };
-
-                                if (!parsedMod.order_trans_item_line_id) {
-                                    return res.status(400).send(libApi.response('Item Line is required', 'Failed'));
-                                };
-
-                                if (!parsedMod.modifier_option_id) {
-                                    return res.status(400).send(libApi.response('Modifier Option is required', 'Failed'));
-                                };
-                                
-                                const modParams = libApi.parseParams(validModAxn, [parsedMod]);
-
-                                const modResult = await t.any(`CALL ${validModAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9)`, modParams);
-
-                                if (modResult[0].p_msg !== 'ok') {
-                                    return res.status(400).send(libApi.response(modResult[0].p_msg, 'Failed'));
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+                    }
+                }
+            }
         });
 
-        return res.status(200).send(libApi.response('Order Submited Successful!!', 'Success'));
+        return res.status(200).send(libApi.response('Order Submitted Successfully!!', 'Success'));
     } catch (err) {
-        console.error(err);
+        console.error("Transaction failed:", err.message);
         return res.status(500).send(libApi.response(err.message, 'Failed'));
     }
 };

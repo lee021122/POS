@@ -75,29 +75,32 @@ BEGIN
 	CALL public.pr_product_save(
         p_current_uid        => 'tester', 
         p_msg                => null,           
-        p_product_id         => '2511994e-12d5-488d-9a9b-8c7a49621903',      
-        p_product_desc       => 'Nasi Goreng Cina', 
-        p_product_code       => 'P0005',            
+        p_product_id         => 'a00143dd-09a1-47ce-8bb5-ad3f8a28805a',      
+        p_product_desc       => 'Nasi Goreng Biasa', 
+        p_product_code       => 'P0004',            
         p_category_id        => 'd437bedc-4e02-428c-a3e6-f4f873cbb675',
         p_product_tag        => null,           
-        p_product_img_path   => 'ab441325-0ba3-478c-9e24-b0dd5eca5f95.jpeg',  
+        p_product_img_path   => '20993f7e-b776-4a93-8884-eb3857dafdd1.jpeg',  
 		p_inventory_type_id  => '07b41650-bd18-42a9-a2e3-4ac76534301b',
+		p_sku_code           => null,
         p_supplier_id        => null, 
         p_pricing_type_id    => '7301109c-cef9-4df0-9824-9e5d304ca49f', 
-        p_cost               => 9,                
-        p_sell_price         => null,               
+        p_cost               => 2,                
+        p_sell_price         => 7,           
         p_tax_code1          => 'SC',                
         p_amt_include_tax1   => 1,                     
         p_tax_code2          => 'SST-6%',                
         p_amt_include_tax2   => 1,                    
         p_calc_tax2_after_tax1 => 1,                  
         p_is_in_use          => 1,                     
-        p_display_seq        => '000004',                 
+        p_display_seq        => '000002',                 
         p_is_enable_kitchen_printer => 1,              
         p_is_allow_modifier  => 1,                     
-        p_is_enable_track_stock => 1,                  
+        p_is_enable_track_stock => 0,        
+		p_is_enable_daily_avail => 1, 
         p_is_popular_item    => 0,
 		p_meal_period => '488d591e-9441-434f-a366-db1369c767c5;;a6c397d6-efb8-4ce3-819f-704a84ceddd5;;19d4791f-558c-4f73-915f-16a1595dd8ae',
+		p_pos_printer => null,
 		p_rid => null,
 		p_axn => null,
 		p_url => null
@@ -205,6 +208,11 @@ BEGIN
 		RETURN;
 	END IF;
 	
+	IF p_is_enable_daily_avail = 1 AND p_is_enable_track_stock = 1 THEN
+		p_msg := 'Either can enable daily availability or enbale track stock!!';
+		RETURN;
+	END IF;
+	
 	-- -------------------------------------
     -- create and use temporary table
     -- -------------------------------------
@@ -255,19 +263,6 @@ BEGIN
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	-- Calc the tax 
-	SELECT final_price
-	INTO v_final_price
-	FROM fn_tax_calculation (
-		p_tax_code1 => p_tax_code1,
-		p_tax_code2 => p_tax_code2,
-		p_amt_include_tax1 => p_amt_include_tax1, 
-		p_amt_include_tax2 => p_amt_include_tax2, 
-		p_calc_tax2_after_tax1 => p_calc_tax2_after_tax1, 
-		p_qty => 1,
-		p_amt => p_sell_price	
-	);
-	
 	IF fn_to_guid(p_product_id) = fn_empty_guid() THEN
 	
 		p_product_id := gen_random_uuid();
@@ -279,7 +274,7 @@ BEGIN
 			is_enable_kitchen_printer, is_allow_modifier, is_enable_track_stock, is_popular_item, inventory_type_id, sku_code
 		) VALUES (
 			p_product_id, v_now, p_current_uid, v_now, p_current_uid, p_product_desc, p_product_code, p_category_id, p_product_tag, p_product_img_path, p_supplier_id,
-			p_pricing_type_id, p_cost, v_final_price, p_tax_code1, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
+			p_pricing_type_id, p_cost, p_sell_price, p_amt_include_tax1, p_tax_code2, p_amt_include_tax2, p_calc_tax2_after_tax1, p_is_in_use, 
 			p_display_seq, p_is_enable_kitchen_printer, p_is_allow_modifier, p_is_enable_track_stock, p_is_popular_item, p_inventory_type_id, p_sku_code
 		);
 		
@@ -334,7 +329,7 @@ BEGIN
 			supplier_id = p_supplier_id,
 			pricing_type_id = p_pricing_type_id,
 			cost = p_cost,
-			sell_price = v_final_price,
+			sell_price = p_sell_price,
 			tax_code1 = p_tax_code1,
 			amt_include_tax1 = p_amt_include_tax1,
 			tax_code2 = p_tax_code2, 
@@ -435,6 +430,7 @@ BEGIN
 	END IF;
 	
 	DROP TABLE meal_period_tb;
+	DROP TABLE pos_printer_tb;
 	
 END
 $BODY$;

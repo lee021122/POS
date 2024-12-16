@@ -44,42 +44,46 @@ AppSettingGeneral.prototype.settingObject = function (o = {}) {
 };
 
 AppSettingGeneral.prototype.save = async function(req, res) {
-    try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
+    let validAxn;
+    
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
 
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required or invalid!', 'Failed'));
-        };
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required or invalid!', 'Failed'));
+    };
 
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!', 'Failed'));
-        };
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!', 'Failed'));
+    };
 
-        // Ensure 'data' is an array and has at least one item
-        if (!Array.isArray(data) || data.length === 0) {
-            return res.status(400).send(libApi.response('Data is required and should not be empty!', 'Failed'));
-        };
+    // Ensure 'data' is an array and has at least one item
+    if (!Array.isArray(data) || data.length === 0) {
+        return res.status(400).send(libApi.response('Data is required and should not be empty!', 'Failed'));
+    };
 
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);        
+    // Find the function by using action_code
+    try {
+        validAxn = await pgSql.getAction(action);  
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
+    
+    try {
         // Put the process inside a transaction
-        const result = await pgSql.runTransaction(async (t) => {
-            // Prepare an array to hold individual promises
-            const promises = [];
-
+        await pgSql.runTransaction(async (t) => {
             // Execute the stored procedure for each item in the data array
             for (const item of data) {
                 // Ensure each item has required fields
@@ -97,86 +101,69 @@ AppSettingGeneral.prototype.save = async function(req, res) {
                 const params = libApi.parseParams(validAxn, [settingData]);
                 
                 // Create a promise for executing the stored procedure and add it to the array
-                const promise = t.any('CALL pr_general_setting_save($1, $2, $3, $4, $5, $6, $7, $8)', params)
-                    .then((result) => { 
-                        if (result[0].p_msg !== 'ok') {
-                            return { data: result[0].p_msg, message: "Failed" };
-                        } else {
-                            return { data: result[0].p_msg, message: "Success" };
-                        }
-                    })
-                    .catch((error) => { 
-                        console.error('Error occurred in stored procedure execution:', error.message, { item, params });
-                        // Log the full error object to capture stack trace and other details
-                        console.error(error);
-                        return { data: error, message: "Failed" }
-                    });
+                const result = await t.any('CALL pr_general_setting_save($1, $2, $3, $4, $5, $6, $7, $8)', params);
                 
-                promises.push(promise);
-            };
-
-            // Use Promise.all to execute all promises concurrently
-            const results = await Promise.all(promises);
-
-            // Check each result for errors after all promises have resolved
-            for (const result3 of results) {
-                if (result3.message !== 'Success') {
-                    return res.status(400).send(libApi.response(result3.data, 'Failed'));
+                if (result[0].p_msg !== 'ok') {
+                    throw new Error(result[0].p_msg);
                 };
             };
-
-            // If everything is successful, return the results
-            return results;
         });        
-
+        
         return res.send(libApi.response('ok', 'Success'));
     } catch (err) {
-        console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        console.error('Error executing stored procedure:', err);
+        res.status(500).send(libApi.response(err.message, 'Failed'));
     };
 };
 
 
 AppSettingGeneral.prototype.list = async function(req, res) {
-    try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.settingObject(item));
+    let validAxn, params;
 
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.settingObject(item));
 
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
 
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
         
+    try {
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-            
-        // Execute the function
-        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-             
-        return res.send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
+
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+
+        return res.send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    }; 
 };
 
 const setting = new AppSettingGeneral();

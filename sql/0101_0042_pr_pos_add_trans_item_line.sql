@@ -102,16 +102,16 @@ BEGIN
 		CALL pr_pos_add_trans_item_line(
 			p_current_uid => 'tester',
 			p_msg => null,
-			p_order_trans_item_line_id => '9b3f16b1-c812-46c5-a143-5f449f7372b4',
+			p_order_trans_item_line_id => 'aa87a480-7f89-4387-8e6e-dd75e94a09a2',
 			p_tr_date => null,
 			p_tr_type => 'TS',
 			p_tr_status => 'C', 
-			p_order_trans_id => 'a426559b-c5e4-4e62-8185-44582732107c',
-			p_doc_no => 'TS2024112500001',
+			p_order_trans_id => '84374986-ecb7-4aea-b76c-7ccd0be2965e',
+			p_doc_no => 'TS2024121300001',
 			p_product_id => 'a00143dd-09a1-47ce-8bb5-ad3f8a28805a',
-			p_cost => '10',
+			p_cost => null,
 			p_sell_price => null,
-			p_addon_amt => 4,
+			p_addon_amt => null,
 			p_amt => null,
 			p_qty => 1,
 			p_discount_id => null,
@@ -245,8 +245,8 @@ BEGIN
 		) + 1;
 
 		-- Get Product Tax Setting
-		SELECT tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, cost
-		INTO v_tax_code1, v_amt_include_tax1, v_tax_code2, v_amt_include_tax2, v_calc_tax2_after_tax1, p_cost
+		SELECT tax_code1, amt_include_tax1, tax_code2, amt_include_tax2, calc_tax2_after_tax1, sell_price
+		INTO v_tax_code1, v_amt_include_tax1, v_tax_code2, v_amt_include_tax2, v_calc_tax2_after_tax1, p_sell_price
 		FROM tb_product
 		WHERE product_id = p_product_id;
 		
