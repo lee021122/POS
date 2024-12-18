@@ -9,6 +9,7 @@ CREATE OR REPLACE FUNCTION fn_table_list (
 	table_id uuid,
 	modified_on timestamp,
 	modified_by character varying(255),
+	table_section_id uuid,
 	table_desc character varying(255),
 	qr_code text,
 	is_in_use integer,
@@ -36,7 +37,7 @@ BEGIN
 	IF p_is_in_use = -1 THEN 
 		
 		RETURN QUERY (
-			SELECT a.table_id, a.modified_on, a.modified_by, a.table_desc, a.qr_code, a.is_in_use, a.display_seq
+			SELECT a.table_id, a.modified_on, a.modified_by, a.table_section_id, a.table_desc, a.qr_code, a.is_in_use, a.display_seq
 			FROM tb_table a
 			ORDER BY 
 				a.display_seq, a.table_desc
@@ -46,7 +47,7 @@ BEGIN
 		
 		RETURN QUERY (
 			SELECT 
-				a.table_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.table_desc, 
+				a.table_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.table_section_id, a.table_desc, 
 				null::character varying AS qr_code, null::integer AS is_in_use, null::character varying AS display_seq
 			FROM tb_table_section a
 			WHERE is_in_use = p_is_in_use

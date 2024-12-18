@@ -6,8 +6,11 @@ CREATE OR REPLACE FUNCTION fn_user_group_action_list (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	action_id uuid,
-	action_desc character varying(255)
+	user_group_id integer,
+	user_group_desc character varying(255),
+	action_desc text,
+	is_in_use integer,
+	display_seq character varying(6)
 )
 LANGUAGE 'plpgsql'
 AS $$
@@ -29,11 +32,12 @@ BEGIN
 	-- process
 	-- -------------------------------------
 	RETURN QUERY (
-		SELECT a.action_id, b.action_desc
-		FROM tb_user_group_action a
-		LEFT JOIN tb_action b ON b.action_id = a.action_id
+		SELECT a.user_group_id, a.user_group_desc, c.action_desc, a.is_in_use, a.display_seq
+		FROM tb_user_group a
+		INNER JOIN tb_user_group_action b ON b.user_group_id = a.user_group_id
+		INNER JOIN tb_action c ON c.action_id = b.action_id
 		WHERE a.user_group_id = p_user_group_id
-		ORDER BY b.display_seq, b.action_desc
+		ORDER BY a.display_seq, a.user_group_desc, c.group_code, c.action_desc
 	);
 
 	-- -------------------------------------

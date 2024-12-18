@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE pr_user_group_save (
 	IN p_current_uid character varying(255),
 	OUT p_msg text,
-	IN p_user_group_id integer,
+	INOUT p_user_group_id integer,
 	IN p_user_group_desc character varying(255),
 	IN p_is_in_use integer,
 	IN p_display_seq character varying(6),
@@ -46,7 +46,7 @@ BEGIN
 		FROM tb_user_group
 		WHERE 
 			user_group_desc = p_user_group_desc
-			AND user_group_id <> p_user_group_id
+			AND user_group_id <> fn_to_int_id(p_user_group_id)
 	) THEN
 		p_msg := 'User Group: ' || p_user_group_desc || ' already exists!!';
 		RETURN;
@@ -74,7 +74,7 @@ BEGIN
 		SELECT user_group_desc, is_in_use, display_seq
 		INTO v_user_group_desc_old, v_is_in_use_old, v_display_seq_old
 		FROM tb_user_group
-		WHERE 
+		WHERE
 			user_group_id = p_user_group_id;
 			  
 		-- Update record
@@ -82,7 +82,7 @@ BEGIN
 		SET 
 			modified_on = v_now,
 			modified_by = p_current_uid,
-			user_group_desc = p_user_group_id,
+			user_group_desc = p_user_group_desc,
 			is_in_use = p_is_in_use
 		WHERE 
 			user_group_id = p_user_group_id;

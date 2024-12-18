@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const path = require('path');
-const fs = require('fs');
 
 const { pgSql } = require('./lib-pgsql');
 
@@ -23,7 +22,7 @@ function msgAddrObject(emailAddr) {
         this.name = pos > 0 ? emailAddr.substring(0, pos).trim() : null;
         this.email = pos > 0 ? emailAddr.substring(pos + 1, emailAddr.indexOf('>')).trim() : emailAddr;
     };
-}
+};
 
 /**
  * Message object for holding email data.

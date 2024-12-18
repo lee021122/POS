@@ -25,7 +25,7 @@ DECLARE
 	v_printer_code_old character varying(50);
 	v_printer_name_old character varying(50);
 	v_is_in_use_old integer;
-	v_display_seq_old character varying(5);
+	v_display_seq_old character varying(6);
 	v_is_default_old integer;
 	v_printer_type_id_old integer;
 	v_action_id uuid;
@@ -83,9 +83,9 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF EXISTS (
+	IF NOT EXISTS (
 		SELECT printer_type_id
-		FROM tb_printer_type
+		FROM tb_pos_printer_type
 		WHERE printer_type_id = p_printer_type_id
 	) THEN
 		p_msg := 'Invalid Printer Type!!';
@@ -95,7 +95,7 @@ BEGIN
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
-	IF fn_to_guid(p_pos_printer_id) <> fn_empty_guid() THEN
+	IF fn_to_guid(p_pos_printer_id) = fn_empty_guid() THEN
 	
 		p_pos_printer_id := gen_random_uuid();
 		
@@ -107,7 +107,7 @@ BEGIN
 		);
 		
 		audit_log := 'Added Pos Printer: ' || p_printer_name || '.';
-	
+		RAISE NOTICE 'Pos Printer ID: %', p_pos_printer_id;
 	ELSE 
 	
 		-- Get old record for audit log purpose

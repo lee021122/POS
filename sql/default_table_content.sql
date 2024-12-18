@@ -62,7 +62,11 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('a99d6e35-825d-4307-b48e-92ab39526cf2', 'other::cl', 'Other - Country List', 'fn_country_list', 'Others', 1, '000044', current_timestamp, 'admin', 1),
 ('0961b167-8b80-4502-b6d9-8476532634d0', 'other::sl', 'Other - State List', 'fn_state_list', 'Others', 1, '000045', current_timestamp, 'admin', 1),
 ('e06fe881-dc37-46f3-8567-047ac609f1c5', 'other::ptl', 'Other - Pricing Type List', 'fn_pricing_type_list', 'Others', 1, '000046', current_timestamp, 'admin', 1),
+('5286cde3-f5a2-4c73-b978-297ba8a60558', 'other::itl', 'Other - Inventory Type List', 'fn_inventory_type_list', 'Others', 1, '000102', current_timestamp, 'admin', 1)
 ('d79ef2ea-e0e7-43e7-bf84-7b9940411382', 'other::all', 'Other - View Audit Log', 'fn_audit_log_list', 'Others', 1, '000047', current_timestamp, 'admin', 0),
+-- Module: Action
+('69f4b2b3-db4b-4001-b16f-0987ab79bfd5', 'other::al', 'Action - View Action', 'fn_action_list', 'Action', 1, '000060', current_timestamp, 'admin', 0),
+
 
 -- Module: Customer
 ('04032095-2a06-4ac3-bbb0-4873a56b1856', 'app-customer::s', 'Customer - Save', 'pr_guest_save', 'Customer', 1, '000048', current_timestamp, 'admin', 0),
@@ -81,9 +85,6 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('e5b11c45-b204-4485-b20f-6652063844c8', 'app-user-group::acl', 'Users - View User Group Action', 'fn_user_group_action_list', 'Users', 1, '000057', current_timestamp, 'admin', 0),
 ('543abc1b-a347-4ab0-85d1-664362579925', 'app-users::s', 'Users - User Save', 'pr_user_save', 'Users', 1, '000058', current_timestamp, 'admin', 0),
 ('655abc6d-8ad8-43d6-9bb9-36b55f014fb5', 'app-users::l', 'Users - View User', 'fn_user_list', 'Users', 1, '000059', current_timestamp, 'admin', 0),
-
--- Module: Action
-('69f4b2b3-db4b-4001-b16f-0987ab79bfd5', 'app-axn::l', 'Action - View Action', 'fn_action_list', 'Action', 1, '000060', current_timestamp, 'admin', 0),
 
 -- Module: Order
 ('20591a3f-f905-487b-930f-d6c5ca02d84a', 'app-order-trans::s', 'Order - Order Transaction Save', 'pr_order_trans_save', 'Order Process', 1, '000061', current_timestamp, 'admin', 1),
@@ -522,13 +523,13 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 
 -- pos-station::s
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
-(gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'msg', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'pos_station_id', 'id', 3, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'pos_station_desc', 'string', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'ip', 'string', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'default_printer_id', 'id', 6, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'is_in_use', 'int', 7, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'display_seq', 'int', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'display_seq', 'string', 8, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'rid', 'int', 9, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'axn', 'string', 10, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '5a04fe24-bb9f-4096-8cc2-e8d11704bcd6', 'url', 'string', 11, 0, current_timestamp, 'admin'),
@@ -544,8 +545,8 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'msg', 'int', 2, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'pos_printer_id', 'id', 3, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'pos_printer_code', 'string', 4, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'pos_printer_name', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'printer_code', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'printer_name', 'string', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'is_in_use', 'int', 6, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'display_seq', 'string', 7, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '38fe1f07-0572-48fe-b97e-dfb576ed535f', 'is_default', 'int', 8, 0, current_timestamp, 'admin'),
@@ -589,6 +590,13 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'e06fe881-dc37-46f3-8567-047ac609f1c5', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'e06fe881-dc37-46f3-8567-047ac609f1c5', 'url', 'string', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'e06fe881-dc37-46f3-8567-047ac609f1c5', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
+-- other::itl
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'is_in_use', 'int', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '5286cde3-f5a2-4c73-b978-297ba8a60558', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
 -- other::all
 
 

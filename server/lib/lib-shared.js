@@ -38,9 +38,9 @@ libShared.toString = function (v) {
         return v;
     };
 
-    // if (v.length > l) { 
-    //     return v.substring(0, l);
-    // }
+    if (v.length > 255) { 
+        return v.substring(0, 255);
+    }
 
     return String(v);
 };

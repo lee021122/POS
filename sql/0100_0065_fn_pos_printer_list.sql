@@ -47,7 +47,7 @@ BEGIN
 		RETURN QUERY (
 			SELECT 
 				a.pos_printer_id, null::timestamp AS modified_on, null::character varying AS modified_by, null::character varying AS printer_ip_address, 
-				a.printer_name, null::integer AS is_kitchen_printer, null::integer AS is_receipt_printer, null::integer AS is_in_use, null::character varying AS display_seq
+				a.printer_name, null::integer AS is_kitchen_printer, null::integer AS is_receipt_printer, a.is_in_use, null::character varying AS display_seq
 			FROM tb_pos_printer a
 			WHERE a.is_in_use = p_is_in_use
 			ORDER BY a.display_seq, a.printer_name

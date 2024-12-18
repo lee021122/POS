@@ -37,7 +37,7 @@ AppPosStation.prototype.posStationObj = function(o = {}) {
         ip: libShared.toString,
         default_printer_id: libShared.toUUID,
         is_in_use: libShared.toInt,
-        display_seq: nulibShared.toStringll,
+        display_seq: libShared.toString,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -49,46 +49,58 @@ AppPosStation.prototype.posStationObj = function(o = {}) {
 };
 
 AppPosStation.prototype.save = async function (req, res) {
+    let validAxn, params;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.posStationObj(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    if (!o2[0].pos_station_desc) {
+        return res.status(400).send(libApi.response('Pos Station Name is required!!', 'Failed'));
+    };
+
+    if (o2[0].display_seq != null) {
+        if (o2[0].display_seq.length > 6) {
+            return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+        } else {
+            o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+        };
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.printerObj(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        if (!o2[0].pos_station_desc) {
-            return res.status(400).send(libApi.response('Pos Station Name is required!!', 'Failed'));
-        };
-
-        if (o2[0].display_seq != null) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    }
+    
+    // Use the shared library function to parse parameters
+    try {
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-
+    try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
 
@@ -104,35 +116,42 @@ AppPosStation.prototype.save = async function (req, res) {
 };
 
 AppPosStation.prototype.list = async function (req, res) {
+    let validAxn;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.posStationObj(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.printerObj(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+   
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-
-        // Execute the function
+    try {
+         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
 
         return res.status(200).send(libApi.response(result, 'Success'));

@@ -16,18 +16,136 @@ const SERVICE = FILE.replace('.js', '');
 
 function AppDayEndClosing() {};
 
-AppDayEndClosing.prototype.settingObject = function(o = {}) {
+AppDayEndClosing.prototype.dayEndObj = function(o = {}) {
     const d = {
-
+        current_uid: null,
+        msg: null,
+        new_tr_dt: null,
+        remarks: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    return Object.assign(d, o);
+    const conversionMap = {
+        current_uid: libShared.toString,
+        remarks: libShared.toText,
+        rid: libShared.toInt,
+        axn: libShared.toString,
+        url: libShared.toString,
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
+};
+
+// Day-end closing prepare
+AppDayEndClosing.prototype.dayEndPrepare = async function (req, res) {
+    let validAxn;
+            
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const o2 = data.map(item => this.dayEndObj(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = p0.code.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+
+    // Find the function by using action_code
+    try {
+        validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
+
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+
+    try {
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+        return res.status(200).send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
 };
 
 // Day-end closing manual close
+AppDayEndClosing.prototype.dayEndClose = async function (req, res) {
+    let validAxn;
+        
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const o2 = data.map(item => this.dayEndObj(item));
 
-// Day-end closing auto close setup
+    if (!code || code !== SERVICE) {
+        return res.status(500).send(libApi.response('Code is required', 'Failed'));
+    };
 
-// Day-end closing auto close
+    if (!axn) {
+        return res.status(500).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    if (!o2[0].remarks) {
+        return res.status(500).send(libApi.response('Remarks is required', 'Failed'));
+    };
+
+    const action = p0.code.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
+    // Find the function by using action_code
+    try {
+        validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    }
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+    // console.log("params: ", params);
+
+    try {
+         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+        
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
 
 module.exports = router;

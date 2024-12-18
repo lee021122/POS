@@ -39,7 +39,7 @@ AppPosPrinter.prototype.printerObj = function(o = {}) {
         is_in_use: libShared.toInt,
         display_seq: libShared.toString,
         is_default: libShared.toInt,
-        printer_type_id: libShared.toUUID,
+        printer_type_id: libShared.toInt,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -51,50 +51,62 @@ AppPosPrinter.prototype.printerObj = function(o = {}) {
 };
 
 AppPosPrinter.prototype.save = async function (req, res) {
+    let validAxn, params;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.printerObj(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    if (!o2[0].printer_code) {
+        return res.status(400).send(libApi.response('Printer Code is required!!', 'Failed'));
+    };
+
+    if (!o2[0].printer_name) {
+        return res.status(400).send(libApi.response('Printer Name is required!!', 'Failed'));
+    };
+
+    if (o2[0].display_seq != null) {
+        if (o2[0].display_seq.length > 6) {
+            return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+        } else {
+            o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+        };
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.printerObj(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        if (!o2[0].printer_code) {
-            return res.status(400).send(libApi.response('Printer Code is required!!', 'Failed'));
-        };
-
-        if (!o2[0].printer_name) {
-            return res.status(400).send(libApi.response('Printer Name is required!!', 'Failed'));
-        };
-
-        if (o2[0].display_seq != null) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-
+    // Use the shared library function to parse parameters
+    try {
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
 
@@ -110,35 +122,42 @@ AppPosPrinter.prototype.save = async function (req, res) {
 };
 
 AppPosPrinter.prototype.list = async function (req, res) {
+    let validAxn;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.printerObj(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.printerObj(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-
-        // Execute the function
+    // Execute the function
+    try {
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
 
         return res.status(200).send(libApi.response(result, 'Success'));
@@ -148,9 +167,15 @@ AppPosPrinter.prototype.list = async function (req, res) {
     };
 };
 
+// Get current network printer
+AppPosPrinter.prototype.getCurrentNetPrinter = async function(req, res) {
+
+};
+
 const printer = new AppPosPrinter();
 
 router.post('/s', printer.save.bind(printer));
 router.post('/l', printer.list.bind(printer));
+router.post('/cp', printer.getCurrentNetPrinter.bind(printer));
 
 module.exports = router;

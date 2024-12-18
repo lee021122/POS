@@ -51,46 +51,49 @@ AppCashiering.prototype.cashierShiftObject = function(o = {}) {
 
 // Open Cashiering Shift
 AppCashiering.prototype.openCshr = async function (req, res) {
+    let validAxn;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.cashierShiftObject(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
+    // Find the function by using action_code
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.cashierShiftObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        // if (!o2[0].tr_type) {
-        //     return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
-        // };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
-            
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+    // console.log("params: ", params);
+    
+    try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-             
+            
         if (result[0].p_msg !== 'ok') {
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
@@ -104,79 +107,92 @@ AppCashiering.prototype.openCshr = async function (req, res) {
 
 // List Current Cashiering Shift 
 AppCashiering.prototype.currentCshr = async function (req, res) {
+    let validAxn;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.cashierShiftObject(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.cashierShiftObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
 
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-        console.log(result);
+        // console.log(result);
         
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    };
+    };  
 };
 
 // Prepare Collection Statement before close
 AppCashiering.prototype.prepareCshr = async function (req, res) {
+    let validAxn;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.cashierShiftObject(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.cashierShiftObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
 
-        // Execute the function
+    // Execute the function
+    try {
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-        console.log(result);
-        
+        // console.log(result);
+            
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -186,43 +202,99 @@ AppCashiering.prototype.prepareCshr = async function (req, res) {
 
 // Close Cashiering Shift
 AppCashiering.prototype.closeCshr = async function (req, res) {
+    let validAxn;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.cashierShiftObject(item));
+    
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
+    // Find the function by using action_code
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.cashierShiftObject(item));
-        
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        // if (!o2[0].tr_type) {
-        //     return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
-        // };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
-                
+        validAxn = await pgSql.getAction(action);
+            
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+        
+    try {
+        // Execute the function
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+        console.log(req.header('x-forwarded-for'));
+        
+        if (result[0].p_msg !== 'ok') {
+            return res.status(500).send(libApi.response(result, 'Failed'));
+        } else {
+            return res.status(200).send(libApi.response(result, 'Success'));
+        };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+};
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
+// Force close cashiering shift
+AppCashiering.prototype.forceCloseCshr = async function (req, res) {
+    let validAxn;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.cashierShiftObject(item));
+    
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
+    // Find the function by using action_code
+    try {
+        validAxn = await pgSql.getAction(action);
             
+        // Append Error if the action is not found
+        if (validAxn.rowCount <= 1) {
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        };
+    } catch {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+        
+    try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
         console.log(req.header('x-forwarded-for'));
@@ -244,6 +316,6 @@ router.post('/o', cashier.openCshr.bind(cashier));
 router.post('/sc', cashier.currentCshr.bind(cashier));
 router.post('/cp', cashier.prepareCshr.bind(cashier));
 router.post('/c', cashier.closeCshr.bind(cashier));
-
+router.post('/fc', cashier.forceCloseCshr.bind(cashier));
 
 module.exports = router;

@@ -24,7 +24,7 @@ BEGIN
 0000_0003_fn_action_cmd
 
 -- Example usage
-SELECT * FROM fn_action_cmd(p_action_code => 'prod-category::s')
+SELECT * FROM fn_action_cmd(p_action_code => 'app-user-group::al')
 
 */
 
@@ -43,8 +43,8 @@ SELECT * FROM fn_action_cmd(p_action_code => 'prod-category::s')
 	) THEN
 		RETURN QUERY (
 			SELECT NULL::TEXT
-					, NULL::TEXT
-					, NULL::VARCHAR
+					, NULL::character varying
+					, NULL::character varying
 					, NULL::INT
 					, NULL::INT
                		, 'Action Code: ' || p_action_code || ' is not exists!!'::TEXT

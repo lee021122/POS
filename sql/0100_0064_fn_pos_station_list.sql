@@ -38,7 +38,7 @@ BEGIN
 		RETURN QUERY (
 			SELECT a.pos_station_id, a.modified_on, a.modified_by, a.pos_station_desc, a.ip, a.default_printer_id, a.is_in_use, a.display_seq
 			FROM tb_pos_station a
-			LEFT JOIN tb_pos_printer b ON b.printer_id = a.default_printer_id
+			LEFT JOIN tb_pos_printer b ON b.pos_printer_id = a.default_printer_id
 			ORDER BY a.display_seq
 		);
 		
@@ -47,9 +47,9 @@ BEGIN
 		RETURN QUERY (
 			SELECT 
 				a.pos_station_id, null::timestamp AS modified_on, null::character varying AS modified_by, a.pos_station_desc, a.ip, a.default_printer_id, 
-				null::integer AS is_in_use, null::character varying AS display_seq
+				a.is_in_use, null::character varying AS display_seq
 			FROM tb_pos_station a
-			LEFT JOIN tb_pos_printer b ON b.printer_id = a.default_printer_id
+			LEFT JOIN tb_pos_printer b ON b.pos_printer_id = a.default_printer_id
 			WHERE a.is_in_use = p_is_in_use
 			ORDER BY a.display_seq
 		);

@@ -134,8 +134,8 @@ AppProdSetup.prototype.prodObject = function (o = {}) {
         is_enable_track_stock: libShared.toInt,
         is_enable_daily_avail: libShared.toInt,
         is_popular_item: libShared.toInt,
-        meal_period: libShared.toString,
-        pos_printer: libShared.toString,
+        meal_period: libShared.toText,
+        pos_printer: libShared.toText,
         rid: libShared.toInt,
         axn: libShared.toString,
         url: libShared.toString,
@@ -192,7 +192,7 @@ AppProdSetup.prototype.save = async function (req, res) {
             const oldImagePath = path.join(uploadDir, oldLogoImgPath[0].product_img_path);
             if (fs.existsSync(oldImagePath)) {
                 fs.unlinkSync(oldImagePath); // Delete the old image
-            }
+            };
         };
         
         if (!code || code !== SERVICE) {

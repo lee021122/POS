@@ -53,6 +53,11 @@ BEGIN
 		p_msg := 'Cannot do day end closing twice a day!!';
 		RETURN;
 	END IF;
+	
+	IF LENGTH(COALESCE(p_remarks, '')) = 0 THEN
+		p_msg := 'Remarks cannot be blank!!';
+		RETURN;
+	END IF;
 
 	-- -------------------------------------
 	-- process
@@ -114,7 +119,7 @@ BEGIN
 			p_attach_file => null
 		);
 		
-		IF v_msg <> 'ok' THEN
+		IF v_msg <> 'ok' THEN 
 			p_msg := 'Error happen during prepare mail!!';
 			RETURN;
 		END IF;

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_country_list (
+CREATE OR REPLACE FUNCTION fn_printer_type_list (
 	p_current_uid character varying(255),
 	p_is_in_use integer,
 	p_rid integer,
@@ -6,20 +6,17 @@ CREATE OR REPLACE FUNCTION fn_country_list (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	country_id uuid,
-	country_name character varying(255)
-)
+	printer_type_id integer,
+	printer_type character varying(255)
+) 
 LANGUAGE 'plpgsql'
 AS $$
--- -------------------------------------
--- init
--- -------------------------------------
 DECLARE
 
 BEGIN
-/* 0100_0066_fn_country_list
+/* 0100_0087_fn_printer_type_list
 
-	select * from fn_country_list (
+	select * from fn_printer_type_list (
 		'tester',
 		-1,
 		null,
@@ -27,6 +24,7 @@ BEGIN
 		null
 	);
 		
+
 */
 
 	-- -------------------------------------
@@ -39,18 +37,18 @@ BEGIN
 	IF COALESCE(p_is_in_use, -1) = -1 THEN 
 	
 		RETURN QUERY (
-			SELECT a.country_id, a.country_name
-			FROM tb_country a
-			ORDER BY a.display_seq, a.country_name
+			SELECT a.printer_type_id, a.printer_type
+			FROM tb_pos_printer_type a
+			ORDER BY a.display_seq, a.printer_type
 		);
 	
 	ELSE
 	
 		RETURN QUERY (
-			SELECT a.country_id, a.country_name
-			FROM tb_country a
+			SELECT a.printer_type_id, a.printer_type
+			FROM tb_pos_printer_type a
 			WHERE a.is_in_use = p_is_in_use
-			ORDER BY a.display_seq, a.country_name
+			ORDER BY a.display_seq, a.printer_type
 		);
 	
 	END IF;

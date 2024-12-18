@@ -341,5 +341,4 @@ router.post('/il', other.inventoryTypeList.bind(other));
 router.post('/all', other.auditLogList.bind(other));
 router.post('/al', other.actionList.bind(other));
 
-
 module.exports = router;

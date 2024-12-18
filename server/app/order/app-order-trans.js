@@ -389,6 +389,51 @@ AppOrderTrans.prototype.processTransaction = async function (req, res) {
                         if (lineResult[0].p_msg !== 'ok') {
                             throw new Error(lineResult[0].p_msg);
                         };
+
+                        const { p_order_trans_item_line_id } = lineResult[0];
+                        
+                        // Process `modifier` if present
+                        if (lineItem.data[0].modifier && Array.isArray(lineItem.data[0].modifier)) {                            
+                            for (const mod of lineItem.data[0].modifier) {
+                                console.log('Processing modifier:', mod);
+
+                                // Validation of code & axn
+                                if (!mod.code || mod.code !== SERVICE) {
+                                    throw new Error('Code is required', 'Failed');
+                                };
+
+                                if (!mod.axn) {
+                                    throw new Error('Action is required', 'Failed');
+                                };
+
+                                const modAction = `${mod.code}::${mod.axn}`.toLowerCase().trim();
+                                const validModAxn = await pgSql.getAction(modAction);
+                                const parsedMod = this.orderObject(mod.data[0]);
+                                parsedMod.order_trans_id = p_order_trans_id;
+                                parsedMod.order_trans_item_line_id = p_order_trans_item_line_id;
+                                
+                                // Compulsory Parameter Check
+                                if (!parsedMod.order_trans_id) {
+                                    throw new Error('Order Transaction ID is required', 'Failed');
+                                };
+
+                                if (!parsedMod.order_trans_item_line_id) {
+                                    throw new Error('Item Line is required', 'Failed');
+                                };
+
+                                if (!parsedMod.modifier_option_id) {
+                                    throw new Error('Modifier Option is required', 'Failed');
+                                };
+                                
+                                const modParams = libApi.parseParams(validModAxn, [parsedMod]);
+
+                                const modResult = await t.any(`CALL ${validModAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9)`, modParams);
+
+                                if (modResult[0].p_msg !== 'ok') {
+                                    throw new Error(modResult[0].p_msg, 'Failed');
+                                };
+                            };
+                        };
                     }
                 }
             }

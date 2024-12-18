@@ -25,63 +25,141 @@ AppUserGroup.prototype.userGroupObject = function(o = {}) {
         user_group_desc: null,
         is_in_use: null,
         display_seq: null,
-        
-        action_id: null
+        action_id: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    return Object.assign(d, o);
+    const conversionMap = {
+        current_uid: libShared.toString,
+        user_group_id: libShared.toInt,
+        user_group_desc: libShared.toString,
+        is_in_use: libShared.toInt,
+        display_seq: libShared.toString,
+        action_id: libShared.toUUID,
+        rid: libShared.toInt,
+        axn: libShared.toString,
+        url: libShared.toString,
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
+// Combine user group and user action save in one API
 AppUserGroup.prototype.save = async function(req, res) {
+    let validAxn;
+    
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = `${code}::${axn}`.toLowerCase().trim();
+    
+    // Find the function by using action_code
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.userGroupObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        if (!o2[0].user_group_desc) {
-            return res.status(400).send(libApi.response('User Group Description is required', 'Failed'));
-        };
-
-        if (o2[0].display_seq) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
+        validAxn = await pgSql.getAction(action);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+        };
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
+        await pgSql.runTransaction(async (t) => {
+            for (const item of data) {
+                console.log(item
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
+                );
+                
+                if (!item.user_group_desc) {
+                    throw new Error('User Group Description is required!!');
+                };
+
+                if (item.display_seq) {
+                    if (o2[0].display_seq.length > 6) {
+                        return res.status(500).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+                    } else {
+                        o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+                    };
+                };
+
+                const parsedData = this.userGroupObject(item);
+                const params = libApi.parseParams(validAxn, [parsedData]); 
+
+                const mainResult = await t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, params);
+                console.log(mainResult);
+                
+                if (mainResult[0].p_msg !== 'ok') {
+                    throw new Error(mainResult[0].p_msg);
+                };
+
+                const { p_user_group_id } = mainResult[0];
+
+                if (item.actions && Array.isArray(item.actions)) {
+                    for (const act of item.actions) {
+                        console.log(act);
+                        
+                        if (!act.code || act.code !== SERVICE) {
+                            throw new Error('Code is required!!');
+                        };
+
+                        if (!act.axn) {
+                            throw new Error('Action is required!!');
+                        };
+
+                        const action = `${act.code}::${act.axn}`.toLowerCase().trim();
+                        const validActionAxn = await pgSql.getAction(action);
+
+                        if (Array.isArray(act.data)) {
+                            for (const actionItem of act.data) {
+                                // Ensure actionItem is iterable (contains valid action data)
+                                if (actionItem && typeof actionItem === 'object') {
+                                    const parsedAction = this.userGroupObject(actionItem);
+                                    parsedAction.user_group_id = p_user_group_id;
+    
+                                    if (!parsedAction.user_group_id) {
+                                        throw new Error('User Group is required!!');
+                                    }
+    
+                                    if (!actionItem.action_id) {
+                                        throw new Error('Action ID is required!!');
+                                    }
+    
+                                    const actionParams = libApi.parseParams(validActionAxn, [parsedAction]);
+    
+                                    const actionResult = await t.any(`CALL ${validActionAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8)`, actionParams);
+    
+                                    if (actionResult[0].p_msg !== 'ok') {
+                                        throw new Error(actionResult[0].p_msg);
+                                    }
+                                } else {
+                                    console.warn('Skipping invalid action item:', actionItem);
+                                }
+                            }
+                        } else {
+                            throw new Error('Unexcept Data format!!')
+                        }
+                    };
+                };
+            };
+        });
             
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
-             
-        return res.send(libApi.response(result, 'Success'));
+        return res.send(libApi.response('User group created successfully!!', 'Success'));
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -89,42 +167,49 @@ AppUserGroup.prototype.save = async function(req, res) {
 };
 
 AppUserGroup.prototype.list = async function(req, res) {
+    let validAxn;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.userGroupObject(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.userGroupObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+    // console.log("params: ", params);
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
-            
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-             
+            
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -132,170 +217,61 @@ AppUserGroup.prototype.list = async function(req, res) {
     };
 };
 
-// AppUserGroup.prototype.actionSave = async function(req, res) {
-//     try {
-//         // Extract and validate request data
-//         const { code, axn, data } = req.body;
-//         p0.code = code;
-//         p0.axn = axn;
-//         p0.data = data;
-//         // const preCode = p0.code;
-//         const SERVICE_CODE = SERVICE.concat('-ac');
+AppUserGroup.prototype.actionList = async function(req, res) {
+    let validAxn;
 
-//         if (!code || code !== SERVICE_CODE) {
-//             return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-//         };
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.userGroupObject(item));
 
-//         if (!axn) {
-//             return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-//         };
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
 
-//         const action = SERVICE_CODE.concat('::').concat(axn).toLowerCase().trim();
-//         // console.log("action: ", action);
-        
-//         // Find the function by using action_code
-//         const validAxn = await pgSql.getAction(action);
-//         // console.log(validAxn);
-                
-//         // Append Error if the action is not found
-//         if (validAxn.rowCount <= 1) {
-//             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-//         }
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
 
-//         // Prepare an array to hold individual results
-//         const results = [];
-
-//         // Execute the stored procedure for each item in the data array
-//         for (const item of data) {
-//             console.log(item);
-            
-//             // Ensure each item has required fields
-//             const actionData = this.userGroupObject(item);
-
-//             if (!actionData.user_group_id) {
-//                 return res.status(400).send(libApi.response('User Group is required for each data item!', 'Failed'));
-//             }
-            
-//             if (!actionData.action_id) {
-//                 return res.status(400).send(libApi.response('Action is required for each data item!', 'Failed'));
-//             }
-
-//             // Parse parameters for the current item
-//             const params = libApi.parseParams(validAxn, [actionData]);
-            
-//             // Execute the stored procedure for the current item
-//             const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-//             results.push(result)
-//         }
-
-//         return res.send(libApi.response(results, 'Success'));
-//     } catch (err) {
-//         console.error(err);
-//         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-//     };
-// };
-
-AppUserGroup.prototype.actionSave = async function(req, res) {
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-
-        const SERVICE_CODE = SERVICE.concat('-ac');
-
-        if (!code || code !== SERVICE_CODE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = SERVICE_CODE.concat('::').concat(axn).toLowerCase().trim();
-        
-        const validAxn = await pgSql.getAction(action);
-        
+        // Find the function by using action_code
+        validAxn = await pgSql.getAction(action);
+        // console.log(validAxn);
+                
+        // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
-
-        // Use the runTransaction function
-        const result = await pgSql.runTransaction(async (t) => {
-            // Prepare an array to hold individual promises
-            const promises = [];
-
-            // Execute the stored procedure for each item in the data array
-            for (const item of data) {
-                // Ensure each item has required fields
-                const lineData = this.orderObject(item);
-                
-                if (!lineData.order_trans_id) {
-                    return res.status(400).send(libApi.response('Order Transaction Number is required!', 'Failed'));
-                };
-        
-                if (!lineData.doc_no) {
-                    return res.status(400).send(libApi.response('Order Number is required', 'Failed'));
-                };
-        
-                if (!lineData.tr_type) {
-                    return res.status(400).send(libApi.response('Transaction Type is required', 'Failed'))
-                };
-
-                // Parse parameters for the current item
-                const params = libApi.parseParams(validAxn, [lineData]);
-                    
-                // Create a promise for executing the stored procedure and add it to the array
-                const promise = t.any(`CALL ${validAxn.data[0].sql_stm}($1, $2, $3, $4, $5, $6, $7, $8)`, params)
-                    .then((result) => { 
-                        if (result[0].p_msg !== 'ok') {
-                            return { data: result[0].p_msg, message: "Failed" };
-                        } else {
-                            return { data: result[0].p_msg, message: "Success" };
-                        }
-                    })
-                    .catch((error) => { 
-                        console.error('Error occurred in stored procedure execution:', error.message, { item, params });
-                        // Log the full error object to capture stack trace and other details
-                        console.error(error);
-                        return { data: error, message: "Failed" }
-                    });
-                
-                promises.push(promise);
-            };
-
-            // Use Promise.all to execute all promises concurrently
-            const results = await Promise.all(promises);
-
-            // Check each result for errors after all promises have resolved
-            for (const result3 of results) {
-                if (result3.message !== 'Success') {
-                    return res.status(400).send(libApi.response(result3.data, 'Failed'));
-                };
-            };
-
-            // If everything is successful, return the results
-            return results;
-        });        
-             
-        return res.send(libApi.response('ok', 'Success'));
+        };
     } catch (err) {
-        console.error("Error during actionSave:", err);
-        return res.status(500).send(libApi.response(err.message || 'Unexpected error', 'Failed'));
-    }
-};
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    // Use the shared library function to parse parameters
+    const params = libApi.parseParams(validAxn, o2);
+    // console.log("params: ", params);
 
-
-
-
-
-AppUserGroup.prototype.actionList = async function(req, res) {
-
+    try {
+        // Execute the function
+        const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
+            
+        return res.send(libApi.response(result, 'Success'));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 };
 
 const userGroup = new AppUserGroup();
 
 router.post('/s', userGroup.save.bind(userGroup));
-router.post('/ax-s', userGroup.actionSave.bind(userGroup));
+router.post('/l', userGroup.list.bind(userGroup));
+router.post('/al', userGroup.actionList.bind(userGroup));
 
 module.exports = router;

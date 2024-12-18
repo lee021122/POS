@@ -6,4 +6,7 @@ Object.defineProperty(appShared, 'TB_PRICE_TAG', { get: function() { return 'tb_
 Object.defineProperty(appShared, 'TB_PRODUCT', { get: function() { return 'tb_product'; } });
 Object.defineProperty(appShared, 'TB_RECEIPT_TEMP', { get: function() { return 'tb_receipt_temp'; } });
 
+// Get Curr Code
+
+
 module.exports = appShared;
