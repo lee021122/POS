@@ -659,7 +659,7 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- app-user-group::s
 (gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'user_group_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'user_group_id', 'int', 3, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'user_group_desc', 'string', 4, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'is_in_use', 'int', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'f2737b0c-9359-4486-815c-b38b2015eb4d', 'display_seq', 'string', 6, 0, current_timestamp, 'admin'),
@@ -677,7 +677,7 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 -- app-user-group::acs
 (gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'msg', 'text', 2, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'user_group_id', 'id', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'user_group_id', 'int', 3, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'action_id', 'id', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'rid', 'int', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'c1ff314c-10e6-4203-804b-f406790765ad', 'axn', 'string', 6, 0, current_timestamp, 'admin'),
@@ -699,7 +699,7 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'user_name', 'text', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'email', 'text', 6, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'pwd', 'text', 7, 0, current_timestamp, 'admin'),
-(gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'user_group_id', 'id', 8, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'user_group_id', 'int', 8, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'is_active', 'int', 9, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'rid', 'int', 10, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '543abc1b-a347-4ab0-85d1-664362579925', 'axn', 'string', 11, 0, current_timestamp, 'admin'),
@@ -881,8 +881,12 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 
 -- Receipt 
 -- app-order-trans::tr
-
--- app-order-trans::ptk
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'order_trans_id', 'id', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'axn', 'string', 4, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '255e7a66-6e49-467d-b237-205478992a28', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
 
 -- app-order-trans::l
 (gen_random_uuid(), '3d66bf32-523b-4cd4-a852-c7296ce9573f', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
@@ -1055,3 +1059,7 @@ INSERT INTO tb_mail_type (mail_type_id, created_on, created_by, mail_type_desc, 
 (1, current_timestamp, 'admin', 'Notification', 1),
 (2, current_timestamp, 'admin', 'Scheduler Report', 1),
 (3, current_timestamp, 'admin', 'Receipt', 1)
+
+INSERT INTO tb_user_status (user_status_id, created_on, created_by, user_status_desc, allow_login, is_in_use) VALUES 
+(1, current_timestamp, 'admin', 'Active', 1, 1),
+(2, current_timestamp, 'admin', 'Suspend', 0, 1);

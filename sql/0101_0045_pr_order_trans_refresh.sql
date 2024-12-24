@@ -34,8 +34,8 @@ BEGIN
 		CALL pr_order_trans_refresh(
 			p_current_uid => 'tester',
 			p_msg => null,
-			p_order_trans_id => '9f1e591e-89ed-46ab-b07a-9e4602dab5c8',
-			p_doc_no => 'TS2024101600002',
+			p_order_trans_id => '219efb90-5d76-4b4b-ad7d-4dd3d6042b70',
+			p_doc_no => 'TS2024122400004',
 			p_tr_status => 'C',  -- Example transaction status
 			p_is_debug => 0  -- Debug mode off (optional)
 		);
@@ -112,7 +112,7 @@ BEGIN
 			order_trans_id = p_order_trans_id 
 			AND doc_no = p_doc_no
 			AND is_pymt = 1
-			AND seq between 1000 and 2000
+			AND seq between 999 and 2000
 	) THEN 
 		
 		SELECT ROUND(SUM(amt), 2)
@@ -137,6 +137,8 @@ BEGIN
 	
 	END IF;
 	
+	RAISE NOTICE 'Ost Amt %', v_outstanding_amt;
+	
 	-- Update Amount
 	UPDATE tb_order_trans
 	SET
@@ -156,7 +158,9 @@ BEGIN
 		SET 
 			order_trans_id = null,
 			doc_no = null,
-			is_occ = 0
+			is_occ = 0,
+			modified_on = v_now,
+			modified_by = p_current_uid
 		WHERE 
 			order_trans_id = p_order_trans_id
 			AND doc_no = p_doc_no;

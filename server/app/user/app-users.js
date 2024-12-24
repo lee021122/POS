@@ -26,10 +26,30 @@ AppUser.prototype.userObject = function(o = {}) {
         email: null,
         pwd: null,
         user_group_id: null,
-        is_active: null
+        is_active: null,
+        rid: null,
+        axn: null,
+        url: null,
+        is_debug: null
     };
 
-    return Object.assign(d, o);
+    const conversionMap = {
+        current_uid: libShared.toString,
+        user_id: libShared.toUUID,
+        login_id: libShared.toText,
+        user_name: libShared.toText,
+        email: libShared.toText,
+        pwd: libShared.toText,
+        user_group_id: libShared.toInt,
+        is_active: libShared.toInt,
+        rid: libShared.toInt,
+        axn: libShared.toString,
+        url: libShared.toString,
+        is_debug: libShared.toInt
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
 };
 
 AppUser.prototype.save = async function(req, res) {
@@ -72,7 +92,6 @@ AppUser.prototype.save = async function(req, res) {
 
         // redefine the o2.pwd
         o2[0].pwd = libShared.hashText(o2[0].pwd);
-        console.log(o2[0].pwd);
 
         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
         // console.log("action: ", action);
@@ -88,7 +107,7 @@ AppUser.prototype.save = async function(req, res) {
 
         // Use the shared library function to parse parameters
         const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
+        console.log("params: ", params);
             
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)

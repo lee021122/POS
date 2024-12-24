@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION fn_order_product_list (
 	category_desc character varying(255),
 	product_tag character varying(255),
 	product_img_path character varying(255),
-	cost numeric(15, 4),
+	sell_price numeric(15, 4),
 	avail integer
 )
 LANGUAGE 'plpgsql'
@@ -25,7 +25,7 @@ DECLARE
 	v_tr_date CONSTANT date = current_date;
 BEGIN
 /*
-
+	SELECT * FROM fn_order_product_list ('tester', null, null, null)
 */
 
 	-- -------------------------------------
@@ -37,7 +37,7 @@ BEGIN
 	-- -------------------------------------
 	RETURN QUERY (
 		SELECT 
-			a.product_id, a.product_desc, a.product_code, d.category_id, d.category_desc, a.product_tag, a.product_img_path, a.cost, 
+			a.product_id, a.product_desc, a.product_code, d.category_id, d.category_desc, a.product_tag, a.product_img_path, a.sell_price, 
 			(e.qty - e.sold) AS avail
 		FROM tb_product a
 		INNER JOIN tb_meal_period_product b ON b.product_id = a.product_id

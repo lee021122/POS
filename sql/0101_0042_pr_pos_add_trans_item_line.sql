@@ -46,10 +46,14 @@ DECLARE
 	v_tax_amt2_calc numeric(15, 4);
 	v_cost numeric(15, 4);
 	v_seq integer;
+	v_seq2 integer;
 	v_new_amt numeric(15, 4);
 	v_new_sell_price numeric(15, 4);
 	v_now CONSTANT timestamp = current_timestamp;
 	v_today_dt CONSTANT date = current_date;
+	v_total numeric(15, 4);
+	v_amt2 numeric(15, 4);
+	v_remarks character varying(255);
 	
 	-- Update get old record
 	v_tr_date_old date;
@@ -102,24 +106,24 @@ BEGIN
 		CALL pr_pos_add_trans_item_line(
 			p_current_uid => 'tester',
 			p_msg => null,
-			p_order_trans_item_line_id => 'aa87a480-7f89-4387-8e6e-dd75e94a09a2',
+			p_order_trans_item_line_id => null,
 			p_tr_date => null,
 			p_tr_type => 'TS',
 			p_tr_status => 'C', 
-			p_order_trans_id => '84374986-ecb7-4aea-b76c-7ccd0be2965e',
-			p_doc_no => 'TS2024121300001',
-			p_product_id => 'a00143dd-09a1-47ce-8bb5-ad3f8a28805a',
+			p_order_trans_id => '5be8f329-54e4-48cd-8de7-d56751250a58',
+			p_doc_no => 'TS2024122000001',
+			p_product_id => null,
 			p_cost => null,
 			p_sell_price => null,
 			p_addon_amt => null,
-			p_amt => null,
-			p_qty => 1,
+			p_amt => 50,
+			p_qty => null,
 			p_discount_id => null,
 			p_discount_amt => null,
 			p_discount_pct => null,
 			p_total_disc_amt => null,
 			p_is_pymt => null,
-			p_pymt_mode_id => null,
+			p_pymt_mode_id => '59c5e753-9e2a-48d8-84c3-55ec53606d3c',
 			p_ref_no => null,
 			p_remarks => null,
 			p_coupon_no => null,
@@ -216,17 +220,6 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	IF p_product_id IS NOT NULL THEN 
-		IF NOT EXISTS (
-			SELECT product_id
-			FROM tb_product
-			WHERE product_id = p_product_id
-		) THEN
-			p_msg := 'Invalid Product!!';
-			RETURN;
-		END IF;
-	END IF;
-	
 	-- Get setting value
 	v_setting_value := (SELECT sys_setting_value FROM tb_sys_setting WHERE sys_setting_title = 'OPERATION_MODE');
 	
@@ -235,6 +228,17 @@ BEGIN
 	-- -------------------------------------
 		
 	IF fn_to_guid(p_product_id) <> fn_empty_guid() THEN 
+	
+		IF p_product_id IS NOT NULL THEN 
+			IF NOT EXISTS (
+				SELECT product_id
+				FROM tb_product
+				WHERE product_id = p_product_id
+			) THEN
+				p_msg := 'Invalid Product!!';
+				RETURN;
+			END IF;
+		END IF;
 		
 		p_is_pymt := 0;
 		p_pymt_mode_id = fn_empty_guid();
@@ -287,7 +291,7 @@ BEGIN
 		END IF;
 			
 	ELSIF fn_to_guid(p_pymt_mode_id) <> fn_empty_guid() THEN 
-		
+
 		IF NOT EXISTS (
 			SELECT * 
 			FROM tb_pymt_mode
@@ -303,15 +307,36 @@ BEGIN
 		p_sell_price := 0;
 		p_is_pymt := 1;
 		
-		IF p_remarks = 'Amount Change Due' THEN
-			v_seq := 2000;
-		ELSE 
-			v_seq := (
+		v_seq := (
 				SELECT COALESCE(MAX(seq), 999)
 				FROM tb_order_trans_item_line
 				WHERE order_trans_id = p_order_trans_id
 				AND is_pymt = 1
 			) + 1;
+		
+		-- Curent Outtanding Amt
+		SELECT outstanding_amt
+		INTO v_total
+		FROM tb_order_trans
+		WHERE order_trans_id = p_order_trans_id;
+		
+		IF p_amt > v_total THEN 
+			IF EXISTS (
+				SELECT a.pymt_mode_id
+				FROM tb_pymt_mode a
+				INNER JOIN tb_pymt_type b ON b.pymt_type_id = a.pymt_type_id
+				WHERE 
+					pymt_mode_id = p_pymt_mode_id
+					AND b.is_allow_change_due = 1
+			) THEN
+				v_remarks := 'Amount Change Due';
+
+				IF v_remarks = 'Amount Change Due' THEN
+					v_seq2 := 2000;
+				END IF;
+
+				v_amt2 := -1 * (p_amt - v_total);
+			END IF;
 		END IF;
 		
 		p_discount_id := fn_empty_guid();
@@ -321,7 +346,7 @@ BEGIN
 		
 	END IF;
 	
-	RAISE NOTICE 'ID: %', p_order_trans_item_line_id;
+	RAISE NOTICE 'Remarks: %', p_remarks;
 	
 	IF fn_to_guid(p_order_trans_item_line_id) = fn_empty_guid() THEN
 		
@@ -338,11 +363,31 @@ BEGIN
 			null, null, p_coupon_no, p_coupon_id, v_tax_code1, v_tax_pct1, v_tax_amt1_calc, v_tax_code2, v_tax_pct2, v_tax_amt2_calc
 		);
 		
-		audit_log := 'Added New Item Line -  ' || 
-						'Product: ' || p_product_id || ', ' ||
-						'Sell Price: ' || p_sell_price || ', ' ||
-						'Tax Amount 1 Calculate: ' || v_tax_amt1_calc || ', ' ||
-						'Tax Amount 2 Calculate: ' || v_tax_amt2_calc || '.';
+		-- Insert one more for amount change due
+		IF v_remarks = 'Amount Change Due' THEN
+			INSERT INTO tb_order_trans_item_line (
+				order_trans_item_line_id, created_on, created_by, modified_on, modified_by, tr_date, tr_type, tr_status, doc_no, product_id, qty, cost, sell_price,
+				seq, order_trans_id, discount_id, discount_amt, discount_pct, total_disc_amt, is_pymt, pymt_mode_id, ref_no, remarks, amt, 
+				price_override_on, price_override_by, coupon_no, coupon_id, tax_code1, tax_pct1, tax_amt1_calc, tax_code2, tax_pct2, tax_amt2_calc
+			) values (
+				gen_random_uuid(), v_now, p_current_uid, v_now, p_current_uid, p_tr_date, p_tr_type, p_tr_status, p_doc_no, p_product_id, p_qty, p_cost, p_sell_price,
+				v_seq2, p_order_trans_id, p_discount_id, p_discount_amt, p_discount_pct, p_total_disc_amt, p_is_pymt, p_pymt_mode_id, p_ref_no, v_remarks, v_amt2, 
+				null, null, p_coupon_no, p_coupon_id, v_tax_code1, v_tax_pct1, v_tax_amt1_calc, v_tax_code2, v_tax_pct2, v_tax_amt2_calc
+			);
+		END IF;
+		
+		IF p_is_pymt = 0 THEN 
+			audit_log := 'Added New Item Line -  ' || 
+							'Product: ' || p_product_id || ', ' ||
+							'Sell Price: ' || p_sell_price || ', ' ||
+							'Tax Amount 1 Calculate: ' || v_tax_amt1_calc || ', ' ||
+							'Tax Amount 2 Calculate: ' || v_tax_amt2_calc || '.';
+		ELSE 
+			audit_log := 'Added Payment - ' ||
+							'Payment Mode: ' || p_pymt_mode_id || ', ' ||
+							'Given Amt: ' || p_amt || ', ' || 
+							'Amt Change Due: ' || v_amt2 || '.';
+		END IF;
 		
 	ELSE
 	

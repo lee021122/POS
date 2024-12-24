@@ -27,7 +27,8 @@ const usergrp = require('./app/user/app-user-group');
 const user = require('./app/user/app-users');
 const rpt = require('./app/report/app-report');
 const mail = require('./app/app-mail-service');
-const other = require('./app/other/app-other')
+const other = require('./app/other/app-other');
+const uac = require('./app/app-user-access');
 
 // Order process
 const order = require('./app/order/app-order-trans');
@@ -62,6 +63,7 @@ app.use('/oth', other);
 
 app.use('/ord', order);
 app.use('/csh', cashier);
+app.use('/uac', uac);
 
 app.listen(myConfig.PORT, () => {
     console.log(`Server running on PORT: ${myConfig.PORT}`);

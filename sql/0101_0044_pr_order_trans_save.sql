@@ -244,7 +244,9 @@ BEGIN
 	SET 
 		order_trans_id = p_order_trans_id,
 		doc_no = p_doc_no,
-		is_occ = 1
+		is_occ = 1,
+		modified_on = v_now,
+		modified_by = p_current_uid
 	WHERE 
 		table_desc = p_table_no;
 	

@@ -1,13 +1,17 @@
-const exceljs = require('exceljs');
+const exceljs = require('exceljs');         // to Excel
+const PDFDocument  = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const currentWorkingDirectory = process.cwd();
+console.log("Lib Rpt current dir: ", currentWorkingDirectory);
 
 const tempDir = path.join(currentWorkingDirectory, '..', 'temp');
+const tempDir2 = path.join(currentWorkingDirectory, '../../', 'temp');
+console.log("Temp Dir: ", tempDir);
 
 // Create the directory if it doesn't exist
 try {
-    if (!fs.existsSync(tempDir)) {
+    if (!fs.existsSync(tempDir) || !fs.existsSync(tempDir2) ) {
         //console.log("Directory does not exist, creating...");
 
         // Create the directory recursively (including any parent directories if needed)
@@ -71,11 +75,39 @@ libRpt.rptContentObj = function() {
     this.border_left = null,
     this.border_right = null,
     this.bg_color = null
-}
+};
+
+libRpt.newPdf = function(opt, file_name, pdf_info) {
+    const filePath = path.join(tempDir2, file_name)
+    console.log("PDF file path: ", filePath);
+    
+    // Destructure options with default values
+    const options = {
+        outputPath: filePath,   
+        size: opt.paperSize || 'A4',                            // Default paper size
+        margins: { top: 30, left: 10, right: 10, bottom: 10 },  // Default margins
+        layout: opt.pageLayout || 'portrait',                   // Page layout, default portrait
+    };
+
+    // Create the PDF document
+    const doc = new PDFDocument({
+        size: options.size,
+        margins: options.margins,
+        layout: options.layout,
+        info: pdf_info || {}, // Metadata (e.g., Title, Author)
+    });
+
+    // Pipe the document to a file
+    doc.pipe(fs.createWriteStream(options.outputPath));
+
+    // Return the doc object to allow further modifications
+    return doc;
+};
 
 libRpt.newWorkbook = function(excel, file_name, bookInfo) {
     // construct a streaming XLSX workbook writer with styles and shared strings
     const filePath = path.join(tempDir, file_name)
+    console.log("Excel file path: ", filePath);
     const options = {
         filename: filePath,
         useStyles: true,
@@ -261,5 +293,40 @@ libRpt.writeDataRows = function (excel, headerConfig, dataConfig, startRow = 2) 
         currentRow++; // Move to the next row
     });
 };
+
+libRpt.pdfContent = function() {
+
+};
+
+(async () => {
+    const opt = {
+        paperSize: 'A4', // Custom receipt paper size
+        pageLayout: 'portrait',
+    };
+    
+    const file_name = 'invoice2.pdf';
+    
+    const pdf_info = {
+        Title: 'Invoice',
+        Author: 'Your Company',
+        Subject: 'Customer Invoice',
+    };
+    
+    const doc = libRpt.newPdf(opt, file_name, pdf_info);
+    
+    // Add content to the document
+    doc.text('Invoice', { align: 'center' });
+    doc.text('Customer Name: John Doe', { align: 'left' });
+    doc.text('----------------------------------------');
+    doc.text('Item                 Qty         Price');
+    doc.text('----------------------------------------');
+    doc.text('Apple               2           $3.00');
+    doc.text('Orange              1           $1.50');
+    doc.text('----------------------------------------');
+    doc.text('Total:                        $4.50', { align: 'right' });
+    
+    // Finalize the document
+    doc.end();
+})();
 
 module.exports = libRpt;

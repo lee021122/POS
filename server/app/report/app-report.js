@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const currentWorkingDirectory = process.cwd();
 
 const tempDir = path.join(currentWorkingDirectory, '..', 'temp');
+console.log("Report Temp Dir: ", tempDir);
 
 // Create the directory if it doesn't exist
 try {

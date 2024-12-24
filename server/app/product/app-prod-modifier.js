@@ -377,6 +377,46 @@ AppProdModifier.prototype.linkProductList = async function(req, res) {
     };
 };
 
+// Modifier save Step 1 + step 2 + step 3
+AppProdModifier.prototype.completeModifierSave = async function (req, res) {
+    const { code, axn, data } = req.body;
+    
+    // Basic validation
+    if (!code || code !== SERVICE) {
+        return res.status(500).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(500).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = `${code}::${axn}`.toLowerCase().trim();
+
+    // Fetch action definition
+    let validAxn;
+    try {
+        validAxn = await pgSql.getAction(action);
+        if (validAxn.rowCount <= 1) {
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
+
+    try {
+        // Run transaction
+        await pgSql.runTransaction(async (t) => {
+            for (const modgrp of data) {
+                
+            }
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
+};
+
 const prodModf = new AppProdModifier();
 
 router.post('/mgs', prodModf.modifierGroupSave.bind(prodModf));
