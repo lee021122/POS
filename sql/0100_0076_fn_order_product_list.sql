@@ -13,7 +13,8 @@ CREATE OR REPLACE FUNCTION fn_order_product_list (
 	product_tag character varying(255),
 	product_img_path character varying(255),
 	sell_price numeric(15, 4),
-	avail integer
+	avail integer,
+	modifier json
 )
 LANGUAGE 'plpgsql'
 AS $BODY$
@@ -36,22 +37,71 @@ BEGIN
 	-- -------------------------------------
 	-- process
 	-- -------------------------------------
+-- 	RETURN QUERY (
+-- 		SELECT 
+-- 			a.product_id, a.product_desc, a.product_code, d.category_id, d.category_desc, a.product_tag, a.product_img_path, a.sell_price, 
+-- 			(e.qty - e.sold) AS avail, f.modifier_option_name
+-- 		FROM tb_product a
+-- 		INNER JOIN tb_meal_period_product b ON b.product_id = a.product_id
+-- 		INNER JOIN tb_meal_period c ON c.meal_period_id = b.meal_period_id
+-- 		INNER JOIN tb_prod_category d ON d.category_id = a.category_id
+-- 		INNER JOIN tb_product_availability e ON e.product_id = a.product_id
+-- 		WHERE 
+-- 			v_now between c.start_time AND c.end_time
+-- 			AND e.dt = v_tr_date
+-- 			AND a.is_in_use = 1
+-- 			AND c.is_in_use = 1
+-- 		ORDER BY
+-- 			a.product_code, a.product_desc
+-- 	);
+	
 	RETURN QUERY (
 		SELECT 
-			a.product_id, a.product_desc, a.product_code, d.category_id, d.category_desc, a.product_tag, a.product_img_path, a.sell_price, 
-			(e.qty - e.sold) AS avail, f.modifier_option_name
+			a.product_id,
+			a.product_desc,
+			a.product_code,
+			a.category_id,
+			d.category_desc,
+			a.product_tag,
+			a.product_img_path,
+			a.sell_price,
+			(e.qty - e.sold) AS avail,
+			COALESCE(
+				json_agg(
+					json_build_object(
+						'modifier_group_name', g.modifier_group_name,
+						'sing_c', g.is_single_modifier_choice,
+						'mult_c', g.is_multiple_modifier_choice,
+						'options', (
+							SELECT json_agg(
+								json_build_object(
+									'modifier_option_id', h.modifier_option_id,
+									'modifier_option_name', h.modifier_option_name,
+									'addon_amt', h.addon_amt,
+									'is_default', h.is_default
+								)
+							)
+							FROM tb_modifier_option h
+							WHERE h.modifier_group_id = g.modifier_group_id
+						)
+					)
+				) FILTER (WHERE g.modifier_group_id IS NOT NULL),
+				'[]'
+			) AS modifiers
 		FROM tb_product a
-		INNER JOIN tb_meal_period_product b ON b.product_id = a.product_id
-		INNER JOIN tb_meal_period c ON c.meal_period_id = b.meal_period_id
-		INNER JOIN tb_prod_category d ON d.category_id = a.category_id
-		INNER JOIN tb_product_availability e ON e.product_id = a.product_id
+		LEFT JOIN tb_meal_period_product b ON b.product_id = a.product_id
+		LEFT JOIN tb_meal_period c ON c.meal_period_id = b.meal_period_id
+		LEFT JOIN tb_prod_category d ON d.category_id = a.category_id
+		LEFT JOIN tb_product_availability e ON e.product_id = a.product_id
+		LEFT JOIN tb_modifier_item_link f ON f.product_id = a.product_id
+		LEFT JOIN tb_modifier_group g ON g.modifier_group_id = f.modifier_group_id
 		WHERE 
 			v_now between c.start_time AND c.end_time
 			AND e.dt = v_tr_date
 			AND a.is_in_use = 1
 			AND c.is_in_use = 1
-		ORDER BY
-			a.product_code, a.product_desc
+		GROUP BY 
+			a.product_id, d.category_desc, e.qty, e.sold
 	);
 	
 	-- -------------------------------------
