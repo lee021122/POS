@@ -267,7 +267,4 @@ pgSql.runTransaction = async function (operations) {
     }
 };
 
-
-
-
 module.exports = { pgSql, db };

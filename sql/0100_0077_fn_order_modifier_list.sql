@@ -23,7 +23,9 @@ DECLARE
 
 BEGIN
 /* 0100_0076_fn_order_modifier_list
-
+	
+	SELECT * FROM fn_order_modifier_list ('tester', '17ea1fb4-c3ef-4bad-ae51-bf51932e3752', 0, null, null)
+	
 */
 
 	-- -------------------------------------

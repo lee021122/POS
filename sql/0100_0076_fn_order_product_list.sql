@@ -22,15 +22,16 @@ AS $BODY$
 -- -------------------------------------
 DECLARE
 	v_now CONSTANT time without time zone = current_time;
-	v_tr_date CONSTANT date = current_date;
+	v_tr_date date;
 BEGIN
 /*
-	SELECT * FROM fn_order_product_list ('tester', null, null, null)
+	SELECT * FROM fn_order_product_list ('tester', 0, null, null)
 */
 
 	-- -------------------------------------
 	-- validation
 	-- -------------------------------------
+	v_tr_date := fn_get_current_trans_dt();
 
 	-- -------------------------------------
 	-- process
@@ -38,7 +39,7 @@ BEGIN
 	RETURN QUERY (
 		SELECT 
 			a.product_id, a.product_desc, a.product_code, d.category_id, d.category_desc, a.product_tag, a.product_img_path, a.sell_price, 
-			(e.qty - e.sold) AS avail
+			(e.qty - e.sold) AS avail, f.modifier_option_name
 		FROM tb_product a
 		INNER JOIN tb_meal_period_product b ON b.product_id = a.product_id
 		INNER JOIN tb_meal_period c ON c.meal_period_id = b.meal_period_id
