@@ -148,7 +148,7 @@ AppProdModifier.prototype.modifierGroupList = async function(req, res) {
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.respons      e(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
 
         // Use the shared library function to parse parameters
