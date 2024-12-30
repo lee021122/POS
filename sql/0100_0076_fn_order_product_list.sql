@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION fn_order_product_list (
 	product_id uuid,
 	product_desc character varying(255),
 	product_code character varying(50),
-	category_id uuid, 
+	category_id uuid,
 	category_desc character varying(255),
 	product_tag character varying(255),
 	product_img_path character varying(255),

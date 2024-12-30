@@ -108,7 +108,7 @@ BEGIN
 		audit_log := 'Update Modifier Group Name from ' || v_modifier_group_name_old || ' to ' || p_modifier_group_name || ', ' ||
 						'Updated Single Modifier Choice from ' || v_is_single_modifier_choice_old || ' to ' || p_is_single_modifier_choice || ', ' ||
 						'Update Multiple Modifier Choice from ' || v_is_multiple_modifier_choice_old || ' to ' || p_is_multiple_modifier_choice || ', ' ||
-						'Update Is In Use from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+						'Update Is In Use from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_is_in_use) || ', ' ||
 						'Update Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || '.';
 		
 	END IF;

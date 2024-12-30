@@ -99,7 +99,7 @@ BEGIN
 		
 		-- Prepare Audit Log
 		audit_log := 'Updated Category Description from ' || v_category_desc_old || ' to ' || p_category_desc || ', ' ||
-						'Updated Is in Use from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+						'Updated Is in Use from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_is_in_use) || ', ' ||
 						'Updated Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || '.';
 
 	END IF;

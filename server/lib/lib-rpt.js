@@ -3,11 +3,11 @@ const PDFDocument  = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const currentWorkingDirectory = process.cwd();
-console.log("Lib Rpt current dir: ", currentWorkingDirectory);
+// console.log("Lib Rpt current dir: ", currentWorkingDirectory);
 
 const tempDir = path.join(currentWorkingDirectory, '..', 'temp');
 const tempDir2 = path.join(currentWorkingDirectory, '../../', 'temp');
-console.log("Temp Dir: ", tempDir);
+// console.log("Temp Dir: ", tempDir);
 
 // Create the directory if it doesn't exist
 try {
@@ -298,35 +298,35 @@ libRpt.pdfContent = function() {
 
 };
 
-(async () => {
-    const opt = {
-        paperSize: 'A4', // Custom receipt paper size
-        pageLayout: 'portrait',
-    };
+// (async () => {
+//     const opt = {
+//         paperSize: 'A4', // Custom receipt paper size
+//         pageLayout: 'portrait',
+//     };
     
-    const file_name = 'invoice2.pdf';
+//     const file_name = 'invoice2.pdf';
     
-    const pdf_info = {
-        Title: 'Invoice',
-        Author: 'Your Company',
-        Subject: 'Customer Invoice',
-    };
+//     const pdf_info = {
+//         Title: 'Invoice',
+//         Author: 'Your Company',
+//         Subject: 'Customer Invoice',
+//     };
     
-    const doc = libRpt.newPdf(opt, file_name, pdf_info);
+//     const doc = libRpt.newPdf(opt, file_name, pdf_info);
     
-    // Add content to the document
-    doc.text('Invoice', { align: 'center' });
-    doc.text('Customer Name: John Doe', { align: 'left' });
-    doc.text('----------------------------------------');
-    doc.text('Item                 Qty         Price');
-    doc.text('----------------------------------------');
-    doc.text('Apple               2           $3.00');
-    doc.text('Orange              1           $1.50');
-    doc.text('----------------------------------------');
-    doc.text('Total:                        $4.50', { align: 'right' });
+//     // Add content to the document
+//     doc.text('Invoice', { align: 'center' });
+//     doc.text('Customer Name: John Doe', { align: 'left' });
+//     doc.text('----------------------------------------');
+//     doc.text('Item                 Qty         Price');
+//     doc.text('----------------------------------------');
+//     doc.text('Apple               2           $3.00');
+//     doc.text('Orange              1           $1.50');
+//     doc.text('----------------------------------------');
+//     doc.text('Total:                        $4.50', { align: 'right' });
     
-    // Finalize the document
-    doc.end();
-})();
+//     // Finalize the document
+//     doc.end();
+// })();
 
 module.exports = libRpt;

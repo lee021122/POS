@@ -1008,23 +1008,25 @@ insert into tb_state (state_id, created_on, created_by, state_name, is_in_use, d
 (gen_random_uuid(), current_timestamp, 'admin', 'Sarawak', 1, '000014'),
 (gen_random_uuid(), current_timestamp, 'admin', 'Sabah', 1, '000015')
 
-insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_title, sys_setting_value, can_customize) values 
-(current_timestamp, 'admin', current_timestamp, 'admin', 'CURRENT_TRANS_DATE', '2024-10-16', 1),
+insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sys_setting_grp, sys_setting_title, sys_setting_value, can_customize) values 
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Operation', 'CURRENT_TRANS_DATE', '2024-10-16', 1),
 --(current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_PREFIX', 'OR-'),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'ORDER_NO_LENGTH', '5', 0),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Operation', 'ORDER_NO_LENGTH', '5', 0),
 -- Pay-first or Pay-later
-(current_timestamp, 'admin', current_timestamp, 'admin', 'OPERATION_MODE', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_server', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_port', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_id', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_mailbox_pwd', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_use_ssl', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'smtp_able_service', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Operation', 'OPERATION_MODE', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'SMTP_SERVICE', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'SMTP_MAILBOX', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'SMTP_CLIENT', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'SMTP_CLIENT_SECRET', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'SMTP_TOKEN', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Mail Service', 'IS_ACTIVE_MAIL_SERVICE', '', 1),
 -- Default (sell as much as) or set daily availability
-(current_timestamp, 'admin', current_timestamp, 'admin', 'QR_ORDER_AVAILABILITY', '', 1),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_URL', '', 0),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_ADMIN_PORTAL_URL', '', 0),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'POS_QR_ORDER_URL', '', 0)
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Operation', 'QR_ORDER_AVAILABILITY', '', 1),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_URL', '', 0),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_ADMIN_PORTAL_URL', '', 0),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_QR_ORDER_URL', '', 0)
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'Cookies', '', 0),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'SESS_IDLE_TIME_OUT', '60', 0),  -- in minutes
 
 
 INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES
@@ -1063,3 +1065,14 @@ INSERT INTO tb_mail_type (mail_type_id, created_on, created_by, mail_type_desc, 
 INSERT INTO tb_user_status (user_status_id, created_on, created_by, user_status_desc, allow_login, is_in_use) VALUES 
 (1, current_timestamp, 'admin', 'Active', 1, 1),
 (2, current_timestamp, 'admin', 'Suspend', 0, 1);
+
+INSERT INTO tb_repeat_type (repeat_type_id, created_on, created_by, repeat_type_grp, repeat_type_desc, repeat_type_value, is_in_use) VALUES
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Repeat Every First of Month', '* * * 1 * *', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Repeat Every End of Month', '* * * 28-31 * *', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Monday', '* * * * * 1', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Tuesday', '* * * * * 2', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Wednesday', '* * * * * 3', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Thrusday', '* * * * * 4', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Friday', '* * * * * 5', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Saturday', '* * * * * 6', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Sunday', '* * * * * 7', 1),

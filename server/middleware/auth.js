@@ -7,5 +7,5 @@ const libShared = require('../lib/lib-shared');
  * @param {string} sid
  */
 async function checkSession(l, sid) {
-    const result = await pgSql.executeFunction('')
+    const result = await pgSql.executeFunction('fn_get_user_sess', )
 };

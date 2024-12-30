@@ -120,7 +120,7 @@ BEGIN
 		audit_log := 'Updatetd Meal Period Description from ' || v_meal_period_desc_old || ' to ' || p_meal_period_desc || ', ' ||
 						'Updatetd Start Time from ' || v_start_time_old || ' to ' || p_start_time || ', ' ||
 						'Updatetd End Time from ' || v_end_time_old || ' to ' || p_end_time || ', ' ||
-						'Updatetd Is in Use from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+						'Updatetd Is in Use from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_is_in_use) || ', ' ||
 						'Updatetd Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || '.';
 		
 	END IF;

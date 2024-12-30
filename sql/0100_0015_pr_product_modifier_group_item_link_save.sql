@@ -158,7 +158,7 @@ BEGIN
 		RAISE NOTICE 'pr_product_modifier_group_item_link_save - end';
 	END IF;
 	
-	DROP TABLE prod_tb;
+-- 	DROP TABLE prod_tb;
 
 END
 $BODY$;

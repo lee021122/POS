@@ -59,7 +59,7 @@ BEGIN
 		WHERE 
 			modifier_option_name = p_modifier_option_name
 			-- Each Modifier Group cannot have same option name
-			AND modifier_group_id = p_modifier_group_id
+			AND modifier_group_id <> fn_to_guid(p_modifier_group_id) 
 	) THEN
 		p_msg := 'Option Name: ' || p_modifier_option_name || ' already exists!!';
 		RETURN;
@@ -124,7 +124,7 @@ BEGIN
 		audit_log := 'Updated Modifier Group from ' || v_modifier_group_id_old || ' to ' || p_modifier_group_id || ', ' ||
 						'Updated Modifier Option Name from ' || v_modifier_option_name_old || ' to ' || p_modifier_option_name || ', ' ||
 						'Updated Addon Amount from ' || v_addon_amt_old || ' to ' || p_addon_amt || ', ' ||
-						'Updated Is Default from ' || v_is_default_old || ' to ' || p_is_default || '.';
+						'Updated Is Default from ' || fn_yes_no_format(v_is_default_old) || ' to ' || fn_yes_no_format(p_is_default) || '.';
 
 	END IF;
 	

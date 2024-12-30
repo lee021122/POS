@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
 const libShared = require('../lib/lib-shared');
-const libMail = require('../lib/lib-mail-service')
+const libMail = require('../lib/lib-mail-service');
 
 const p0 = new libApi.apiCaller();
 

@@ -374,13 +374,13 @@ BEGIN
 		-- Prepared Audit Log
 		audit_log = 'Updated Product Description from ' || v_product_desc_old || ' to ' || p_product_desc || ', ' ||
 					'Updated Product Code from ' || v_product_code_old || ' to ' || p_product_code || ', ' ||
-					'Updated Category from' || v_category_id_old || ' to ' || p_category_id || ', ' ||
+					'Updated Category from' || fn_get_desc_from_id('tb_prod_category', v_category_id_old) || ' to ' || fn_get_desc_from_id('tb_prod_category', p_category_id) || ', ' ||
 					'Updated Product Tag from ' || v_product_tag_old || ' to ' || p_product_tag || ', ' ||
 					'Updated Product Image Path from ' || v_product_img_path_old || ' to ' || p_product_img_path || ', ' ||
-					'Updated Inventory Type from ' || v_inventory_type_id_old || ' to ' || p_inventory_type_id || ', ' ||
+					'Updated Inventory Type from ' || fn_get_desc_from_id('tb_inventory_type', v_inventory_type_id_old) || ' to ' || fn_get_desc_from_id('tb_inventory_type', p_inventory_type_id) || ', ' ||
 					'Updated SKU Code from ' || v_sku_code_old || ' to ' || p_sku_code || ', ' ||
-					'Updated Supplier from ' || v_supplier_id_old || ' to ' || p_supplier_id || ', ' ||
-					'Updated Pricing Type from ' || v_pricing_type_id_old || ' to ' || p_pricing_type_id || ', ' ||
+-- 					'Updated Supplier from ' || v_supplier_id_old || ' to ' || p_supplier_id || ', ' ||
+					'Updated Pricing Type from ' || fn_get_desc_from_id('tb_pricing_type', v_pricing_type_id_old) || ' to ' || fn_get_desc_from_id('tb_pricing_type', p_pricing_type_id) || ', ' ||
 					'Updated Cost from ' || v_cost_old || ' to ' || p_cost || ', ' ||
 					'Updated Sell Price from ' || v_sell_price_old || ' to ' || v_final_price || ', ' ||
 					'Updated Tax Code 1 from ' || v_tax_code1_old || ' to ' || p_tax_code1 || ', ' ||
@@ -388,7 +388,7 @@ BEGIN
 					'Updated Tax Code 2 from ' || v_tax_code2_old || ' to ' || p_tax_code2 || ', ' ||
 					'Updated Amount Include Tax 2 from ' || v_amt_include_tax2_old || ' to ' || p_amt_include_tax2 || ', ' ||
 					'Updated Calc Tax 2 after Tax 1 from ' || v_calc_tax2_after_tax1_old || ' to ' || p_calc_tax2_after_tax1 || ', ' ||
-					'Updated Is Active from ' || v_is_in_use_old || ' to ' || p_is_in_use || ', ' ||
+					'Updated Is Active from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_is_in_use) || ', ' ||
 					'Updated Display Sequence from ' || v_display_seq_old || ' to ' || p_display_seq || ', ' ||
 					'Updated Enbale Kitchen Printer from ' || v_is_enable_kitchen_printer_old || ' to ' || p_is_enable_kitchen_printer || ', ' ||
 					'Updated Allow Modifier from ' || v_is_allow_modifier_old || ' to ' || p_is_allow_modifier || ', ' ||

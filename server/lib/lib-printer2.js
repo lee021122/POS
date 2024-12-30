@@ -93,14 +93,14 @@ libPrinter.printQRCode = async function (data) {
 // const libPrinter = require('./libPrinter');
 
 // Initialize the printer
-libPrinter.init('192.168.14.2'); // Replace with your printer's IP
-(async () => {
-  try {
-    await libPrinter.printText("Hello, World!\nWelcome to ESC/POS printing.");
-  } catch (error) {
-    console.error("Error during text printing:", error);
-  }
-})();
+// libPrinter.init('192.168.14.2'); // Replace with your printer's IP
+// (async () => {
+//   try {
+//     await libPrinter.printText("Hello, World!\nWelcome to ESC/POS printing.");
+//   } catch (error) {
+//     console.error("Error during text printing:", error);
+//   }
+// })();
 
 
 

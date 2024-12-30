@@ -12,7 +12,7 @@ DECLARE
 	v_user_id uuid;
 	p_msg text;
 BEGIN
-/*
+/* -- Check user session is valid or not
 
 */
 

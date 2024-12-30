@@ -66,7 +66,8 @@ AppUAC.prototype.login = async function (req, res) {
     function objectToArray(obj) {
         if (typeof obj !== 'object' || obj === null) {
           throw new Error('Input must be a non-null object');
-        }
+        };
+
         return Object.values(obj);
     };
 
@@ -74,9 +75,9 @@ AppUAC.prototype.login = async function (req, res) {
     console.log(params);
     
     try {
-        const result = await pgSql.executeStoreProc('pr_user_login', params)
+        const result = await pgSql.executeStoreProc('pr_user_login', params);
 
-        res.send(result);
+        return res.status(200).send(result);
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -100,17 +101,9 @@ AppUAC.prototype.logout = async function (req, res) {
         return res.status(500).send(libApi.response("Action is required!!", "Failed"));
     };
 
-    o2[0].pwd = libShared.hashText(o2[0].pwd);
-
-    function objectToArray(obj) {
-        if (typeof obj !== 'object' || obj === null) {
-          throw new Error('Input must be a non-null object');
-        }
-        return Object.values(obj);
+    if (!o2[0].sess_id) {
+        return res.status(500).send(libApi.response("Sess ID is required!!", "Failed"));
     };
-
-    params = objectToArray(o2[0]);
-    console.log(params);
     
     try {
         const result = await pgSql.executeStoreProc('pr_user_logout', params);
