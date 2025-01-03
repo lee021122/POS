@@ -83,7 +83,8 @@ BEGIN
 			modified_on = v_now,
 			modified_by = p_current_uid,
 			user_group_desc = p_user_group_desc,
-			is_in_use = p_is_in_use
+			is_in_use = p_is_in_use,
+			display_seq = p_display_seq
 		WHERE 
 			user_group_id = p_user_group_id;
 			  

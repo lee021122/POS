@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const path = require("path");
 const fs = require("fs");
+const fetch = require('node-fetch');
 const currentWorkingDirectory = process.cwd();
 const configPath = path.join(currentWorkingDirectory, '../config', 'user-config.json')
 const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -64,6 +65,8 @@ app.use('/oth', other);
 app.use('/ord', order);
 app.use('/csh', cashier);
 app.use('/uac', uac);
+
+// A scheduler
 
 app.listen(myConfig.PORT, () => {
     console.log(`Server running on PORT: ${myConfig.PORT}`);

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_invoice_listing_summ (
+CREATE OR REPLACE FUNCTION fn_rpt_invoice_listing_summ (
 	p_current_uid character varying(255),
 	p_start_dt date,
 	p_end_dt date,
@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION fn_invoice_listing_summ (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	tr_date date,
+	tr_date text,
 	meal_period_desc character varying,
 	order_time time,
 	order_no character varying,
@@ -51,7 +51,7 @@ BEGIN
 	-- -------------------------------------
 	RETURN QUERY (
 		SELECT 
-			a.tr_date,
+			a.tr_date::text,
 			c.meal_period_desc,
 			a.created_on::time,
 			a.doc_no, 

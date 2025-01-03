@@ -1,6 +1,8 @@
 const path = require('path');
 const express = require('express');
 const router = express.Router();
+const cookie = require('cookie-parser');
+const session = require('express-session');
 
 const { pgSql } = require('../lib/lib-pgsql');
 const libApi = require('../lib/lib-api');
@@ -77,6 +79,8 @@ AppUAC.prototype.login = async function (req, res) {
     try {
         const result = await pgSql.executeStoreProc('pr_user_login', params);
 
+        // Give cookie and session
+
         return res.status(200).send(result);
     } catch (err) {
         console.error(err);
@@ -108,7 +112,9 @@ AppUAC.prototype.logout = async function (req, res) {
     try {
         const result = await pgSql.executeStoreProc('pr_user_logout', params);
 
-        return res.send(result);
+        // Kill the session and clear cookie
+
+        return res.send(result);    
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));

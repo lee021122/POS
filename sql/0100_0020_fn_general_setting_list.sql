@@ -5,6 +5,7 @@ CREATE OR REPLACE FUNCTION fn_general_setting_list (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
+	g text,
 	t text,
 	v text
 )
@@ -28,11 +29,11 @@ BEGIN
 	-- process
 	-- -------------------------------------
 	RETURN QUERY (
-		SELECT sys_setting_title, sys_setting_value
+		SELECT sys_setting_grp, sys_setting_title, sys_setting_value
 		FROM tb_sys_setting
 		WHERE 
 			can_customize = 1
-			AND sys_setting_title <> 'smtp_mailbox_pwd'
+			AND sys_setting_title <> 'SMTP_TOKEN'
 		ORDER BY sys_setting_id
 	);
 

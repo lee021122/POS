@@ -1,4 +1,5 @@
 const path = require('path');
+const qr = require('qrcode')
 const express = require('express');
 const router = express.Router();
 
@@ -6,6 +7,7 @@ const router = express.Router();
 const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
+const AppShared = require('../app-shared')
 
 const p0 = new libApi.apiCaller();
 
@@ -209,7 +211,8 @@ AppSettingTable.prototype.delete = async function(req, res) {
 
 // use setting url + table_no + status
 AppSettingTable.prototype.genQr = async function(req, res) {
-    
+    // Get url 
+    const url = AppShared.getPosUrl('POS_QR_ORDER_URL');
 };
 
 AppSettingTable.prototype.printQr = async function(req, res) {

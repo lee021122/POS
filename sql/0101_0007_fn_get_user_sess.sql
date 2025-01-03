@@ -33,6 +33,7 @@ BEGIN
 		FROM tb_user_access_log
 		WHERE 
 			user_id = v_user_id
+			AND sess_id = p_sess_id
 			AND logout_on IS NULL
 		ORDER BY user_access_log_id DESC
 		LIMIT 1

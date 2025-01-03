@@ -129,15 +129,15 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 
 -- Module: Reports
 ('ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'app-report::dar', 'Report - Daily Availability Report', 'fn_rpt_daily_availability', 'Report', 0, '000083', current_timestamp, 'admin', 0),
-('d26ee328-d90d-4cd5-92b2-19e96c402e60', 'app-report::iss', 'Report - Item Sales Summary', 'fn_rpt_daily_availability', 'Report', 0, '000084', current_timestamp, 'admin', 0),
-('07074c6f-f8b4-4b52-9942-0aa58637f045', 'app-report::ds', 'Report - Daily Summary', 'fn_rpt_daily_availability', 'Report', 0, '000085', current_timestamp, 'admin', 0),
+('d26ee328-d90d-4cd5-92b2-19e96c402e60', 'app-report::iss', 'Report - Item Sales Summary', 'fn_rpt_item_sales_summ', 'Report', 0, '000084', current_timestamp, 'admin', 0),
+('07074c6f-f8b4-4b52-9942-0aa58637f045', 'app-report::ds', 'Report - Daily Summary', 'fn_rpt_daily_summ', 'Report', 0, '000085', current_timestamp, 'admin', 0),
 ('300ae174-59f9-4f92-93df-2c1c625319eb', 'app-report::ils', 'Report - Invoice Listing Summary', 'fn_rpt_invoice_listing_summ', 'Report', 0, '000086', current_timestamp, 'admin', 0),
 ('6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'app-report::i86', 'Report - Item 86', 'fn_rpt_item86', 'Report', 0, '000087', current_timestamp, 'admin', 0),
 ('a064d444-48a9-4d22-b6c6-763be83a5bb0', 'app-report::ccr', 'Report - Cashiering Collection Report', 'fn_rpt_cashiering_collection', 'Report', 0, '000088', current_timestamp, 'admin', 0),
 ('583e859c-dc9e-43cd-a0e9-1e39212405c6', 'app-report::ivr', 'Report - Item Void Report', 'fn_rpt_item_void', 'Report', 0, '000089', current_timestamp, 'admin', 0),
 ('9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'app-report::bvr', 'Report - Bill Void Report', 'fn_rpt_bill_void', 'Report', 0, '000090', current_timestamp, 'admin', 0),
 ('6c72bbbe-2cda-492f-a23b-2a25854d877d', 'app-report::dr', 'Report - Discount Report', 'fn_rpt_discount', 'Report', 0, '000091', current_timestamp, 'admin', 0),
-('f3468548-f8e0-497e-85aa-58aeea6085a9', 'app-report::str', 'Report - Service Tax Report', 'fn_rpt_service_tax', 'Report', 0, '000092', current_timestamp, 'admin', 0),
+('f3468548-f8e0-497e-85aa-58aeea6085a9', 'app-report::str', 'Report - Service Tax Report', 'fn_rpt_service_charge', 'Report', 0, '000092', current_timestamp, 'admin', 0),
 ('4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'app-report::sstr', 'Report - Sales & Service Tax Report', 'fn_rpt_sst', 'Report', 0, '000093', current_timestamp, 'admin', 0),
 ('d46d4192-ddcc-44f1-9b20-23f4247185d1', 'app-report::rss', 'Report - Restaurant Sales Summary', 'fn_rpt_restaurant_sales_summ', 'Report', 0, '000094', current_timestamp, 'admin', 0)
 
@@ -980,6 +980,104 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'url', 'string', 6, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), 'ddd5f198-1447-4d3b-8b79-d1dbc8f41027', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
 
+-- app-report::iss
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd26ee328-d90d-4cd5-92b2-19e96c402e60', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::ds
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '07074c6f-f8b4-4b52-9942-0aa58637f045', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::ils
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '300ae174-59f9-4f92-93df-2c1c625319eb', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::i86
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6a40f2f6-d5d4-4e4f-a863-04bf5c577a6d', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::ccr
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'a064d444-48a9-4d22-b6c6-763be83a5bb0', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::ivr
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '583e859c-dc9e-43cd-a0e9-1e39212405c6', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::bvr
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '9671ad91-42d9-4454-8ca4-7aab13ac5b18', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::dr
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '6c72bbbe-2cda-492f-a23b-2a25854d877d', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::str
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'f3468548-f8e0-497e-85aa-58aeea6085a9', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::sstr
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'is_debug', 'int', 7, 0, current_timestamp, 'admin'),
+
+-- app-report::rss
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'start_dt', 'dt', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'end_dt', 'dt', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'rid', 'int', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'axn', 'string', 5, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'url', 'string', 6, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), 'd46d4192-ddcc-44f1-9b20-23f4247185d1', 'is_debug', 'int', 7, 0, current_timestamp, 'admin')
 
 insert into tb_pricing_type (pricing_type_id, created_on, created_by, modified_on, modified_by, pricing_type_desc, is_in_use) values
 (gen_random_uuid(), current_timestamp, 'admin', current_timestamp, 'admin', 'Fixed', 1),
@@ -1067,6 +1165,7 @@ INSERT INTO tb_user_status (user_status_id, created_on, created_by, user_status_
 (2, current_timestamp, 'admin', 'Suspend', 0, 1);
 
 INSERT INTO tb_repeat_type (repeat_type_id, created_on, created_by, repeat_type_grp, repeat_type_desc, repeat_type_value, is_in_use) VALUES
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Daily', '* 0 0 * * *', 1)
 (gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Repeat Every First of Month', '* * * 1 * *', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Repeat Every End of Month', '* * * 28-31 * *', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Monday', '* * * * * 1', 1),
@@ -1076,3 +1175,20 @@ INSERT INTO tb_repeat_type (repeat_type_id, created_on, created_by, repeat_type_
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Friday', '* * * * * 5', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Saturday', '* * * * * 6', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Sunday', '* * * * * 7', 1),
+
+select * from tb_date_range
+INSERT INTO tb_date_range (date_range_id, created_on, created_by, date_range_grp, date_range_desc, date_range_func, is_in_use) VALUES 
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Today', 'fn_get_current_date()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Yesterday', 'fn_get_yesterday_date()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Weekly', 'Past 7 Days', 'fn_get_past_7days()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Weekly', 'Next 7 Days', 'fn_get_next_7days()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Begin of this month', 'fn_get_begin_of_month()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'End of this month', 'fn_get_end_of_month()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'Begin of Last month', 'fn_get_begin_of_last_month()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Monthly', 'End of Last month', 'fn_get_end_of_last_month()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'Begin of this year', 'fn_get_begin_of_year()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'End of this year', 'fn_get_end_of_year()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'Begin of Last year', 'fn_get_begin_of_last_year()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'End of Last year', 'fn_get_end_of_last_year()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Calendar Type', 'EG Calendar', 'fn_eg_calendar()', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Calendar Type', 'Normal Calendar', 'fn_normal_calendar()', 1)

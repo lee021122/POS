@@ -22,7 +22,12 @@ DECLARE
 	v_now CONSTANT timestamp = current_timestamp;
 	module_code text;
 	audit_log text;
-	p_repeat_on character varying(50);
+	P_min text;
+	p_sec text;
+	p_repeat_value character varying(255);
+	p_repeat_on character varying(255);
+	p_min text;
+	p_hrs text;
 	v_rpt_sch_desc_old character varying(255);
 	v_rpt_tmpl_id_old uuid;
 	v_repeat_type_id_old uuid;
@@ -81,12 +86,18 @@ BEGIN
 		RETURN;
 	END IF;
 	
-	SELECT repeat_type_value
-	INTO p_repeat_on
+	p_min := CASE WHEN RIGHT(p_send_on, 2);
+	p_hrs := LEFT(p_send_on, 2);
+	
+	SELECT repeat_type_desc, repeat_type_value
+	INTO p_repeat_desc, p_repeat_on
 	FROM tb_repeat_type
 	WHERE repeat_type_id = p_repeat_type_id;
 	
-	--p_repeat_on := ''
+ 	-- Calc Cron-exprension   
+	p_repeat_on := CASE 
+					WHEN p_repeat_on = 'Repeat Daily' THEN 
+					WHEN p_repeat_on = 'Repeat Every First of Month' THEN 
 	
 	-- -------------------------------------
 	-- process
@@ -128,10 +139,10 @@ BEGIN
 		audit_log := 'Updated Scheduler Report Description from ' || v_rpt_sch_desc_old || ' to ' || p_rpt_sch_desc || ', ' ||
 						'Updated Scheduler Report Format from ' || fn_get_desc_from_id('tb_rpt_tmpl', v_rpt_tmpl_id_old) || ' to ' || fn_get_desc_from_id('tb_rpt_tmpl', p_rpt_tmpl_id) || ', ' ||
 						'Updated Scheduler Report Repeat Type from ' || fn_get_desc_from_id('tb_repeat_type', v_repeat_type_id_old) || ' to ' || fn_get_desc_from_id('tb_repeat_type', p_repeat_type_id) || ', ' ||
-						'Updated Send on from ' || v_send_on_old || ' to ' || p_rpt_sch_desc || ', ' ||
-						'Updated Send to from ' || v_send_to_old || ' to ' || p_rpt_sch_desc || ', ' ||
-						'Updated Repeat on from ' || v_repeat_on_old || ' to ' || p_rpt_sch_desc || ', ' ||
-						'Updated Is In Use from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_rpt_sch_desc) || '.';
+						'Updated Send on from ' || v_send_on_old || ' to ' || p_send_on || ', ' ||
+						'Updated Send to from ' || v_send_to_old || ' to ' || p_send_to || ', ' ||
+						'Updated Repeat on from ' || v_repeat_on_old || ' to ' || p_repeat_on || ', ' ||
+						'Updated Is In Use from ' || fn_yes_no_format(v_is_in_use_old) || ' to ' || fn_yes_no_format(p_is_in_use) || '.';
 	
 	END IF;
 	

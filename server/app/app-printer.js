@@ -704,3 +704,9 @@
 
 // // Finalize the PDF document
 // doc.end();
+
+const shared = require('./app-shared')
+
+// (async => () {
+//     shared.get
+// })();

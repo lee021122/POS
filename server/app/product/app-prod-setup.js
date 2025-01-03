@@ -244,8 +244,8 @@ AppProdSetup.prototype.save = async function (req, res) {
                 const uploadedImagePath = path.join(uploadDir, uploadedFile.filename);
                 if (fs.existsSync(uploadedImagePath)) {
                     fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
-                }
-            }
+                };
+            };
 
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {            
