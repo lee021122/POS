@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_users_list (
+CREATE OR REPLACE FUNCTION fn_user_list (
 	p_current_uid character varying(255),
 	p_rid integer,
 	p_axn character varying(255),
@@ -24,7 +24,7 @@ DECLARE
 
 BEGIN
 /* 0101_0006_fn_users_list
-
+	select * from fn_users_list('tester', null, null, null);
 */
 
 	-- -------------------------------------

@@ -1,7 +1,6 @@
 CREATE OR REPLACE FUNCTION fn_get_user_sess (
-	IN p_login_id text,
-	IN p_sess_id uuid,
-	IN p_is_debug integer DEFAULT 0
+	p_sess_id uuid,
+	p_is_debug integer DEFAULT 0
 ) RETURNS TEXT 
 LANGUAGE 'plpgsql'
 AS $$
@@ -13,7 +12,7 @@ DECLARE
 	p_msg text;
 BEGIN
 /* -- Check user session is valid or not
-
+	SELECT * FROM fn_get_user_sess ('c2454f08-c85e-49e2-adf9-931cf60d23f9')
 */
 
 	-- -------------------------------------
@@ -25,8 +24,8 @@ BEGIN
 	-- -------------------------------------
 	SELECT user_id
 	INTO v_user_id
-	FROM tb_users
-	WHERE login_id = p_login_id;
+	FROM tb_user_access_log
+	WHERE sess_id = p_sess_id;
 	
 	IF NOT EXISTS (
 		SELECT sess_id
@@ -42,6 +41,8 @@ BEGIN
 	ELSE 
 		p_msg := 'ok';
 	END IF;
+	
+	RETURN p_msg;
 	
 	-- -------------------------------------
 	-- cleanup

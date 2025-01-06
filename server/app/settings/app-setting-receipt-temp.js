@@ -18,6 +18,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCallerImg();
 
 const FILE = path.basename(__filename)
@@ -118,92 +120,102 @@ AppSettingReceiptTemp.prototype.receiptTempObject = function (o ={}) {
 }
 
 AppSettingReceiptTemp.prototype.save = async function (req, res) {
+    let validAxn, params;
+
+    const { code, axn, data, logo_img_path } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    p0.img = logo_img_path;
+    const preCode = p0.code;
+    let parsedData = data;
+
+    if (typeof data === 'string') {
+        parsedData = JSON.parse(data);
+    };
+
+    // Check parsedData is an array
+    if (!Array.isArray(parsedData)) {
+        return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
+    };
+
+    const o2 = parsedData.map(item => this.receiptTempObject(item));  
+
+    // Access the uploaded file
+    const uploadedFile = req.files['logo_img_path'] ? req.files['logo_img_path'][0] : null;
+    
+    // Check if the file was uploaded
+    if (!uploadedFile) {
+        return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
+    };
+
+    let oldLogoImgPath = null;
+    if (o2[0].receipt_temp_id) {
+        try {
+            oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']);
+        } catch (err) {
+            console.error('Error fetching old logo_img_path:', err);
+            return res.status(500).send(libApi.response('Error fetching old logo image path', 'Failed'));
+        }
+    };
+
+    // Process the logo image path deletion if there was a previous image
+    if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
+        const oldImagePath = path.join(uploadDir, oldLogoImgPath[0].logo_img_path);
+        if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath); // Delete the old image
+        }
+    };
+    
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    if (!o2[0].receipt_temp_name) {
+        return res.status(400).send(libApi.response('Receipt Template Name is required!!', 'Failed'));
+    };
+
+    if (o2[0].display_seq != null) {
+        if (o2[0].display_seq.length > 6) {
+            return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+        } else {
+            o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+        };
+    };
+
+    o2[0].logo_img_path = `${uploadedFile.filename}`;
+    o2[0].url = req.url;
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+    
     try {
-        const { code, axn, data, logo_img_path } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        p0.img = logo_img_path;
-        const preCode = p0.code;
-
-        let parsedData = data;
-        if (typeof data === 'string') {
-            parsedData = JSON.parse(data);
-        };
-
-        // Check parsedData is an array
-        if (!Array.isArray(parsedData)) {
-            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
-        };
-
-        const o2 = parsedData.map(item => this.receiptTempObject(item));        
-
-        // Access the uploaded file
-        const uploadedFile = req.files['logo_img_path'] ? req.files['logo_img_path'][0] : null;
-        
-        // Check if the file was uploaded
-        if (!uploadedFile) {
-            return res.status(400).send(libApi.response('No file uploaded!', 'Failed'));
-        };
-
-        let oldLogoImgPath = null;
-        if (o2[0].receipt_temp_id) {
-            try {
-                oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']);
-            } catch (err) {
-                console.error('Error fetching old logo_img_path:', err);
-                return res.status(500).send(libApi.response('Error fetching old logo image path', 'Failed'));
-            }
-        };
-
-        // Process the logo image path deletion if there was a previous image
-        if (oldLogoImgPath && oldLogoImgPath[0].logo_img_path) {
-            const oldImagePath = path.join(uploadDir, oldLogoImgPath[0].logo_img_path);
-            if (fs.existsSync(oldImagePath)) {
-                fs.unlinkSync(oldImagePath); // Delete the old image
-            }
-        };
-        
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        if (!o2[0].receipt_temp_name) {
-            return res.status(400).send(libApi.response('Receipt Template Name is required!!', 'Failed'));
-        };
-
-        if (o2[0].display_seq != null) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
-        };
-
-        o2[0].logo_img_path = `${uploadedFile.filename}`;
-        o2[0].url = req.url;
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
-                
+        validAxn = await pgSql.getAction(action);
+
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+            
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-       
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-        
+    
         // Check if the result was successful
         if (result[0].p_msg !== 'ok') {
             if (uploadedFile) {
@@ -212,7 +224,6 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
                     fs.unlinkSync(uploadedImagePath); // Delete the uploaded image
                 }
             }
-
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {            
             return res.status(200).send(libApi.response(result, 'Success'));
@@ -220,44 +231,55 @@ AppSettingReceiptTemp.prototype.save = async function (req, res) {
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    }
+    };
 };
 
 AppSettingReceiptTemp.prototype.list = async function (req, res) {
+    let validAxn, params;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.receiptTempObject(item));
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.receiptTempObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
         // console.log(validAxn);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-            
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-             
+            
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -265,83 +287,85 @@ AppSettingReceiptTemp.prototype.list = async function (req, res) {
     };
 };
 
-AppSettingReceiptTemp.prototype.delete = async function (req, res) {
-    try {
-        const { code, axn, data, logo_img_path } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        p0.img = logo_img_path;
-        const preCode = p0.code;
+// AppSettingReceiptTemp.prototype.delete = async function (req, res) {
+//     try {
+//         const { code, axn, data, logo_img_path } = req.body;
+//         p0.code = code;
+//         p0.axn = axn;
+//         p0.data = data;
+//         p0.img = logo_img_path;
+//         const preCode = p0.code;
 
-        let parsedData = data;
-        if (typeof data === 'string') {
-            parsedData = JSON.parse(data);
-        }
+//         let parsedData = data;
+//         if (typeof data === 'string') {
+//             parsedData = JSON.parse(data);
+//         }
 
-        // Check parsedData is an array
-        if (!Array.isArray(parsedData)) {
-            return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
-        }
+//         // Check parsedData is an array
+//         if (!Array.isArray(parsedData)) {
+//             return res.status(400).send(libApi.response('Data should be an array!', 'Failed'));
+//         }
 
-        const o2 = parsedData.map(item => this.receiptTempObject(item));
-        console.log(o2);
+//         const o2 = parsedData.map(item => this.receiptTempObject(item));
+//         console.log(o2);
 
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
+//         if (!code || code !== SERVICE) {
+//             return res.status(400).send(libApi.response('Code is required', 'Failed'));
+//         };
 
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
+//         if (!axn) {
+//             return res.status(400).send(libApi.response('Action is required', 'Failed'));
+//         };
 
-        if (!o2[0].receipt_temp_id) {
-            return res.status(400).send(libApi.response('Invalid Receipt Template', 'Failed'));
-        };
+//         if (!o2[0].receipt_temp_id) {
+//             return res.status(400).send(libApi.response('Invalid Receipt Template', 'Failed'));
+//         };
 
-        const oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']); 
-        // console.log(oldLogoImgPath);
+//         const oldLogoImgPath = await pgSql.getTable('tb_receipt_temp', `${pgSql.SQL_WHERE} receipt_temp_id = '${o2[0].receipt_temp_id}'`, ['logo_img_path']); 
+//         // console.log(oldLogoImgPath);
         
-        if (oldLogoImgPath) {
-            // Get the full path of the old image
-            const oldImagePath = path.join(__dirname, `/${myConfig.user_folder}/`, oldLogoImgPath[0].logo_img_path.replace(`/${myConfig.user_folder}/`, ''));
-            // console.log('Full path to old image:', oldImagePath);
+//         if (oldLogoImgPath) {
+//             // Get the full path of the old image
+//             const oldImagePath = path.join(__dirname, `/${myConfig.user_folder}/`, oldLogoImgPath[0].logo_img_path.replace(`/${myConfig.user_folder}/`, ''));
+//             // console.log('Full path to old image:', oldImagePath);
             
-            // Check if the old image exists, if so, delete it
-            if (fs.existsSync(oldImagePath)) {
-                fs.unlinkSync(oldImagePath); // Delete the old image
-            }
-        };
+//             // Check if the old image exists, if so, delete it
+//             if (fs.existsSync(oldImagePath)) {
+//                 fs.unlinkSync(oldImagePath); // Delete the old image
+//             }
+//         };
 
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
+//         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+//         // console.log("action: ", action);
         
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
+//         // Find the function by using action_code
+//         const validAxn = await pgSql.getAction(action);
+//         // console.log(validAxn);
                 
-        // Append Error if the action is not found
-        if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        }
+//         // Append Error if the action is not found
+//         if (validAxn.rowCount <= 1) {
+//             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+//         }
 
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+//         // Use the shared library function to parse parameters
+//         const params = libApi.parseParams(validAxn, o2);
             
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
+//         // Execute the function
+//         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
              
-        return res.send(libApi.response(result, 'Success'));
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    };
-};
+//         return res.send(libApi.response(result, 'Success'));
+//     } catch (err) {
+//         console.error(err);
+//         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+//     };
+// };
 
 const receiptTemp = new AppSettingReceiptTemp();
 
 router.post('/l', receiptTemp.list.bind(receiptTemp));
-router.post('/s', upload, receiptTemp.save.bind(receiptTemp));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), upload, (req, res) => {
+    receiptTemp.save.bind(req, res);
+});
 // router.post('/d', receiptTemp.delete.bind(receiptTemp));
 
 module.exports = router;

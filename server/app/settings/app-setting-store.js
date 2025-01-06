@@ -7,6 +7,9 @@ const bodyParser = require('body-parser');
 const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
+const libLog = require('../../lib/lib-log');
+
+const auth = require('../../middleware/auth');
 
 const p0 = new libApi.apiCaller();
 
@@ -73,169 +76,211 @@ AppSettingStore.prototype.storeObject = function(o = {}) {
 }
 
 AppSettingStore.prototype.save = async function(req, res) {
+    let validAxn, params, action;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.storeObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
+    // Validate the request data
+    if (!code || code !== SERVICE) {
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    if (!o2[0].store_code) {
+        libLog(FILE, action, 'Store Code is required!!');
+        return res.status(500).send(libApi.response('Store Code is required!!', 'Failed'));
+    };
+
+    if (!o2[0].store_name) {
+        libLog(FILE, action, 'Store Name is required!!');
+        return res.status(500).send(libApi.response('Store Name is required!!', 'Failed'));
+    };
+
+    if (!o2[0].receipt_temp_id) {
+        libLog(FILE, action, 'Receipt Template is required!!');
+        return res.status(500).send(libApi.response('Receipt Template is required!!', 'Failed'));
+    };
+
+    if (!o2[0].curr_code) {
+        libLog(FILE, action, 'Currency Code is required!!');
+        return res.status(500).send(libApi.response('Currency Code is required!!', 'Failed'));
+    };
+
+    o2[0].url = req.url;
+    
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.storeObject(item));
-
-        // Validate the request data
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        if (!o2[0].store_code) {
-            return res.status(400).send(libApi.response('Store Code is required!!', 'Failed'));
-        };
-
-        if (!o2[0].store_name) {
-            return res.status(400).send(libApi.response('Store Name is required!!', 'Failed'));
-        };
-
-        if (!o2[0].receipt_temp_id) {
-            return res.status(400).send(libApi.response('Receipt Template is required!!', 'Failed'));
-        };
-
-        if (!o2[0].curr_code) {
-            return res.status(400).send(libApi.response('Currency Code is required!!', 'Failed'));
-        };
-
-        o2[0].url = req.url;
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
+        validAxn = await pgSql.getAction(action);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-            
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+        
+    try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-             
+            
         if (result[0].p_msg !== 'ok') {
+            libLog(FILE, action, `Failed on ${action}, due to ${result[0].p_msg}`);
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
             return res.status(200).send(libApi.response(result, 'Success'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
 
 AppSettingStore.prototype.list = async function (req, res) {
+    let validAxn, params, action;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.storeObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
+    // Validate the request data
+    if (!code || code !== SERVICE) {
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
+    };
+    
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.storeObject(item));
-
-        // Validate the request data
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
+        validAxn = await pgSql.getAction(action);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-            
-        // Execute the function
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+        
+    try {
+         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-             
-        return res.send(libApi.response(result, 'Success'));
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
-    };
-};
-
-AppSettingStore.prototype.delete = async function (req, res) {
-    try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.storeObject(item));
-
-        // Validate the request data
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        if (!o2[0].store_id) {
-            return res.status(400).send(libApi.response('Invalid Store!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        // console.log("action: ", action);
-        
-        // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
-                
-        // Append Error if the action is not found
-        if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
-        };
-
-        // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
             
-        // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-             
         return res.send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
+
+// AppSettingStore.prototype.delete = async function (req, res) {
+//     try {
+//         // Extract and validate request data
+//         const { code, axn, data } = req.body;
+//         p0.code = code;
+//         p0.axn = axn;
+//         p0.data = data;
+//         const preCode = p0.code;
+//         const o2 = data.map(item => this.storeObject(item));
+
+//         // Validate the request data
+//         if (!code || code !== SERVICE) {
+//             return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
+//         };
+
+//         if (!axn) {
+//             return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
+//         };
+
+//         if (!o2[0].store_id) {
+//             return res.status(500).send(libApi.response('Invalid Store!!', 'Failed'));
+//         };
+
+//         const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+//         // console.log("action: ", action);
+        
+//         // Find the function by using action_code
+//         const validAxn = await pgSql.getAction(action);
+//         // console.log(validAxn);
+                
+//         // Append Error if the action is not found
+//         if (validAxn.rowCount <= 1) {
+//             return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+//         };
+
+//         // Use the shared library function to parse parameters
+//         const params = libApi.parseParams(validAxn, o2);
+            
+//         // Execute the function
+//         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+             
+//         return res.send(libApi.response(result, 'Success'));
+//     } catch (err) {
+//         console.error(err);
+//         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+//     };
+// };
 
 // Create an instance
 const store = new AppSettingStore();
 
 // Define route handler
 router.post('/l', store.list.bind(store));
-router.post('/s', store.save.bind(store));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    store.save(req, res);  // Call the save method with the request and response
+});
+
 // router.post('/d', store.delete.bind(store));
 
 module.exports = router;

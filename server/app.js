@@ -7,6 +7,11 @@ const fetch = require('node-fetch');
 const currentWorkingDirectory = process.cwd();
 const configPath = path.join(currentWorkingDirectory, '../config', 'user-config.json')
 const myConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+const cookieParser  = require('cookie-parser');
+const session = require('express-session');
+
+const appShared = require('./app/app-shared');
+const libShared = require('./lib/lib-shared');
 
 const prodCat = require('./app/product/app-prod-category');
 const modifier = require('./app/product/app-prod-modifier')
@@ -34,8 +39,25 @@ const uac = require('./app/app-user-access');
 // Order process
 const order = require('./app/order/app-order-trans');
 
+const auth = require('./middleware/auth')
+
+// Session
+// async function secret() { await appShared.getSession(); } 
+// async function sessionTime() { libShared.toInt(await appShared.getSessTime()); }
+
 app.use(cors());
 app.use(express.json());
+
+app.use(cookieParser());                       // Cookie parser to read cookies
+app.use(session({
+    secret: '2fe1995696894399fe39ecad33cf09b9d8367bb3154b755bf7d2041d4124b156091005dcd1ec22c3f2b0d723df3522a5bf359d08f5e9df0ba2b4c09eb5df20b3',                            // Secret key for encrypting session data will randomly generate 
+    resave: false,                             // Do not save session if it was not modified
+    saveUninitialized: true,                   // Save session even if it is new
+    cookie: { 
+        httpOnly: true,                        // Prevent client-side access to the cookie
+        maxAge: 24 * 60 * 60 * 1000   // 1 day expiration for the session
+    }
+}));
 
 // Serve static files from the 'product-file' directory
 app.use('/il', express.static(path.join(__dirname, '..', 'product-file')));

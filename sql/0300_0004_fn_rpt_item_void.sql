@@ -7,13 +7,13 @@ CREATE OR REPLACE FUNCTION fn_rpt_item_void (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	tr_date date,
+	tr_date text,
 	order_no character varying,
 	void_by character varying,
 	product_desc character varying,
 	qty integer,
 	amt numeric(15, 2)
-) 
+)
 LANGUAGE 'plpgsql'
 AS $$
 -- -------------------------------------
@@ -22,8 +22,17 @@ AS $$
 DECLARE
 	audit_log text;
 	module_code text;
-BEGIN
+BEGINz`
 /* 0300_0004_fn_rpt_item_void
+
+	SELECT * FROM fn_rpt_item_void (
+		p_current_uid => 'tester',
+		p_start_dt => '2024-12-04',
+		p_end_dt => '2024-12-11',
+		p_rid => null,
+		p_axn => null,
+		p_url => null
+	);
 
 */
 
@@ -45,14 +54,14 @@ BEGIN
     -- -------------------------------------
 	RETURN QUERY (
 		SELECT 
-			a.tr_date, 
+			a.tr_date::TEXT, 
 			a.doc_no AS order_no, 
 			a.void_by,
-			a.qty,
 			b.product_desc,
+			a.qty,
 			a.amt
 		FROM tb_order_trans_item_line_void a
-		INNER JOIN tb_product b ON b.product_id = a.product_id
+		LEFT JOIN tb_product b ON b.product_id = a.product_id
 		WHERE 
 			a.tr_date BETWEEN p_start_dt AND p_end_dt
 		ORDER BY

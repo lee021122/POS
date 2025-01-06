@@ -1,17 +1,17 @@
-CREATE OR REPLACE PROCEDURE pr_user_login (
-	IN p_lid character varying(255),
+CREATE OR REPLACE PROCEDURE public.pr_user_login(
+	IN p_lid character varying,
 	IN p_pwd text,
 	OUT p_msg text,
 	OUT p_sess_id uuid,
-	IN p_user_host character varying(255),
-	IN p_browser_name character varying(255),
-	IN p_os_platform character varying(50),
-	IN p_browser_ver character varying(50),
-	IN p_user_agent character varying(255),
-	IN p_axn character varying(255),
-	IN p_url character varying(255),
-	IN p_is_debug integer DEFAULT 0
-)
+	OUT p_uid integer,
+	IN p_user_host character varying,
+	IN p_browser_name character varying,
+	IN p_os_platform character varying,
+	IN p_browser_ver character varying,
+	IN p_user_agent character varying,
+	IN p_axn character varying,
+	IN p_url character varying,
+	IN p_is_debug integer DEFAULT 0)
 LANGUAGE 'plpgsql'
 AS $BODY$
 -- -------------------------------------
@@ -49,19 +49,32 @@ BEGIN
 	IF NOT EXISTS (
 		SELECT login_id 
 		FROM tb_users 
-		WHERE login_id = p_login_id 
+		WHERE login_id = p_lid 
 	) THEN
 		p_msg := 'Invalid Login ID!!';
 		RETURN;
 	END IF;
 	
+	IF EXISTS (
+		SELECT user_access_log_id
+		FROM tb_user_access_log
+		WHERE 
+			login_id = p_lid
+			AND logout_on IS NULL
+		ORDER BY user_access_log_id DESC
+		LIMIT 1
+	) THEN 
+		p_msg := 'Already Login!!'; 
+		RETURN; 
+	END IF; 
+	
 	-- -------------------------------------
-	-- process
+	-- process								
 	-- -------------------------------------
-	SELECT user_id, user_status_id, pwd, user_group_id
+	SELECT user_id, status_id, pwd, user_group_id
 	INTO v_user_id, v_user_status_id, v_pwd, v_user_group_id
 	FROM tb_users
-	WHERE login_id = p_login_id;
+	WHERE login_id = p_lid;
 	
 	IF v_user_id IS NULL THEN
 	
@@ -71,7 +84,7 @@ BEGIN
 		RETURN;
 		
 	ELSIF EXISTS (
-		SELECT 
+		SELECT user_status_id
 		FROM tb_user_status
 		WHERE 
 			user_status_id = v_user_status_id
@@ -82,7 +95,7 @@ BEGIN
 	
 		IF EXISTS (
 			SELECT *
-			FROM tb_user_suspend
+			FROM tb_user_suspend_log
 			WHERE 
 				user_id = v_user_id
 				AND ban_time > v_ban_release_time
@@ -90,14 +103,14 @@ BEGIN
 		
 			SELECT ban_time
 			INTO v_ban_release_time
-			FROM tb_user_suspend
+			FROM tb_user_suspend_log
 			WHERE 
 				user_id = v_user_id
 			ORDER BY created_on DESC
 			LIMIT 1;
 			
 			v_status_id := 3;						-- wrong pwd
-			audit_log := 'Login ID ' || p_login_id || ' has been suspend!!';
+			audit_log := 'Login ID ' || p_lid || ' has been suspend!!';
 			p_msg := 'Your Login ID has been suspend, please wait after ' || v_ban_release_time::text || ' to relogin again!!';
 			RETURN;
 		END IF;
@@ -105,27 +118,27 @@ BEGIN
 		v_now2 := NOW() - INTERVAL '10 minutes';
 		
 		SELECT
-			count(*), 
-        	max(l.created_on) 
+			COUNT(*), 
+        	MAX(l.created_on) 
     	INTO
 			v_fail_cnt, 
 			v_last_fail_on 
 		FROM tb_user_access_log l
 		INNER JOIN tb_users u ON u.user_id = l.user_id
 		WHERE 
-			u.login_id = uid
+			u.login_id = p_lid
 			AND l.status_id = 3  -- wrong pwd
-			AND l.created_on >= now;
+			AND l.created_on >= v_now2;
 			
 		IF v_fail_cnt >= 10 THEN
 		
 			v_status_id := 3;						-- wrong pwd
-			audit_log := 'Login ID ' || p_login_id || ' has been suspend!!';
+			audit_log := 'Login ID ' || p_lid || ' has been suspend!!';
 			p_msg := 'Your Login ID has been suspend, please wait after ' || (v_now + INTERVAL '15 minutes')::text || ' to relogin again!!';
 			
 			IF NOT EXISTS (
 				SELECT *
-				FROM tb_user_suspend
+				FROM tb_user_suspend_log
 				WHERE 
 					user_id = v_user_id
 					AND ban_time > v_ban_release_time
@@ -134,17 +147,17 @@ BEGIN
 				v_ban_release_time = now() + INTERVAL '15 minutes';
 				v_user_suspend_log_id := gen_random_uuid();
 				
-				INSERT INTO tb_user_suspend (
+				INSERT INTO tb_user_suspend_log (
 					user_suspend_log_id, created_on, created_by, user_id, ban_time
 				) VALUES (
-					v_user_suspend_log_id, v_now, p_login_id, v_user_id, v_ban_release_time
+					v_user_suspend_log_id, v_now, p_lid, v_user_id, v_ban_release_time
 				);
 				
 				-- Create Audit Log
 				CALL pr_sys_append_audit_log (
 					p_msg => audit_log
 					, p_remarks => 'pr_user_login'
-					, p_uid => p_current_uid
+					, p_uid => p_lid
 					, p_id1 => v_user_suspend_log_id
 					, p_id2 => null
 					, p_id3 => null
@@ -165,13 +178,14 @@ BEGIN
 			
 			v_status_id := 1;						-- valid owd, can access
 			p_sess_id = gen_random_uuid();
-			audit_log := 'Login ID: ' || p_login_id || ' has been login into the system!!';
+			SELECT user_group_id INTO p_uid FROM tb_users WHERE login_id = p_lid;
+			audit_log := 'Login ID: ' || p_lid || ' has been login into the system!!';
 			p_msg := 'ok';
 			
 		ELSE
 		
 			v_status_id := 3; 						-- wrong pwd
-			audit_log := 'Access Deny - Invalid Password for ' || p_login_id || '.';
+			audit_log := 'Access Deny - Invalid Password for ' || p_lid || '.';
 			p_msg := 'Invalid Password!!';
 
 		END IF;
@@ -179,8 +193,8 @@ BEGIN
 	ELSE
 	
 		v_status_id := 4;						-- block
-		audit_log := 'Login ID: ' || p_login_id || ' has been blocked!!';
-		p_msg := 'Login ID: ' || p_login_id || ' has been blocked!!';
+		audit_log := 'Login ID: ' || p_lid || ' has been blocked!!';
+		p_msg := 'Login ID: ' || p_lid || ' has been blocked!!';
 	
 	END IF;
 	
@@ -194,17 +208,17 @@ BEGIN
 	END IF;
 	
 	INSERT INTO tb_user_access_log (
-		created_on, login_id, user_id, sess_id, user_host, user_agent, last_access_on, logout_on, browser_name, os_platform, browser_version
+		created_on, login_id, user_id, sess_id, user_group_id, user_host, user_agent, status_id, last_access_on, logout_on, browser_name, os_platform, browser_version
 	) VALUES (
-		v_now, p_login_id, v_user_id, p_sess_id, p_user_host, p_user_agent, v_now, v_logout_on, p_browser_name, p_os_platform, p_browser_ver
+		v_now, p_lid, v_user_id, p_sess_id, v_user_group_id, p_user_host, p_user_agent, v_status_id, v_now, v_logout_on, p_browser_name, p_os_platform, p_browser_ver
 	);
 	
 	-- Create Audit Log
 	CALL pr_sys_append_audit_log (
 		p_msg => audit_log
 		, p_remarks => 'pr_user_login'
-		, p_uid => p_current_uid
-		, p_id1 => p_user_id
+		, p_uid => p_lid
+		, p_id1 => v_user_id
 		, p_id2 => null
 		, p_id3 => null
         , p_app_id => null

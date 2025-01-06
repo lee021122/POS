@@ -16,6 +16,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCallerImg();
 
 const FILE = path.basename(__filename)
@@ -358,30 +360,11 @@ AppProdSetup.prototype.delete = async function (req, res) {
     }
 };
 
-// AppProdSetup.prototype.imageList = async function(req, res) {
-//     const imagesDir = path.join(__dirname, 'product-file');
-
-//     fs.readdir(imagesDir, (err, files) => {
-//         if (err) {
-//             return res.status(500).json({ error: 'Unable to scan directory: ' + err });
-//         }
-
-//         // Filter out non-image files if necessary
-//         const imageFiles = files.filter(file => /\.(jpg|jpeg|png|gif)$/.test(file));
-
-//         // Map to create full image URLs
-//         const images = imageFiles.map(file => ({
-//             id: file, // or use an incrementing ID if you prefer
-//             url: `http://localhost:38998/images/${file}`
-//         }));
-
-//         res.json(images);
-//     });
-// };
-
 const prod = new AppProdSetup();
 
-router.post('/s', upload, prod.save.bind(prod));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), upload, (req, res) => {
+    prod.save(req, res);
+});
 router.post('/l', prod.list.bind(prod));
 router.post('/d', prod.delete.bind(prod));
 // router.get('/il', prod.imageList.bind(prod));

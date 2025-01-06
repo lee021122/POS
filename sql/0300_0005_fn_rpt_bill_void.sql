@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION fn_rpt_bill_void (
 	p_url character varying(255),
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
-	tr_date date,
+	tr_date text,
 	void_by character varying,
 	order_no character varying,
 	reason text,
@@ -47,11 +47,12 @@ BEGIN
     -- -------------------------------------
 	RETURN QUERY (
 		SELECT 
-			a.tr_date,
+			a.tr_date::TEXT,
 			a.void_by,
 			a.doc_no AS order_no,
 			a.remarks AS reason,
 			c.product_desc,
+			b.qty,
 			b.amt
 		FROM tb_order_trans_void_log a
 		INNER JOIN tb_order_trans_item_line b ON b.doc_no = a.doc_no

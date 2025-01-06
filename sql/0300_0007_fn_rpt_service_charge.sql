@@ -8,9 +8,9 @@ CREATE OR REPLACE FUNCTION fn_rpt_service_charge (
 	p_is_debug integer DEFAULT 0
 ) RETURNS TABLE (
 	dt text,
-	order_no character varying(255),
+	order_no character varying(50),
 	product_desc character varying(255),
-	tac_code character varying(255),
+	tac_code character varying(50),
 	tax_desc character varying(255),
 	tax_amt numeric(15, 2)
 )
@@ -24,7 +24,14 @@ DECLARE
 	audit_log text;
 BEGIN
 /*
-
+	SELECT * FROM fn_rpt_service_charge(
+		'tester',
+		'2024-11-20',
+		'2024-12-01',
+		null,
+		null,
+		null
+	)
 */
 
 	module_code := 'Report - Service Charge Report';
@@ -61,7 +68,7 @@ BEGIN
 		ORDER BY 
 			a.tr_date,
 			a.doc_no,
-			c.product_desc
+			b.product_desc
 	);
 	-- -------------------------------------
 	-- cleanup

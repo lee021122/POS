@@ -15,12 +15,13 @@ const SERVICE = FILE.replace('.js', '');
 
 function AppUAC() {};
 
-AppUAC.prototype.uacObj = function(o = {}) {
+AppUAC.prototype.loginObj = function(o = {}) {
     const d = {
         lid: null,
         pwd: null,
         msg: null,
         sess_id: null,
+        uid: null,
         user_host: null,
         browser_name: null,
         os_platform: null,
@@ -34,12 +35,29 @@ AppUAC.prototype.uacObj = function(o = {}) {
         lid: libShared.toString,
         pwd: libShared.toString,
         user_host: libShared.toString,
+        // sess_id: libShared.toUUID,
         browser_name: libShared.toString,
         os_platform: libShared.toString,
         browser_ver: libShared.toString,
         user_agent: libShared.toString,
         axn: libShared.toString,
         url: libShared.toString
+    };
+
+    // Use the convertObjProp function to apply the conversions and merge with defaults
+    return libShared.convertObjProp(o, d, conversionMap);
+};
+
+AppUAC.prototype.logoutObj = function(o = {}) {
+    const d = {
+        sess_id: null,
+        msg: null,
+        is_debug: null
+    };
+
+    const conversionMap = {
+        sess_id: libShared.toUUID,
+        is_debug: libShared.toInt
     };
 
     // Use the convertObjProp function to apply the conversions and merge with defaults
@@ -53,7 +71,7 @@ AppUAC.prototype.login = async function (req, res) {
     p0.code = code;
     p0.axn = axn;
     p0.data = data;
-    const o2 = data.map(item => this.uacObj(item));
+    const o2 = data.map(item => this.loginObj(item));
 
     if (!code || code !== SERVICE) {
         return res.status(500).send(libApi.response("Code is required!!", "Failed"));
@@ -74,14 +92,29 @@ AppUAC.prototype.login = async function (req, res) {
     };
 
     params = objectToArray(o2[0]);
-    console.log(params);
+    // console.log(params);
     
     try {
         const result = await pgSql.executeStoreProc('pr_user_login', params);
+        console.log(result);
+        
+        if (result[0].p_msg === 'ok') {
+            // Set session with sess_id
+            req.session.sid = result[0].p_sess_id;
+            req.session.u = result[0].p_uid;
 
-        // Give cookie and session
+            // Set a cookie with the session ID
+            res.cookie('s',  result[0].p_sess_id, { 
+                httpOnly: false,
+                maxAge: 24 * 60 * 60 * 1000 // Set cookie expiration (1 day)
+            });
+            console.log(req.session);
+            
 
-        return res.status(200).send(result);
+            return res.status(200).send(libApi.response("Login successful", "Success"));
+        } else {
+            return res.status(500).send(libApi.response("Invalid login credentials", "Failed"));
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
@@ -95,7 +128,7 @@ AppUAC.prototype.logout = async function (req, res) {
     p0.code = code;
     p0.axn = axn;
     p0.data = data;
-    const o2 = data.map(item => this.uacObj(item));
+    const o2 = data.map(item => this.logoutObj(item));
 
     if (!code || code !== SERVICE) {
         return res.status(500).send(libApi.response("Code is required!!", "Failed"));
@@ -108,13 +141,33 @@ AppUAC.prototype.logout = async function (req, res) {
     if (!o2[0].sess_id) {
         return res.status(500).send(libApi.response("Sess ID is required!!", "Failed"));
     };
+
+    function objectToArray(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+          throw new Error('Input must be a non-null object');
+        };
+
+        return Object.values(obj);
+    };
+
+    params = objectToArray(o2[0]);
     
     try {
-        const result = await pgSql.executeStoreProc('pr_user_logout', params);
+        const result = await pgSql.executeStoreProc('pr_user_logout', params);  
 
-        // Kill the session and clear cookie
-
-        return res.send(result);    
+        if (result[0].p_msg === 'ok') {
+            req.session.destroy((err) => {
+                if (err) {
+                    return res.status(500).send(libApi.response("Failed to destroy session", "Failed"));
+                };
+    
+                // Clear the cookie
+                res.clearCookie('s');
+                console.log(req.session);
+                
+                return res.send(libApi.response("Logout successful", "Success"));
+            });
+        };
     } catch (err) {
         console.error(err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));

@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const libShared = require('./lib-shared');
 const currentWorkingDirectory = process.cwd();
 
 // Create a log directory if it doesn't exist
-const logDir = path.join(__dirname, 'logs');
+const logDir = path.join(currentWorkingDirectory, '../../', 'log');
 
 // Ensure the log directory exists
 if (!fs.existsSync(logDir)) {
@@ -14,13 +15,13 @@ if (!fs.existsSync(logDir)) {
 function libLog(filename, action, message) {
     // Get current date and format it as YYYY-MM-DD
     const currentDate = new Date().toISOString().split('T')[0];
-
+    
     // Create the log file path (e.g., logs/2025-01-02.txt)
     const logFilePath = path.join(logDir, `${currentDate}.txt`);
-
+    
     // Create log entry with timestamp, filename, action, and message
-    const logEntry = `[${new Date().toISOString()}] - ${filename} - ${action} - ${message}\n`;
-
+    const logEntry = `[${libShared.toDateTime(new Date().toISOString())}] - ${filename} - ${action} - ${message}\n`;
+    
     // Append the log entry to the file
     fs.appendFileSync(logFilePath, logEntry, 'utf8');
     console.log('Log added:', logEntry); // Optional: log to console for debugging

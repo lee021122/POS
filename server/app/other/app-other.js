@@ -8,6 +8,8 @@ const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 const { sendEmail } = require('../../lib/lib-mail-service');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -338,7 +340,11 @@ router.post('/cl', other.countryList.bind(other));
 router.post('/sl', other.stateList.bind(other));
 router.post('/ptl', other.pricingTypeList.bind(other));
 router.post('/il', other.inventoryTypeList.bind(other));
-router.post('/all', other.auditLogList.bind(other));
-router.post('/al', other.actionList.bind(other));
+router.post('/all', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    other.auditLogList.bind(req, res);
+});
+router.post('/al', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    other.actionList.bind(req, res);
+});
 
 module.exports = router;

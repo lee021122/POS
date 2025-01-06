@@ -100,6 +100,7 @@ BEGIN
 			AND e.dt = v_tr_date
 			AND a.is_in_use = 1
 			AND c.is_in_use = 1
+			--AND e.qty <> 0
 		GROUP BY 
 			a.product_id, d.category_desc, e.qty, e.sold
 	);

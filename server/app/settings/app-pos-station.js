@@ -7,6 +7,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -163,7 +165,9 @@ AppPosStation.prototype.list = async function (req, res) {
 
 const station = new AppPosStation();
 
-router.post('/s', station.save.bind(station));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    station.save.bind(req, res);
+});
 router.post('/l', station.list.bind(station));
 
 module.exports = router;

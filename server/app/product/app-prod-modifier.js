@@ -10,7 +10,9 @@ const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 const { output } = require('pdfkit');
 
-const p0 = new libApi.apiCallerImg();
+const auth = require('../../middleware/auth');
+
+const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
@@ -126,37 +128,54 @@ AppProdModifier.prototype.prodModifierObject = function(o = {}) {
 // };
 
 AppProdModifier.prototype.modifierGroupList = async function(req, res) {
+    let validAxn, params, action;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.prodModifierObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.prodModifierObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
-
+        // Find the function by using action_code
+        validAxn = await pgSql.getAction(action);
+                
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -253,37 +272,53 @@ AppProdModifier.prototype.modifierGroupList = async function(req, res) {
 // };
 
 AppProdModifier.prototype.modifierOptList = async function(req, res) {
+    let validAxn, params, action;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.prodModifierObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.prodModifierObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
-
+        // Find the function by using action_code
+        validAxn = await pgSql.getAction(action);
+                
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -340,37 +375,53 @@ AppProdModifier.prototype.modifierOptList = async function(req, res) {
 // };
 
 AppProdModifier.prototype.linkProductList = async function(req, res) {
+    let validAxn, params, action;
+
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.prodModifierObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
     try {
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.prodModifierObject(item));
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-
-        const validAxn = await pgSql.getAction(action);
-
+        // Find the function by using action_code
+        validAxn = await pgSql.getAction(action);
+                
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -539,6 +590,8 @@ router.post('/mgl', prodModf.modifierGroupList.bind(prodModf));
 router.post('/mol', prodModf.modifierOptList.bind(prodModf));
 // router.post('/mlps', prodModf.linkProduct.bind(prodModf));
 router.post('/mlpl', prodModf.linkProductList.bind(prodModf));
-router.post('/mgs', prodModf.completeModifierSave.bind(prodModf));
+router.post('/mgs', auth.checkPermission.bind(auth, `${SERVICE}::gs`), (req, res) => {
+    prodModf.completeModifierSave.bind(req, res);
+});
 
 module.exports = router;

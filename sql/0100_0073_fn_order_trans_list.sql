@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION fn_order_trans_list (
 ) RETURNS TABLE (
 	order_trans_id uuid, 
 	doc_no character varying, 
-	modified_on timestamp without time zone, 
+	tr_date text, 
 	modified_by character varying, 
 	tr_type_desc character varying, 
 	tr_status character varying, 
@@ -56,24 +56,26 @@ BEGIN
 	
 		RETURN QUERY (
 			SELECT 
-				a.order_trans_id, a.doc_no, a.modified_on, a.modified_by, b.tr_type_desc, a.tr_status, a.table_no, a.room_no, a.amt
+				a.order_trans_id, a.doc_no, a.tr_date::text, a.modified_by, b.tr_type_desc, a.tr_status, a.table_no, a.room_no, a.amt
 			FROM tb_order_trans a
 			LEFT JOIN tb_tr_type b ON b.tr_type_code = a.tr_type
 			WHERE 
 				a.tr_status = 'C'
 				AND a.outstanding_amt <> 0
 				AND a.tr_date BETWEEN p_start_dt AND p_end_dt
+			ORDER BY a.tr_date, a.doc_no
 		);
 		
 	ELSIF p_axn = 'history-list' THEN 
 		
 		RETURN QUERY (
 			SELECT 
-				a.order_trans_id, a.doc_no, a.modified_on, a.modified_by, b.tr_type_desc, a.tr_status, a.table_no, a.room_no, a.amt
+				a.order_trans_id, a.doc_no, a.tr_date::text, a.modified_by, b.tr_type_desc, a.tr_status, a.table_no, a.room_no, a.amt
 			FROM tb_order_trans a
 			LEFT JOIN tb_tr_type b ON b.tr_type_code = a.tr_type
 			WHERE 
 				a.tr_date BETWEEN p_start_dt AND p_end_dt
+			ORDER BY a.tr_date, a.doc_no
 		);
 		
 	END IF;

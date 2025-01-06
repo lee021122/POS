@@ -9,6 +9,8 @@ const libShared = require('../../lib/lib-shared');
 const FILE = path.basename(__filename)
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const AppSettingMealPeriod = function () {};
@@ -49,56 +51,65 @@ AppSettingMealPeriod.prototype.mealPeriodObject = function (o = {}) {
 }
 
 AppSettingMealPeriod.prototype.save = async function (req, res) {
+    let validAxn, params;
+
+    // Extract and validate request data
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;
+    const o2 = data.map(item => this.mealPeriodObject(item));
+    console.log(o2);
+    
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+    };
+
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+    };
+
+    if (!o2[0].meal_period_desc) {
+        return res.status(400).send(libApi.response('Meal period description is required', 'Failed'));
+    };
+
+    if (o2[0].display_seq != null) {
+        if (o2[0].display_seq.length > 6) {
+            return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
+        } else {
+            o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
+        };
+    };
+
+    o2[0].url = req.url;
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    
     try {
-        // Extract and validate request data
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;
-        const o2 = data.map(item => this.mealPeriodObject(item));
-        console.log(o2);
-        
-
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required', 'Failed'));
-        };
-
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required', 'Failed'));
-        };
-
-        if (!o2[0].meal_period_desc) {
-            return res.status(400).send(libApi.response('Meal period description is required', 'Failed'));
-        };
-
-        if (o2[0].display_seq != null) {
-            if (o2[0].display_seq.length > 6) {
-                return res.status(400).send(libApi.response('Display sequence must be 6 digits or less!!', 'Failed'));
-            } else {
-                o2[0].display_seq = libShared.padFillLeft(o2[0].display_seq, 6, '0');
-            };
-        };
-
-        o2[0].url = req.url;
-
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
+        validAxn = await pgSql.getAction(action);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
-
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        // console.log("params: ", params);
-            
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+        
+    try {
         // Execute the function
-        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params)
-             
+        const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
+            
         if (result[0].p_msg !== 'ok') {
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
@@ -111,40 +122,50 @@ AppSettingMealPeriod.prototype.save = async function (req, res) {
 };
 
 AppSettingMealPeriod.prototype.list = async function(req, res) {
-    try {       
-        const { code, axn, data } = req.body;
-        p0.code = code;
-        p0.axn = axn;
-        p0.data = data;
-        const preCode = p0.code;        
-        const o2 = data.map(item => this.mealPeriodObject(item));
-        console.log(o2);
-        
-        if (!code || code !== SERVICE) {
-            return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
-        };
+    let validAxn, params;
 
-        if (!axn) {
-            return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
-        };
+    const { code, axn, data } = req.body;
+    p0.code = code;
+    p0.axn = axn;
+    p0.data = data;
+    const preCode = p0.code;        
+    const o2 = data.map(item => this.mealPeriodObject(item));
+    console.log(o2);
+    
+    if (!code || code !== SERVICE) {
+        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+    };
 
-        const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-        console.log("action: ", action);
-        
+    if (!axn) {
+        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+    };
+
+    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    
+    try {
         // Find the function by using action_code
-        const validAxn = await pgSql.getAction(action);
-
+        validAxn = await pgSql.getAction(action);
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         }
-
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Use the shared library function to parse parameters
-        const params = libApi.parseParams(validAxn, o2);
-        
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
+    
+    try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);        
-             
+            
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
@@ -152,14 +173,12 @@ AppSettingMealPeriod.prototype.list = async function(req, res) {
     };
 };
 
-AppSettingMealPeriod.prototype.delete = async function(req, res) {
-
-};
-
 const mealPeriod = new AppSettingMealPeriod();
 
 router.post('/l', mealPeriod.list.bind(mealPeriod));
-router.post('/s', mealPeriod.save.bind(mealPeriod));
-router.post('/d', mealPeriod.delete.bind(mealPeriod));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    mealPeriod.save.bind(req, res);
+});
+// router.post('/d', mealPeriod.delete.bind(mealPeriod));
 
 module.exports = router;

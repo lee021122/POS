@@ -85,3 +85,12 @@
 //     this.close();
 //   });
 // });
+
+const libLog = require('./lib-log')
+
+
+// Example usage of the logging function in your application
+libLog('app.js', 'USER_LOGIN', 'User with ID 123 has logged in successfully.');
+libLog('app.js', 'FILE_UPLOAD', 'User uploaded a file named "report.pdf".');
+libLog('app.js', 'ERROR', 'An unexpected error occurred while processing data.');
+

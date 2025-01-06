@@ -7,6 +7,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -174,7 +176,9 @@ AppPosPrinter.prototype.getCurrentNetPrinter = async function(req, res) {
 
 const printer = new AppPosPrinter();
 
-router.post('/s', printer.save.bind(printer));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    printer.save.bind(req, res);
+});
 router.post('/l', printer.list.bind(printer));
 router.post('/cp', printer.getCurrentNetPrinter.bind(printer));
 

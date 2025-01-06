@@ -8,6 +8,8 @@ const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 const { sendEmail } = require('../../lib/lib-mail-service');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -54,7 +56,7 @@ AppNotif.prototype.notifObj = function(o = {}) {
 };
 
 AppNotif.prototype.save = async function(req, res) {
-    let validAxn;
+    let validAxn, params;
     
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -104,9 +106,13 @@ AppNotif.prototype.save = async function(req, res) {
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     }
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
-    // console.log("params: ", params);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
 
     try {
          const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
@@ -157,8 +163,13 @@ AppNotif.prototype.list = async function (req, res) {
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     };
 
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
 
     try {
         // Execute the function
@@ -173,7 +184,9 @@ AppNotif.prototype.list = async function (req, res) {
 
 const notif = new AppNotif() ;
 
-router.post('/s', notif.save.bind(notif));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    notif.save.bind(req, res);
+});
 router.post('/l', notif.list.bind(notif));
 
 module.exports = router;

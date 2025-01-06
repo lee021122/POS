@@ -9,6 +9,8 @@ const { pgSql, db } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -270,8 +272,14 @@ AppUserGroup.prototype.actionList = async function(req, res) {
 
 const userGroup = new AppUserGroup();
 
-router.post('/s', userGroup.save.bind(userGroup));
-router.post('/l', userGroup.list.bind(userGroup));
-router.post('/al', userGroup.actionList.bind(userGroup));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => { 
+    userGroup.save.bind(req, res);
+});
+router.post('/l', auth.checkPermission.bind(auth, `${SERVICE}::l`), (req, res) => {
+    userGroup.list.bind(req, res)
+});
+router.post('/al', auth.checkPermission.bind(auth, `${SERVICE}::al`), (req, res) => {
+    userGroup.actionList.bind(req, res);
+});
 
 module.exports = router;

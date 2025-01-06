@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_rpt_item_86 (
+CREATE OR REPLACE FUNCTION fn_rpt_item86 (
 	p_current_uid character varying(255),
 	p_start_dt date,
 	p_end_dt date,

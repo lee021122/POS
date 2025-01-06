@@ -9,6 +9,9 @@ const bodyParser = require('body-parser');
 const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
+const libLog = require('../../lib/lib-log');
+
+const auth = require('../../middleware/auth');
 
 const p0 = new libApi.apiCaller();
 
@@ -51,7 +54,7 @@ AppCashiering.prototype.cashierShiftObject = function(o = {}) {
 
 // Open Cashiering Shift
 AppCashiering.prototype.openCshr = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
 
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -61,53 +64,64 @@ AppCashiering.prototype.openCshr = async function (req, res) {
     const preCode = p0.code;
     const o2 = data.map(item => this.cashierShiftObject(item));
 
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+    // console.log("action: ", action);
+
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
     };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-    // console.log("action: ", action);
     
-    // Find the function by using action_code
     try {
+        // Find the function by using action_code
         validAxn = await pgSql.getAction(action);
-        // console.log(validAxn);
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
-    // console.log("params: ", params);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+        // console.log("params: ", params);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
     
     try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
             
         if (result[0].p_msg !== 'ok') {
+            libLog(FILE, action, `Failed on ${action}, due to ${result[0].p_msg}`);
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
             return res.status(200).send(libApi.response(result, 'Success'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
 
 // List Current Cashiering Shift 
 AppCashiering.prototype.currentCshr = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
 
     const { code, axn, data } = req.body;
     p0.code = code;
@@ -116,30 +130,40 @@ AppCashiering.prototype.currentCshr = async function (req, res) {
     const preCode = p0.code;
     const o2 = data.map(item => this.cashierShiftObject(item));
 
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
     };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
 
     try {
         validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
     try {
         // Execute the function
@@ -149,13 +173,14 @@ AppCashiering.prototype.currentCshr = async function (req, res) {
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };  
 };
 
 // Prepare Collection Statement before close
 AppCashiering.prototype.prepareCshr = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
 
     const { code, axn, data } = req.body;
     p0.code = code;
@@ -164,29 +189,40 @@ AppCashiering.prototype.prepareCshr = async function (req, res) {
     const preCode = p0.code;
     const o2 = data.map(item => this.cashierShiftObject(item));
 
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
+
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required!!', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required!!', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
     };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
 
     try {
         validAxn = await pgSql.getAction(action);
 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch (err) {
-
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
 
     // Execute the function
     try {
@@ -196,13 +232,14 @@ AppCashiering.prototype.prepareCshr = async function (req, res) {
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
 
 // Close Cashiering Shift
 AppCashiering.prototype.closeCshr = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
 
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -211,17 +248,18 @@ AppCashiering.prototype.closeCshr = async function (req, res) {
     p0.data = data;
     const preCode = p0.code;
     const o2 = data.map(item => this.cashierShiftObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
     
     if (!code || code !== SERVICE) {
+        libLog(FILE, action, 'Code is required!!');
         return res.status(400).send(libApi.response('Code is required', 'Failed'));
     };
 
     if (!axn) {
+        libLog(FILE, action, 'Action is required!!');
         return res.status(400).send(libApi.response('Action is required', 'Failed'));
     };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-    // console.log("action: ", action);
     
     // Find the function by using action_code
     try {
@@ -229,35 +267,44 @@ AppCashiering.prototype.closeCshr = async function (req, res) {
             
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
+            libLog(FILE, action, validAxn.data[0]?.msg);
             return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
         
     try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-        console.log(req.header('x-forwarded-for'));
         
         if (result[0].p_msg !== 'ok') {
+            libLog(FILE, action, `Failed on ${action}, due to ${result[0].p_msg}`);
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
             return res.status(200).send(libApi.response(result, 'Success'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
 
 // Force close cashiering shift
 AppCashiering.prototype.forceCloseCshr = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
 
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -266,17 +313,18 @@ AppCashiering.prototype.forceCloseCshr = async function (req, res) {
     p0.data = data;
     const preCode = p0.code;
     const o2 = data.map(item => this.cashierShiftObject(item));
+
+    action = preCode.concat('::').concat(axn).toLowerCase().trim();
     
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required', 'Failed'));
     };
-
-    const action = preCode.concat('::').concat(axn).toLowerCase().trim();
-    // console.log("action: ", action);
     
     // Find the function by using action_code
     try {
@@ -284,38 +332,58 @@ AppCashiering.prototype.forceCloseCshr = async function (req, res) {
             
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.error(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+    };
         
     try {
         // Execute the function
         const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
-        console.log(req.header('x-forwarded-for'));
         
         if (result[0].p_msg !== 'ok') {
+            libLog(FILE, action, `Failed on ${action}, due to ${result[0].p_msg}`);
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
             return res.status(200).send(libApi.response(result, 'Success'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
 
 const cashier = new AppCashiering();
 
-router.post('/o', cashier.openCshr.bind(cashier));
-router.post('/sc', cashier.currentCshr.bind(cashier));
+router.post('/o', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    cashier.openCshr.bind(req, res);
+});
+router.post('/sc', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    cashier.currentCshr.bind(req, res);
+});
+// router.post('/cp', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+//     cashier.prepareCshr.bind(req, res);
+// });
 router.post('/cp', cashier.prepareCshr.bind(cashier));
-router.post('/c', cashier.closeCshr.bind(cashier));
-router.post('/fc', cashier.forceCloseCshr.bind(cashier));
+router.post('/c', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    cashier.closeCshr.bind(req, res);
+});
+router.post('/fc', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    cashier.forceCloseCshr.bind(req, res);
+});
 
 module.exports = router;

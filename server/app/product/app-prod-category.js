@@ -6,6 +6,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const FILE = path.basename(__filename);
 const SERVICE = FILE.replace('app-', '').replace('.js', '');
 
@@ -199,7 +201,9 @@ const prodCat = new AppProdCategory();
 
 // Define route handler
 router.post('/l', prodCat.list.bind(prodCat));
-router.post('/s', prodCat.save.bind(prodCat));
-// router.post('/d', prodCat.delete.bind(prodCat));
+router.post('/s', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => {
+    prodCat.save.bind(req, res);
+});
+// router.post('/d', prodCat.delete.bind(prodCat)); 
 
 module.exports = router;

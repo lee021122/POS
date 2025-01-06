@@ -30,6 +30,8 @@ const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 const libRpt = require('../../lib/lib-rpt');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -1453,7 +1455,8 @@ AppReport.prototype.serviceChargeRpt = async function (req, res) {
 
     try {
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
-
+        console.log(result);
+        
         if (o2[0].axn === 'excel') {
             // Generate the Excel file from the result
             const excel = new libRpt.interface();  // Create a new Excel workbook
@@ -1762,17 +1765,40 @@ AppReport.prototype.resSalesSumm = async function (req, res) {
 
 const rpt = new AppReport();
 
-router.post('/dar', rpt.dailyAvailabilityRpt.bind(rpt));
-router.post('/iss', rpt.itemSalesSummary.bind(rpt));
-router.post('/ds', rpt.dailySumm.bind(rpt));
-router.post('/ils', rpt.invoiceListingSumm.bind(rpt));
-router.post('/i86', rpt.item86.bind(rpt));
-router.post('/ivr', rpt.itemVoidRpt.bind(rpt));
-router.post('/ccr', rpt.cashieringRpt.bind(rpt));
-router.post('/bvr', rpt.billVoidRpt.bind(rpt));
-router.post('/dr', rpt.discountRpt.bind(rpt));
+router.post('/dar', auth.checkPermission.bind(auth, `${SERVICE}::dar`), (req, res) => {
+    rpt.dailyAvailabilityRpt.bind(req, res);
+});
+router.post('/iss', auth.checkPermission.bind(auth, `${SERVICE}::iss`), (req, res) => {
+    rpt.itemSalesSummary.bind(req, res);
+});
+router.post('/ds', auth.checkPermission.bind(auth, `${SERVICE}::ds`), (req, res) => {
+    rpt.dailySumm.bind(req, res);
+});
+router.post('/ils', auth.checkPermission.bind(auth, `${SERVICE}::ils`), (req, res) => { 
+    rpt.invoiceListingSumm.bind(req, res);
+});
+router.post('/i86', auth.checkPermission.bind(auth, `${SERVICE}::i86`), (req, res) => { 
+    rpt.item86.bind(req, res);
+});
+router.post('/ivr', auth.checkPermission.bind(auth, `${SERVICE}::ivr`), (req, res) => {
+    rpt.itemVoidRpt.bind(req, res);
+});
+router.post('/ccr', auth.checkPermission.bind(auth, `${SERVICE}::ccr`), (req, res) => { 
+    rpt.cashieringRpt.bind(req, res);
+});
+router.post('/bvr', auth.checkPermission.bind(auth, `${SERVICE}::bvr`), (req, res) => {
+    rpt.billVoidRpt.bind(req, res);
+});
+router.post('/dr', auth.checkPermission.bind(auth, `${SERVICE}::iss`), (req, res) => { 
+    rpt.discountRpt.bind(req, res);
+});
+// router.post('/str', auth.checkPermission.bind(auth, `${SERVICE}::iss`), (req, res) => {
+//     rpt.serviceChargeRpt.bind(req, res);
+// });
 router.post('/str', rpt.serviceChargeRpt.bind(rpt));
-router.post('/sstr', rpt.sstRpt.bind(rpt));
+router.post('/sstr', auth.checkPermission.bind(auth, `${SERVICE}::iss`), (req, res) => {
+    rpt.sstRpt.bind(req, res);
+});
 // rss
 
 

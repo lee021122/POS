@@ -9,6 +9,8 @@ const { pgSql } = require('../../lib/lib-pgsql');
 const libApi = require('../../lib/lib-api');
 const libShared = require('../../lib/lib-shared');
 
+const auth = require('../../middleware/auth');
+
 const p0 = new libApi.apiCaller();
 
 const FILE = path.basename(__filename);
@@ -43,7 +45,7 @@ AppDayEndClosing.prototype.dayEndObj = function(o = {}) {
 
 // Day-end closing prepare
 AppDayEndClosing.prototype.dayEndPrepare = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
             
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -52,16 +54,17 @@ AppDayEndClosing.prototype.dayEndPrepare = async function (req, res) {
     p0.data = data;
     const o2 = data.map(item => this.dayEndObj(item));
 
+    action = p0.code.concat('::').concat(axn).toLowerCase().trim();
+
     if (!code || code !== SERVICE) {
-        return res.status(400).send(libApi.response('Code is required', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(400).send(libApi.response('Action is required', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
     };
-
-    const action = p0.code.concat('::').concat(axn).toLowerCase().trim();
-    // console.log("action: ", action);
 
     // Find the function by using action_code
     try {
@@ -70,29 +73,38 @@ AppDayEndClosing.prototype.dayEndPrepare = async function (req, res) {
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch (err) {
         console.log(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     };
 
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
-
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.log(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
+   
     try {
         // Execute the function
         const result = await pgSql.executeFunction(validAxn.data[0].sql_stm, params);
         return res.status(200).send(libApi.response(result, 'Success'));
     } catch (err) {
         console.log(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     };
 };
 
 // Day-end closing manual close
 AppDayEndClosing.prototype.dayEndClose = async function (req, res) {
-    let validAxn;
+    let validAxn, params, action;
         
     // Extract and validate request data
     const { code, axn, data } = req.body;
@@ -101,21 +113,23 @@ AppDayEndClosing.prototype.dayEndClose = async function (req, res) {
     p0.data = data;
     const o2 = data.map(item => this.dayEndObj(item));
 
+    action = p0.code.concat('::').concat(axn).toLowerCase().trim();
+
     if (!code || code !== SERVICE) {
-        return res.status(500).send(libApi.response('Code is required', 'Failed'));
+        libLog(FILE, action, 'Code is required!!');
+        return res.status(500).send(libApi.response('Code is required!!', 'Failed'));
     };
 
     if (!axn) {
-        return res.status(500).send(libApi.response('Action is required', 'Failed'));
+        libLog(FILE, action, 'Action is required!!');
+        return res.status(500).send(libApi.response('Action is required!!', 'Failed'));
     };
 
     if (!o2[0].remarks) {
-        return res.status(500).send(libApi.response('Remarks is required', 'Failed'));
+        libLog(FILE, action, 'Remarks is required!!');
+        return res.status(500).send(libApi.response('Remarks is required!!', 'Failed'));
     };
 
-    const action = p0.code.concat('::').concat(axn).toLowerCase().trim();
-    // console.log("action: ", action);
-    
     // Find the function by using action_code
     try {
         validAxn = await pgSql.getAction(action);
@@ -123,29 +137,46 @@ AppDayEndClosing.prototype.dayEndClose = async function (req, res) {
                 
         // Append Error if the action is not found
         if (validAxn.rowCount <= 1) {
-            return res.status(400).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
+            libLog(FILE, action, validAxn.data[0]?.msg);
+            return res.status(500).send(libApi.response(validAxn.data[0]?.msg || 'Invalid Action', 'Failed'));
         };
     } catch (err) {
         console.log(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
     }
     
-    // Use the shared library function to parse parameters
-    const params = libApi.parseParams(validAxn, o2);
-    // console.log("params: ", params);
+    try {
+        // Use the shared library function to parse parameters
+        params = libApi.parseParams(validAxn, o2);
+    } catch (err) {
+        console.log(err);
+        libLog(FILE, action, err);
+        return res.status(500).send(libApi.response(err.message || 'Failed to fetch action', 'Failed'));
+    };
 
     try {
          const result = await pgSql.executeStoreProc(validAxn.data[0].sql_stm, params);
         
         if (result[0].p_msg !== 'ok') {
+            libLog(FILE, action, `Failed on ${action}, due to ${result[0].p_msg}`);
             return res.status(500).send(libApi.response(result, 'Failed'));
         } else {
+            libLog(FILE, action, `Success on ${action}, msg: ${result[0].p_msg}`);
             return res.status(200).send(libApi.response(result, 'Success'));
         };
     } catch (err) {
         console.error(err);
+        libLog(FILE, action, err);
         return res.status(500).send(libApi.response(err.message || err, 'Failed'));
     };
 };
+
+const dayEndClose = new AppDayEndClosing();
+
+router.post('/c', dayEndClose.dayEndPrepare.bind(dayEndClose));
+router.post('/d', auth.checkPermission.bind(auth, `${SERVICE}::s`), (req, res) => { 
+    dayEndClose.dayEndClose.bind(req, res);
+});
 
 module.exports = router;

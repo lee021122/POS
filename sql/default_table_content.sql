@@ -104,6 +104,7 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('81a26b63-de75-47e3-88c9-1937e35507f6', 'app-order-trans::ml', 'Order - Modifier List', 'fn_order_modifier_list', 'Order Process', 1, '000075', current_timestamp, 'admin', 1),
 ('bdf3b996-922a-44c2-87fb-a27902edd8ba', 'app-order-trans::tl', 'Order - View Table Location List', 'fn_order_trans_table_list', 'Order Process', 1, '000081', current_timestamp, 'admin', 0),
 ('3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'app-order-trans::il', 'Order - View Order Transaction Item', 'fn_order_trans_item_list', 'Order Process', 1, '000082', current_timestamp, 'admin', 0)
+('55c1750e-c015-44e4-a289-ec68b87dab14', 'app-order-trans::e', 'Order - Order Transaction Allow Edit', 'fn_pos_trans_allow_edit', 'Order Process', 1, '000103', current_timestamp, 'admin', 1)
 
 -- Module: Cashiering
 ('53c09823-1cc1-4f81-a29b-68b29d7870a8', 'app-cashiering-shift::o', 'Cashiering - Cashiering Shift Open', 'pr_cashiering_start', 'Cashiering Shift', 1, '000076', current_timestamp, 'admin', 0),
@@ -140,6 +141,9 @@ insert into tb_action (action_id, action_code, action_desc, sql_q, group_code, i
 ('f3468548-f8e0-497e-85aa-58aeea6085a9', 'app-report::str', 'Report - Service Tax Report', 'fn_rpt_service_charge', 'Report', 0, '000092', current_timestamp, 'admin', 0),
 ('4cd4e494-cdb4-44e5-a394-dfeb31dc4de6', 'app-report::sstr', 'Report - Sales & Service Tax Report', 'fn_rpt_sst', 'Report', 0, '000093', current_timestamp, 'admin', 0),
 ('d46d4192-ddcc-44f1-9b20-23f4247185d1', 'app-report::rss', 'Report - Restaurant Sales Summary', 'fn_rpt_restaurant_sales_summ', 'Report', 0, '000094', current_timestamp, 'admin', 0)
+
+-- Module: User Access
+
 
 INSERT INTO tb_acn_rlt_tb (created_on, created_by, action_id, rlt_tb) VALUES 
 (current_timestamp, 'admin', '1296c008-4372-485f-91cf-81a544f476c2', 'tb_prod_category'),
@@ -904,7 +908,6 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'url', 'string', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '855eded5-c3a8-4b0b-a958-710d105badd6', 'is_debug', 'int', 5, 0, current_timestamp, 'admin'),
 
-
 -- app-order-trans::ml
 (gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
 (gen_random_uuid(), '81a26b63-de75-47e3-88c9-1937e35507f6', 'product_id', 'id', 2, 0, current_timestamp, 'admin'),
@@ -927,6 +930,14 @@ insert into tb_action_param (action_param_id, action_id, action_param_name, data
 (gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'url', 'string', 5, 0, current_timestamp, 'admin'),
 (gen_random_uuid(), '3681cceb-a75e-43d0-9eef-c57293ffb8e0', 'is_debug', 'int', 6, 0, current_timestamp, 'admin'),
+
+-- app-order-trans::e
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'order_trans_id', 'id', 2, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'rid', 'int', 3, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'axn', 'string', 4, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'url', 'string', 5, 0, current_timestamp, 'admin'),
+(gen_random_uuid(), '55c1750e-c015-44e4-a289-ec68b87dab14', 'is_debug', 'int', 6, 0, current_timestamp, 'admin')
 
 -- app-cashiering-shift::o
 (gen_random_uuid(), '53c09823-1cc1-4f81-a29b-68b29d7870a8', 'current_uid', 'string', 1, 1, current_timestamp, 'admin'),
@@ -1123,8 +1134,8 @@ insert into tb_sys_setting (created_on, created_by, modified_on, modified_by, sy
 (current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_URL', '', 0),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_ADMIN_PORTAL_URL', '', 0),
 (current_timestamp, 'admin', current_timestamp, 'admin', 'Config', 'POS_QR_ORDER_URL', '', 0)
-(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'Cookies', '', 0),
-(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'SESS_IDLE_TIME_OUT', '60', 0),  -- in minutes
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'Cookies', 'mNH6eDmzrrfIXI3zzjUUZOCvxq//O61nXK4vsCLsCho=', 0),
+(current_timestamp, 'admin', current_timestamp, 'admin', 'Security', 'SESS_IDLE_TIME_OUT', '24', 0),  -- in hrs
 
 
 INSERT into tb_tr_type (tr_type_id, created_on, created_by, modified_on, modified_by, tr_type_code, tr_type_desc, is_in_use, display_seq) VALUES
@@ -1174,9 +1185,8 @@ INSERT INTO tb_repeat_type (repeat_type_id, created_on, created_by, repeat_type_
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Thrusday', '* * * * * 4', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Friday', '* * * * * 5', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Saturday', '* * * * * 6', 1),
-(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Sunday', '* * * * * 7', 1),
+(gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Repeat Every Sunday', '* * * * * 7', 1);
 
-select * from tb_date_range
 INSERT INTO tb_date_range (date_range_id, created_on, created_by, date_range_grp, date_range_desc, date_range_func, is_in_use) VALUES 
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Today', 'fn_get_current_date()', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Daily', 'Yesterday', 'fn_get_yesterday_date()', 1),
@@ -1191,4 +1201,4 @@ INSERT INTO tb_date_range (date_range_id, created_on, created_by, date_range_grp
 (gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'Begin of Last year', 'fn_get_begin_of_last_year()', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Yearly', 'End of Last year', 'fn_get_end_of_last_year()', 1),
 (gen_random_uuid(), current_timestamp, 'admin', 'Calendar Type', 'EG Calendar', 'fn_eg_calendar()', 1),
-(gen_random_uuid(), current_timestamp, 'admin', 'Calendar Type', 'Normal Calendar', 'fn_normal_calendar()', 1)
+(gen_random_uuid(), current_timestamp, 'admin', 'Calendar Type', 'Normal Calendar', 'fn_normal_calendar()', 1);

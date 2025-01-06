@@ -223,10 +223,24 @@ AppShared.prototype.getCookie = async function () {
     try {
         const f = 'Cookies';
         const result = await pgSql.getTable('tb_sys_setting', ` ${pgSql.SQL_WHERE} sys_setting_title = '${f}'`, ['sys_setting_value']);
-        return result;
+        return result[0].sys_setting_value;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
+    };
+};
+
+// Get Session Secret
+AppShared.prototype.getSession = async function () {
+    try {
+        const f = 'SESS';
+        const result = await pgSql.getTable('tb_sys_setting', ` ${pgSql.SQL_WHERE} sys_setting_title = '${f}'`, ['sys_setting_value']);
+        console.log(result[0].sys_setting_value);
+        
+        return result[0].sys_setting_value;
+    } catch (err) {
+        console.error(err);
+        return { msg: "Failed" };
     };
 };
 
@@ -235,10 +249,10 @@ AppShared.prototype.getSessTime = async function () {
     try {
         const f = 'SESS_IDLE_TIME_OUT';
         const result = await pgSql.getTable('tb_sys_setting', ` ${pgSql.SQL_WHERE} sys_setting_title = '${f}'`, ['sys_setting_value']);
-        return result;
+        return result[0].sys_setting_value;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
     };
 };
 
@@ -246,10 +260,10 @@ AppShared.prototype.getSessTime = async function () {
 AppShared.prototype.getPosUrl = async function (url) {
     try {
         const result = await pgSql.getTable('tb_sys_setting', ` ${pgSql.SQL_WHERE} sys_setting_title = '${url}'`, ['sys_setting_value']);
-        return result;
+        return result[0].sys_setting_value;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
     };
 };
 
@@ -257,10 +271,10 @@ AppShared.prototype.getPosUrl = async function (url) {
 AppShared.prototype.getStoreName = async function (sid) {
     try {
         const result = await pgSql.getTable('tb_store', ` ${pgSql.SQL_WHERE} store_id = '${sid}'`, ['store_name']);
-        return result;
+        return result[0].store_name;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
     };
 };
 
@@ -268,10 +282,10 @@ AppShared.prototype.getStoreName = async function (sid) {
 AppShared.prototype.getPosUrl = async function (id) {
     try {
         const result = await pgSql.getTable('tb_sys_setting', ` ${pgSql.SQL_WHERE} sys_setting_title = '${url}'`, ['sys_setting_value']);
-        return result;
+        return result[0].sys_setting_value;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
     };
 };
 
@@ -283,7 +297,7 @@ AppShared.prototype.formatPeriod = async function (sdt, edt) {
         return result;
     } catch (err) {
         console.error(err);
-        return res.status(500).send(libApi.response(err.message || err, 'Failed'));
+        return { msg: "Failed" };
     };
 };
 

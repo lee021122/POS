@@ -61,7 +61,7 @@ BEGIN
 		ORDER BY 
 			a.tr_date,
 			a.doc_no,
-			c.product_desc
+			b.product_desc
 	);
 	-- -------------------------------------
 	-- cleanup
